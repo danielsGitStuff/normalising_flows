@@ -1,0 +1,11 @@
+/pyinstall/
+/venv/
+/maf/examples/results/
+/maf/examples/cut/
+/maf/examples/.cache/
+/maf/mixlearn/.cache/
+/maf/mixlearn/results/
+.pytest_cache
+/.idea
+/python.src/
+/python.src.tgz

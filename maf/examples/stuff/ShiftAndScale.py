@@ -1,0 +1,37 @@
+from typing import List
+
+import numpy as np
+import scipy.stats
+
+from distributions.Distribution import Distribution
+
+
+class ShiftAndScale(Distribution):
+    def __init__(self, input_dim: int, shift: List[float], scale: List[float]):
+        super().__init__(input_dim)
+        self.shift: np.ndarray = np.array(shift, dtype=np.float32)
+        self.scale: np.ndarray = np.array(scale, dtype=np.float32)
+        self.normal = scipy.stats.multivariate_normal(mean=[0] * self.input_dim, cov=[1] * self.input_dim)
+
+    def xs_to_us(self, xs: np.ndarray) -> np.ndarray:
+        return self.scale * xs + self.shift
+
+    def us_to_xs(self, us: np.ndarray) -> np.ndarray:
+        return (us - self.shift) / self.scale
+
+    def prob(self, xs: np.ndarray, batch_size: int = None) -> np.ndarray:
+        us = self.xs_to_us(xs)
+        ps = self.normal.pdf(us) * self.xs_to_us_jacobian_det()
+        ps = self.cast_2_likelihood(xs, ps)
+        return ps
+
+    def xs_to_us_jacobian_det(self) -> float:
+        return np.prod(self.scale)
+
+
+class ShiftAndScaleWrong(ShiftAndScale):
+    def __init__(self, input_dim: int, shift: float, scale: float):
+        super().__init__(input_dim, shift, scale)
+
+    def xs_to_us_jacobian_det(self) -> float:
+        return 1.0
