@@ -8,7 +8,7 @@ if [ -d "venv" ]; then
 fi
 
 # build a local python runtime
-./init_python.sh
+./init_python_ancient_ubuntu.sh
 
 # create venv using local python runtime
 if ! [ -d 'venv' ]; then
