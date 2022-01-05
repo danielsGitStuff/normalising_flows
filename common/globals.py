@@ -1,4 +1,6 @@
 import sys
+
+from common.jsonloader import Ser
 from typing import Any
 
 import numpy as np
@@ -7,7 +9,6 @@ from common import util
 from common.poolreplacement import RestartingPoolReplacement
 
 pool_key = "pool//instance"
-
 
 class Global:
     class Testing:
@@ -122,6 +123,6 @@ class Global:
 
 Global.d = {"global_max": 1, "gen_xs_dtype": np.float, "width_teams": 5, "width_time": 4, "noise_decline_start": 100, "noise_decline_stop": 180, "computation_pool_size": 8}
 Global.Testing.d = {}
-for _ in range(5):
-    print('ENABLING KALEIDO_MISSING_HACK: no 3d prints!!!', file=sys.stderr)
-Global.Testing.set('kaleido_missing_hack', True)  # currently no kaleido for python 3.10
+# for _ in range(5):
+#     print('ENABLING KALEIDO_MISSING_HACK: no 3d prints!!!', file=sys.stderr)
+# Global.Testing.set('kaleido_missing_hack', True)  # currently no kaleido for python 3.10

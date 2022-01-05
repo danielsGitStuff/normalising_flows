@@ -18,7 +18,7 @@ class MafExperiment:
     def __init__(self, name: str):
         self.cache_dir: Path = StaticMethods.cache_dir()
         self.name: str = name
-        self.result_folder: Path = Path("results")
+        self.result_folder: Path = Global.get_default('results_dir', Path("results"))
         self.heat_map_cmap: Colormap = sns.color_palette("Blues", as_cmap=True)
         self.heat_map_cmap = None
         self.fig = None
@@ -87,9 +87,6 @@ class MafExperiment:
                 dp.print_yourself_3d(title=dp.title, image_base_path=self.get_base_path(f"{self.name}.{dp.title}"))
         self.denses = None
 
-
-
-
     def print_cuts(self):
         if self.cuts is None:
             return
@@ -104,9 +101,6 @@ class MafExperiment:
             c_y.print_transform(axs[3 + i * 4])
         self.save_fig(name=f"{self.name}.cuts")
         self.cuts = None
-
-
-
 
     def run(self):
         self.result_folder.mkdir(exist_ok=True)

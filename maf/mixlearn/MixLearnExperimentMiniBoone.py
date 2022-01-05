@@ -47,7 +47,9 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                  batch_size: int = 128,
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
-                 test_split: float = 0.1):
+                 test_split: float = 0.1,
+                 dataset_size_steps: int = 3,
+                 synth_ratio_steps: int = 2):
         self.paper_load: bool = paper_load
         self.dataset_name: str = dataset_name
 
@@ -65,8 +67,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          experiment_init_ds_class=experiment_init_ds_class,
                          learned_distribution_creator=learned_distr_creator,
                          classifier_creator=MiniBooneBinaryClassifierCreator())
-        self.dataset_size_steps = 3
-        self.synth_ratio_steps = 2
+        self.dataset_size_steps = dataset_size_steps
+        self.synth_ratio_steps = synth_ratio_steps
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -131,6 +133,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                                         paper_load=False,
                                         epochs=100,
                                         batch_size=1000,
+                                        dataset_size_steps=7,
+                                        synth_ratio_steps=7,
                                         # layers=20,
                                         # hidden_shape=[200, 200],
                                         # norm_layer=False,
