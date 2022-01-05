@@ -34,7 +34,7 @@ if __name__ == '__main__':
                 batch_norm=True,
                 epochs=150,
                 use_tanh_made=True,
-                layers=12,
+                layers=30,
                 hidden_shape=[1024, 1024])
     if LearnedTransformedDistribution.can_load_from(folder=checkpoints_dir, prefix=prefix):
         mist.maf = LearnedTransformedDistribution.load(folder=checkpoints_dir, prefix=prefix)
