@@ -8,13 +8,13 @@ if [ -d "venv" ]; then
 fi
 
 # build a local python runtime
-./init_python.sh
+./init_python_manjaro.sh
 
 # create venv using local python runtime
 if ! [ -d 'venv' ]; then
-   pyinstall/bin/python3 -m venv venv
+   pyinstall/bin/python3.9 -m venv venv
 fi
 source venv/bin/activate
 
 # install dependencies
-pip install -r requirements_ancient_ubuntu.txt
+pip install -r requirements.txt

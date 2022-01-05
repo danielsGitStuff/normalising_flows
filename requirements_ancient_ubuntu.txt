@@ -1,0 +1,9 @@
+scikit-learn
+pandas
+tensorflow==2.3.3
+tensorflow-probability
+tensorflow-datasets
+numpy
+seaborn
+plotly
+kaleido
