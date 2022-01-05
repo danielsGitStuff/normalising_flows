@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
-from tensorflow_datasets.testing import TestCase
 from tensorflow_probability.python.distributions import Distribution as TD
 
 from common.NotProvided import NotProvided
@@ -34,11 +33,3 @@ class Uniform(Distribution):
         return self.cast_2_likelihood(result=ll, input_tensor=xs)
 
 
-class UniformTest(TestCase):
-    def setUp(self):
-        self.u = Uniform(low=1.0, high=2.5)
-        self.a: np.ndarray = np.array([[0.1], [1.0], [1.1], [2.0]], dtype=np.float32)
-
-    def test_ll(self):
-        ll = self.u.likelihoods(self.a)
-        self.assertAllEqual(ll, np.array([[0.0], [2 / 3], [2 / 3], [2 / 3]], dtype=np.float32))

@@ -2,24 +2,19 @@ from __future__ import annotations
 
 import math
 import os
-import shutil
 import sys
 from pathlib import Path
 from typing import List, Union, Optional, Dict, Any
 
-import keras.initializers.initializers_v2
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability.python.bijectors as tfb
 import tensorflow_probability.python.distributions as tfd
-from keras.keras_parameterized import TestCase
-from keras.layers import CategoryEncoding
 from keras.optimizer_v2.optimizer_v2 import OptimizerV2
-from numpy.core import ufunc
 from tensorflow import Tensor
 from tensorflow.python.data import Dataset
 from tensorflow_probability.python import distributions as tfd
-from tensorflow_probability.python.distributions import TransformedDistribution, Distribution as TD
+from tensorflow_probability.python.distributions import Distribution as TD
 from tensorflow_probability.python.bijectors import Bijector
 
 from common import jsonloader
@@ -474,62 +469,6 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         checkpoint.restore(complete_prefix)
         dis.set_training(False)
         return dis
-
-
-class MafTest(TestCase):
-    def setUp(self):
-        self.dim: int = 2
-        self.maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow(input_dim=self.dim, layers=4, hidden_shape=[5, 5], norm_layer=True)
-        self.ones = np.ones(shape=(3, 2))
-        self.zeros = np.zeros(shape=(3, 2))
-
-    def check_tdfs(self, original: TransformedDistribution, cp: TransformedDistribution, op: ufunc = np.equal):
-        """check whether two TDFs produce the same log likelihoods"""
-        print(f"check ones and zeros with op '{op.__name__}'")
-        for ar in [self.ones, self.zeros]:
-            p: np.ndarray = original.log_prob(ar).numpy()
-            p_copy: np.ndarray = cp.log_prob(ar).numpy()
-            print(f"{p} vs {p_copy}")
-            assert np.all(op(p, p_copy))
-
-    def test_after_fit(self):
-        xs = np.random.random_sample(self.dim * 10).reshape((10, self.dim)).astype(np.float32) + 2
-        rt = Runtime(name="deepcopy").start()
-        self.maf.adapt(xs)
-        before = self.maf.log_prob(xs)
-        tdf: TransformedDistribution = self.maf.transformed_distribution
-        before_ones = tdf.log_prob(self.ones)
-        maf_copy: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.Methods.deepcopy_maf(self.maf)
-        tdf_copy = maf_copy.transformed_distribution
-        rt.stop().print()
-        print("before fit")
-
-        dense_layers = [d for d in tdf.submodules if isinstance(d, keras.layers.core.Dense)]
-        weights = [d.get_weights() for d in dense_layers]
-
-        self.check_tdfs(self.maf.transformed_distribution, tdf_copy, op=np.equal)
-        self.maf.fit(dataset=xs, batch_size=10, epochs=2, lr=0.1)
-
-        dense_layers_after_fit = [d for d in tdf.submodules if isinstance(d, keras.layers.core.Dense)]
-        weights_after_fit = [d.get_weights() for d in dense_layers_after_fit]
-
-        dense_layers_copy = [d for d in tdf_copy.submodules if isinstance(d, keras.layers.core.Dense)]
-        weights_copy = [d.get_weights() for d in dense_layers_copy]
-
-        print("after fit")
-        self.check_tdfs(self.maf.transformed_distribution, tdf_copy, op=np.not_equal)
-
-    def test_after_save_and_load(self):
-        test_dir = "test_dir"
-        os.makedirs(test_dir, exist_ok=True)
-
-        xs = np.random.random_sample(self.dim * 10).reshape((10, self.dim)).astype(np.float32)
-        self.maf.fit(dataset=xs, batch_size=10, epochs=2)
-
-        self.maf.save(test_dir, "bla")
-        loaded: MaskedAutoregressiveFlow = LearnedTransformedDistribution.load(test_dir, "bla")
-        self.check_tdfs(self.maf.transformed_distribution, loaded.transformed_distribution, op=np.equal)
-        shutil.rmtree(test_dir)
 
 
 class MAFCreator(LearnedDistributionCreator):
