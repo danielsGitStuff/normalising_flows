@@ -1,8 +1,8 @@
 #!/bin/bash
 DIR="$(dirname "$0")"
 cd "$DIR" || exit
-python_tgz='python3.8.src.tgz'
-python_src_dir='python.src'
+python_tgz='python38.src.tgz'
+python_src_dir='python38.src'
 python_url='https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tgz'
 python_md5='f7890dd43302daa5fcb7b0254b4d0f33'
 target_root="$(pwd)/pyinstall"
