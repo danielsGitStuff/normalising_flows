@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Collection, Union, List, Optional
-
-from keras.layers import CategoryEncoding, StringLookup, IntegerLookup
+from tensorflow.keras.layers.experimental.preprocessing import CategoryEncoding, StringLookup, IntegerLookup
 from keras.layers.preprocessing.index_lookup import IndexLookup
 from tensorflow import Tensor
 
@@ -52,5 +51,3 @@ class ClassOneHot(Ser):
 
     def after_deserialize(self):
         self.init()
-
-
