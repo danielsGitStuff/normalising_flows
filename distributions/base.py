@@ -57,7 +57,13 @@ class BaseMethods:
 def enable_memory_growth():
     print('enabling memory growth ...')
     physical_devices = tf.config.list_physical_devices('GPU')
-    tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    try:
+        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+    except Exception as e:
+        print('could not enable cuda memory growth', file=sys.stderr)
+        print('physical devices:', file=sys.stderr)
+        for d in physical_devices:
+            print(f"   {d}", file=sys.stderr)
 
 
 def cast_to_ndarray(tensor: Union[Tensor, np.ndarray], dtype=np.float32) -> np.ndarray:
