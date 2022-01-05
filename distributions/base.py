@@ -57,6 +57,8 @@ class BaseMethods:
 def enable_memory_growth():
     print('enabling memory growth ...')
     physical_devices = tf.config.list_physical_devices('GPU')
+    if len(physical_devices) == 0:
+        raise RuntimeError('no physical GPUs available!!!')
     try:
         tf.config.experimental.set_memory_growth(physical_devices[0], True)
     except Exception as e:
