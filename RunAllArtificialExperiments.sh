@@ -4,4 +4,4 @@ cd "$DIR" || exit
 
 . venv/bin/activate
 export PYTHONPATH=$(pwd)
-python maf/examples/MNISTRun.py
+python RunAllArtificialExperiments.py
