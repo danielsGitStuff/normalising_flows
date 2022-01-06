@@ -10,9 +10,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability.python.bijectors as tfb
 import tensorflow_probability.python.distributions as tfd
-# todo revert import hackery
-from tensorflow.python.keras.optimizer_v2.optimizer_v2 import OptimizerV2
-# from keras.optimizer_v2.optimizer_v2 import OptimizerV2
+from keras.optimizer_v2.optimizer_v2 import OptimizerV2
 from tensorflow import Tensor
 from tensorflow.python.data import Dataset
 from tensorflow_probability.python import distributions as tfd

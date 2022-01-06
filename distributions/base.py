@@ -60,7 +60,9 @@ def enable_memory_growth():
     if len(physical_devices) == 0:
         raise RuntimeError('no physical GPUs available!!!')
     try:
-        tf.config.experimental.set_memory_growth(physical_devices[0], True)
+        for card in physical_devices:
+            tf.config.experimental.set_memory_growth(card, True)
+        # tf.config.experimental.set_memory_growth(physical_devices[0], True)
     except Exception as e:
         print('could not enable cuda memory growth', file=sys.stderr)
         print('physical devices:', file=sys.stderr)

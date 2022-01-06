@@ -4,9 +4,7 @@ import math
 from typing import Optional
 
 import numpy as np
-# todo revert import hackery
-from tensorflow.python.keras.layers import Normalization
-# from keras.layers import Normalization
+from keras.layers import Normalization
 from tensorflow import Tensor
 from tensorflow_probability.python.bijectors import Bijector
 import tensorflow as tf
