@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 import os
 import sys
+
+from common.globals import Global
 from pathlib import Path
 from typing import Optional, Tuple, List, Callable, Union
 import pandas as pd
@@ -158,9 +160,9 @@ class Mist:
                 print("using ONE HOT encoding for class")
                 class_one_hot = ClassOneHot(enabled=True, num_tokens=len(numbers), classes=numbers, typ='int').init()
             self.maf = MaskedAutoregressiveFlow(input_dim=28 * 28, layers=layers, batch_norm=batch_norm, hidden_shape=hidden_shape, norm_layer=norm_layer,
-                                                           use_tanh_made=use_tanh_made,
-                                                           conditional_dims=self.conditional_dim, class_one_hot=class_one_hot, activation=self.activation,
-                                                           input_noise_variance=noise_layer_variance)
+                                                use_tanh_made=use_tanh_made,
+                                                conditional_dims=self.conditional_dim, class_one_hot=class_one_hot, activation=self.activation,
+                                                input_noise_variance=noise_layer_variance)
         else:
             self.maf = MaskedAutoregressiveFlow(input_dim=28 * 28, layers=layers, batch_norm=batch_norm, hidden_shape=hidden_shape, norm_layer=norm_layer,
                                                 use_tanh_made=use_tanh_made, input_noise_variance=noise_layer_variance, activation=self.activation)
@@ -192,10 +194,11 @@ class Mist:
         from_zeros = self.maf.calculate_xs(zeros, cond)
         fig, ax = plt.subplots(figsize=(2, 2))
         ax.imshow(cast_to_ndarray(from_zeros).reshape((28, 28)), cmap='gray')
+        results_dir: Path = Global.get_default('resuts_dir', Path('results_mnist'))
         if self.conditional:
-            plt.savefig(f"{s}.ZEROS.cond_{cond}.png")
+            plt.savefig(Path(results_dir, f"{s}.ZEROS.cond_{cond}.png"))
         else:
-            plt.savefig(f"{s}.ZEROS.png")
+            plt.savefig(Path(results_dir, f"{s}.ZEROS.png"))
         title = ""
         if True:
             ys: np.ndarray = np.random.normal(size=no_samples * 28 * 28) * 1.0
@@ -253,6 +256,4 @@ class Mist:
             #     xs = sample[i]
             #     ax.imshow(xs, cmap='gray')
         plt.tight_layout()
-        plt.savefig(f"{s}.png")
-
-
+        plt.savefig(Path(results_dir), f"{s}.png")

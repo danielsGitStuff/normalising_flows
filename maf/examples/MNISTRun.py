@@ -1,3 +1,4 @@
+from common.globals import Global
 from pathlib import Path
 
 import tensorflow as tf
@@ -24,6 +25,8 @@ if __name__ == '__main__':
     checkpoints_dir = Path(cache_dir, "mnist_checkpoints")
     checkpoints_dir.mkdir(exist_ok=True)
     prefix = "mnist_12_[5]2"
+    result_dir: Path = Path("results_mnist")
+    Global.set_global('results_dir', result_dir)
     mist = Mist(conditional=False,
                 one_hot=False,
                 numbers=[5],
