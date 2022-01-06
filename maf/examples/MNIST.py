@@ -257,4 +257,4 @@ class Mist:
             #     xs = sample[i]
             #     ax.imshow(xs, cmap='gray')
         plt.tight_layout()
-        plt.savefig(Path(results_dir), f"{s}.png")
+        plt.savefig(Path(results_dir, f"{s}.png"))
