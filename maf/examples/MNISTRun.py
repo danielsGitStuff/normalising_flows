@@ -1,4 +1,5 @@
 from common.globals import Global
+from keta.argparseer import ArgParser
 from pathlib import Path
 
 import tensorflow as tf
@@ -9,6 +10,7 @@ from maf.examples.MNIST import Mist
 from maf.examples.stuff.StaticMethods import StaticMethods
 
 if __name__ == '__main__':
+    ArgParser.parse()
     tf.random.set_seed(42)
     enable_memory_growth()
 

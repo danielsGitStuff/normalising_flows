@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sys
+
+from common.globals import Global
 from typing import Union, Optional, Tuple, Dict, List
 import numpy as np
 import tensorflow as tf
@@ -54,8 +56,28 @@ class BaseMethods:
         # helper methods
 
 
+def set_gpu():
+    gpus = tf.config.list_physical_devices('GPU')
+    gpu_index = Global.get_default('tf_gpu', 0)
+    tf.config.set_visible_devices([gpus[gpu_index]], 'GPU')
+    # tf.config.set_visible_devices()
+    # if gpus:
+    #     # Create 2 virtual GPUs with 1GB memory each
+    #     try:
+    #         tf.config.set_logical_device_configuration(
+    #             gpus[0],
+    #             [tf.config.LogicalDeviceConfiguration(memory_limit=1024),
+    #              tf.config.LogicalDeviceConfiguration(memory_limit=1024)])
+    #         logical_gpus = tf.config.list_logical_devices('GPU')
+    #         print(len(gpus), "Physical GPU,", len(logical_gpus), "Logical GPUs")
+    #     except RuntimeError as e:
+    #         # Virtual devices must be set before GPUs have been initialized
+    #         print(e)
+
+
 def enable_memory_growth():
     print('enabling memory growth ...')
+    set_gpu()
     physical_devices = tf.config.list_physical_devices('GPU')
     if len(physical_devices) == 0:
         raise RuntimeError('no physical GPUs available!!!')

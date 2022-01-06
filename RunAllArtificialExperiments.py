@@ -1,3 +1,4 @@
+from keta.argparseer import ArgParser
 from pathlib import Path
 
 from common.globals import Global
@@ -17,6 +18,7 @@ from maf.examples.SS2DExample import SS2DMafExperiment
 from maf.examples.ShowCase1D1 import ShowCase1D1
 
 if __name__ == '__main__':
+    ArgParser.parse()
     result_dir: Path = Path("results_artificial")
     Global.set_global('results_dir', result_dir)
     description: str = f"""

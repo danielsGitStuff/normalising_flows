@@ -1,7 +1,9 @@
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MAFCreator
 from maf.mixlearn.MixLearnExperimentSynth import MixLeanExperimentSynth
 
 if __name__ == '__main__':
+    ArgParser.parse()
     creator = MAFCreator(batch_norm=True,
                          norm_layer=False,
                          use_tanh_made=True,
