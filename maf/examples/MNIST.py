@@ -195,6 +195,7 @@ class Mist:
         fig, ax = plt.subplots(figsize=(2, 2))
         ax.imshow(cast_to_ndarray(from_zeros).reshape((28, 28)), cmap='gray')
         results_dir: Path = Global.get_default('resuts_dir', Path('results_mnist'))
+        results_dir.mkdir(exist_ok=True)
         if self.conditional:
             plt.savefig(Path(results_dir, f"{s}.ZEROS.cond_{cond}.png"))
         else:
