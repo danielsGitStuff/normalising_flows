@@ -1,9 +1,11 @@
+from common.globals import Global
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MAFCreator
 from maf.mixlearn.MixLearnExperimentMiniBoone import MixLearnExperimentMiniBoone
 
 if __name__ == '__main__':
     ArgParser.parse()
+    Global.set_global('testing_noise', True)
     creator = MAFCreator(batch_norm=True,
                          conditional_one_hot=True,
                          # epochs=epochs,

@@ -13,6 +13,7 @@ from pandas import Series
 
 from maf.examples.stuff.StaticMethods import StaticMethods
 from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam
+import matplotlib.ticker as ticker
 
 
 class TrainingPlanner:
@@ -77,7 +78,7 @@ class TrainingPlanner:
         plt.rc('legend', fontsize=small)
         plt.rc('figure', titlesize=big)
         plt.rc('lines', linewidth=3)
-        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=10, h=8)
+        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=14, h=11)
         fig.suptitle(f"Results for {models_per_config} classifiers")
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
@@ -90,9 +91,20 @@ class TrainingPlanner:
             # fig, ax = StaticMethods.default_fig(no_rows=1, no_columns=1, w=10, h=8)
             ax.set_title(f"{group_by_operation_name} of '{metric}'")
             pivoted = df.pivot(index=group_by[0], columns=group_by[1], values='metric').T[::-1]
+
             sns.heatmap(data=pivoted, annot=True, fmt='.2f', ax=ax, square=True, )
-            ax.set_xlabel(self.label_map.get(group_by[0], group_by[0]))
-            ax.set_ylabel(self.label_map.get(group_by[1], group_by[1]))
+            ax.xaxis.set_major_formatter(ticker.EngFormatter(places=3))
+            # ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{}".format(x)))
+            ys: List[float] = list(pivoted.index)
+            ax.set_yticks(list(range(len(ys))))
+            ax.set_yticklabels(["{:.2f}".format(y) for y in ys])
+
+            xs: List[float] = list(pivoted.columns)
+            ax.set_xticks(list(range(len(xs))))
+            ax.set_xticklabels(["{:.2f}".format(x) for x in xs])
+            # ax.set_xlabel(self.label_map.get(group_by[0], group_by[0]))
+            # ax.set_ylabel(self.label_map.get(group_by[1], group_by[1]))
+
             # ax.set_xlabel('Synthetic Samples ratio')
             # ax.set_ylabel('No of Training Samples')
             plt.tight_layout()

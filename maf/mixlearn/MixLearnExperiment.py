@@ -18,7 +18,6 @@ from maf.DS import DatasetProps
 from maf.DL import DL2
 from maf.examples.stuff.MafExperiment import MafExperiment
 from maf.examples.stuff.StaticMethods import StaticMethods
-from maf.examples.stuff.TrainingPlanner import TrainingPlanner
 from maf.mixlearn.ClassifierTrainingProcess import ClassifierTrainingProcess, BinaryClassifierCreator
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.MAFTrainingProcess import MAFTrainingProcess
@@ -204,12 +203,6 @@ class MixLearnExperiment(MafExperiment):
                                      no_of_generated_val_samples=sample_val_size,
                                      checkpoint_dir=self.checkpoint_dir,
                                      base_file_name=base_name,
-                                     # layers=self.layers,
-                                     # batch_norm=self.batch_norm,
-                                     # hidden_shape=self.hidden_shape,
-                                     # norm_layer=self.norm_layer,
-                                     # use_tanh_made=self.use_tanh_made,
-                                     # input_noise_variance=self.noise_variance,
                                      conditional=conditional,
                                      conditional_classes=self.dl_training.props.classes,
                                      conditional_one_hot=self.conditional_one_hot,
