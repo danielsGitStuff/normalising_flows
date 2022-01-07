@@ -162,6 +162,7 @@ class MAFTrainingProcess(Ser):
                 ds_train = dl_train.get_signal(amount=self.training_size)
                 ds_val = dl_val.get_signal(amount=self.val_size)
                 if Global.equals('testing_noise', True) and not self.conditional:
+                    print('fitting noise')
                     ds_train_noise = dl_train.get_noise(amount=self.training_size)
                     ds_val_noise = dl_val.get_noise(amount=self.val_size)
                     # noise_maf = MaskedAutoregressiveFlow(input_dim=self.dl_main.props.dimensions, layers=self.layers, batch_norm=self.batch_norm,
@@ -172,7 +173,6 @@ class MAFTrainingProcess(Ser):
                                                                          conditional_dims=conditional_dims,
                                                                          conditional_classes=self.conditional_classes)
                     es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=10, restore_best_model=True)
-                    print('fitting noise')
                     noise_maf.fit(ds_train_noise, epochs=self.epochs, batch_size=self.batch_size, val_xs=ds_val_noise, early_stop=es, shuffle=True)
                     noise_maf.save(folder=self.checkpoint_dir_noise, prefix=self.base_file_name)
                     hdf = pd.DataFrame(noise_maf.history.to_dict())
