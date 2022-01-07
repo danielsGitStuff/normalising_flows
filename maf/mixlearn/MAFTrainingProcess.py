@@ -161,6 +161,7 @@ class MAFTrainingProcess(Ser):
             else:
                 ds_train = dl_train.get_signal(amount=self.training_size)
                 ds_val = dl_val.get_signal(amount=self.val_size)
+                print(f"DEBUG noise {Global.d['testing_noise']}")
                 if Global.equals('testing_noise', True) and not self.conditional:
                     print('fitting noise')
                     ds_train_noise = dl_train.get_noise(amount=self.training_size)
