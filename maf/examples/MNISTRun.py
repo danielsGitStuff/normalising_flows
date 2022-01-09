@@ -26,7 +26,7 @@ if __name__ == '__main__':
     cache_dir = StaticMethods.cache_dir()
     checkpoints_dir = Path(cache_dir, "mnist_checkpoints")
     checkpoints_dir.mkdir(exist_ok=True)
-    prefix = "mnist_30"
+    prefix = "mnist_302"
     result_dir: Path = Path("results_mnist")
     Global.set_global('results_dir', result_dir)
     mist = Mist(conditional=True,
