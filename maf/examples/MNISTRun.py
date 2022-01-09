@@ -29,9 +29,9 @@ if __name__ == '__main__':
     prefix = "mnist_30"
     result_dir: Path = Path("results_mnist")
     Global.set_global('results_dir', result_dir)
-    mist = Mist(conditional=True,
-                one_hot=True,
-                numbers=[1, 5],
+    mist = Mist(conditional=False,
+                one_hot=False,
+                numbers=[5],
                 norm_layer=False,
                 norm_data='-1 1',
                 dataset_noise_variance=0.0,
