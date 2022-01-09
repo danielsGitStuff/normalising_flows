@@ -29,18 +29,18 @@ if __name__ == '__main__':
     prefix = "mnist_30"
     result_dir: Path = Path("results_mnist")
     Global.set_global('results_dir', result_dir)
-    mist = Mist(conditional=False,
-                one_hot=False,
-                numbers=[5],
+    mist = Mist(conditional=True,
+                one_hot=True,
+                numbers=[1, 5],
                 norm_layer=False,
-                norm_data='logit',
+                norm_data='-1 1',
                 dataset_noise_variance=0.0,
                 noise_layer_variance=0.0,
                 batch_norm=True,
                 epochs=150,
                 use_tanh_made=True,
                 layers=30,
-                hidden_shape=[1024, 1024])
+                hidden_shape=[1500, 1500])
     if LearnedTransformedDistribution.can_load_from(folder=checkpoints_dir, prefix=prefix):
         mist.maf = LearnedTransformedDistribution.load(folder=checkpoints_dir, prefix=prefix)
         if mist.conditional != mist.maf.conditional:

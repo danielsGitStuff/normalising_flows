@@ -177,8 +177,51 @@ class Mist:
         self.maf.fit(dataset=dataloader, epochs=self.epochs, batch_size=128, early_stop=es)
 
     def test(self):
+        DEBUG =0
+        # +1 is for the zero sample
         no_samples = 5
+        no_digits = len(self.numbers)
         m: MaskedAutoregressiveFlow = self.maf
+        results_dir: Path = Global.get_default('resuts_dir', Path('results_mnist'))
+        results_dir.mkdir(exist_ok=True)
+        print(f"sampling {no_samples + 1} images for each of the {no_digits} numbers")
+        fig, axs = plt.subplots(no_digits, no_samples + 1)
+        for ax in axs.flatten():
+            ax.set_axis_off()
+        axs = axs.reshape((no_digits, no_samples + 1))
+        file_name = 'maf '
+        if self.conditional:
+            file_name = f"{file_name}cond "
+        file_name = f"{file_name} numbers {self.numbers} l {m.layers}, e {self.epochs}, h {m.hidden_shape}, bn {m.batch_norm}, nd {self.norm_data}, nl {m.norm_layer}, tanh {m.use_tanh_made}.png"
+        for number_index, number in enumerate(self.numbers):
+            s = 'maf '
+            if self.conditional:
+                s = f"{s} cond"
+            s = f"{s} num {number} l {m.layers}, e {self.epochs}, h {m.hidden_shape}, bn {m.batch_norm}, nd {self.norm_data}, nl {m.norm_layer}, tanh {m.use_tanh_made}"
+
+            zeros: np.ndarray = np.zeros(28 * 28, dtype=np.float32).reshape((1, 28 * 28))
+            non_zeros: np.ndarray = np.random.normal(size=no_samples * 28 * 28) * 1.0
+            non_zeros = non_zeros.reshape((no_samples, 28 * 28)).astype(np.float32)
+            ys: np.ndarray = np.concatenate([zeros, non_zeros])
+            cond = None
+            if self.conditional:
+                cond = [number] * (no_samples + 1)
+            samples = m.calculate_xs(ys, cond)
+            samples = cast_to_ndarray(samples)
+            samples = samples.reshape(no_samples + 1, 28, 28)
+            if self.norm_data == "logit":
+                samples = DataLoader.Methods.inverse_logit(samples)
+            for sample_index, image in enumerate(samples):
+                xs = samples[sample_index]
+                # xs[0,DEBUG] = 4.5
+                DEBUG += 1
+                ax = axs[number_index, sample_index]
+                ax.imshow(xs, cmap='gray')
+        plt.tight_layout()
+        plt.savefig(Path(results_dir, file_name))
+        print('das')
+        return
+
         s = "maf "
         if self.conditional:
             s = f"maf.cond "
