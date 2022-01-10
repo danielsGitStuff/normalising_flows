@@ -150,7 +150,8 @@ class LambdaParams:
             if val_split is not None:
                 val_take = math.floor(clfsize * val_split)
             return clfsize - clf_t_g_size - val_take - clf_t_s_size
-        lp = LambdaParam(name, source_params=['clf_t_g_size','clf_t_s_size', 'clfsize'], f=f)
+
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size', 'clfsize'], f=f)
         return lp
 
     @staticmethod
@@ -162,6 +163,7 @@ class LambdaParams:
             if val_split is not None:
                 val_take = math.floor(clfsize * val_split)
             return clfsize - clf_t_g_size - val_take
+
         lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f)
         return lp
 
@@ -172,9 +174,10 @@ class LambdaParams:
             clf_t_g_size: float = series['clf_t_g_size']
             if clf_t_s_size == 0:
                 return val_size
-            genuine_synth_ratio : float = clf_t_g_size / clf_t_s_size
+            genuine_synth_ratio: float = clf_t_g_size / clf_t_s_size
             take = val_size * genuine_synth_ratio
             return math.floor(take)
+
         lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size'], f=f)
         return lp
 
@@ -185,9 +188,10 @@ class LambdaParams:
             clf_t_g_size: float = series['clf_t_g_size']
             if clf_t_s_size == 0:
                 return 0
-            genuine_synth_ratio : float = clf_t_g_size / clf_t_s_size
-            take = val_size * genuine_synth_ratio
+            genuine_synth_ratio: float = clf_t_g_size / clf_t_s_size
+            take = val_size * 1 / genuine_synth_ratio
             return math.ceil(take)
+
         lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size'], f=f)
         return lp
 
