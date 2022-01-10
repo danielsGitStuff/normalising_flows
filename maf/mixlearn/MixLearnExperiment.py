@@ -126,17 +126,12 @@ class MixLearnExperiment(MafExperiment):
         self.no_of_synthetic_samples_per_batch: int = 1000
         self.dataset_size_start: int = 2500
         self.dataset_size_end: int = self.load_limit
-        self.dataset_size_steps: int = 5
-        self.synth_ratio_start: float = 0.0
-        self.synth_ratio_end: float = 1.0
-        self.synth_ratio_steps: int = 5
         self.classifiers_per_nf: int = 3
         self.val_size: int = 1500
 
         self.training_planner: Optional[TrainingPlanner] = None
         self.result_training_plan: Path = Path(self.result_folder, f"{self.name}_training_plan.png")
         self.result_confusion_matrices: Path = Path(self.result_folder, f"{self.name}_confusion.png")
-
 
     def get_nf_file(self, dataset_size: int, extension: Optional[str] = None) -> Path:
         """@return the base file name for everything that just depends on a NF: sample file (.npy), nf file (.json)"""
@@ -153,6 +148,11 @@ class MixLearnExperiment(MafExperiment):
         return Path(self.cache_dir, name)
 
     def create_training_plan(self):
+        self.training_planner = self._create_training_plan().build_plan()
+        with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
+            print(self.training_planner.plan)
+
+    def _create_training_plan(self) -> TrainingPlanner:
         raise NotImplementedError()
 
     def start(self):

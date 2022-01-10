@@ -48,9 +48,7 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                  batch_size: int = 128,
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
-                 test_split: float = 0.1,
-                 dataset_size_steps: int = 3,
-                 synth_ratio_steps: int = 2):
+                 test_split: float = 0.1):
         self.paper_load: bool = paper_load
         self.dataset_name: str = dataset_name
 
@@ -68,8 +66,6 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          experiment_init_ds_class=experiment_init_ds_class,
                          learned_distribution_creator=learned_distr_creator,
                          classifier_creator=MiniBooneBinaryClassifierCreator())
-        self.dataset_size_steps = dataset_size_steps
-        self.synth_ratio_steps = synth_ratio_steps
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -79,11 +75,6 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
     def create_data_loader(self, norm_data: bool) -> DL2:
         dl3 = MinibooneDL3(dataset_name=self.dataset_name)
         return dl3.execute()
-
-    def create_training_plan(self) -> MixLearnExperimentMiniBoone:
-        raise NotImplementedError()
-
-
 
 
     @staticmethod

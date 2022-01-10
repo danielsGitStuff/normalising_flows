@@ -48,9 +48,7 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
                  batch_size: int = 128,
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
-                 test_split: float = 0.1,
-                 dataset_size_steps: int = 3,
-                 synth_ratio_steps: int = 2):
+                 test_split: float = 0.1):
         super().__init__(
             name=name,
             learned_distr_creator=learned_distr_creator,
@@ -60,10 +58,7 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
             batch_size=batch_size,
             paper_load=paper_load,
             experiment_init_ds_class=experiment_init_ds_class,
-            test_split=test_split,
-            dataset_size_steps=dataset_size_steps,
-            # synth_ratio_steps=synth_ratio_steps
-        )
+            test_split=test_split)
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -74,7 +69,7 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
         dl3 = MinibooneDL3(dataset_name=self.dataset_name)
         return dl3.execute()
 
-    def create_training_plan(self) -> MixLearnExperimentMiniBoone:
+    def _create_training_plan(self) :
         # self.training_planner = TrainingPlanner(FixedParam('done', 0),
         #                                         LambdaParams.tsize_from_dsize(val_size=self.val_size),
         #                                         LambdaParams.vsize_from_dsize(val_size=self.val_size),
@@ -94,12 +89,12 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
         #                                         LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
         #                                         LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size)) \
         #     .build_plan()
-        self.training_planner = TrainingPlanner(FixedParam('done', 0),
+        return TrainingPlanner(FixedParam('done', 0),
                                                 LambdaParams.tsize_from_dsize(val_size=self.val_size),
                                                 LambdaParams.vsize_from_dsize(val_size=self.val_size),
                                                 FixedParam('dsize', self.dataset_size_end),
-                                                VariableParam('synthratio', range_start=self.synth_ratio_start, range_end=self.synth_ratio_end, range_steps=self.synth_ratio_steps),
-                                                VariableParamInt('model', range_start=0, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
+                                                VariableParam('synthratio', range_start=0.0, range_end=1.0, range_steps=3),
+                                                VariableParamInt('model', range_start=1, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
                                                 MetricParam('loss'),
                                                 MetricParam('accuracy'),
                                                 MetricParam('max_epoch'),
@@ -111,10 +106,7 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
                                                 LambdaParams.clf_t_g_size_from_clfsize_synthratio(val_size=self.val_size),
                                                 LambdaParams.clf_t_s_size_from_clfsize_synthratio(val_size=self.val_size),
                                                 LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
-                                                LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size)) \
-            .build_plan()
-        print('plan built')
-        return self
+                                                LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size))
 
     @staticmethod
     def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator, experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
@@ -129,8 +121,6 @@ class MixLearnExperimentMiniBooneSynthVar(MixLearnExperimentMiniBoone):
                                         paper_load=False,
                                         epochs=100,
                                         batch_size=1000,
-                                        dataset_size_steps=7,
-                                        synth_ratio_steps=7,
                                         # layers=20,
                                         # hidden_shape=[200, 200],
                                         # norm_layer=False,

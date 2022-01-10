@@ -24,8 +24,6 @@ if __name__ == '__main__':
                                 result_folder=results_folder,
                                 paper_load=False,
                                 epochs=100,
-                                batch_size=1000,
-                                dataset_size_steps=3,
-                                synth_ratio_steps=3)
+                                batch_size=1000)
     experiment.create_training_plan().run()
     # MixLearnExperimentMiniBoone.main_static(dataset_name='miniboone', experiment_name='miniboone_default', learned_distr_creator=creator)

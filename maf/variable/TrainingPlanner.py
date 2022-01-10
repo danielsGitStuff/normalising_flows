@@ -28,8 +28,12 @@ class TrainingPlanner:
         self.plan: Optional[pd.DataFrame] = None
         self.metrics: List[str] = [p.name for p in self._metric_params]
         self.label_map: Dict[str, str] = {}
+        self.built:bool = False
 
     def build_plan(self) -> TrainingPlanner:
+        if self.built:
+            return self
+        self.built = True
         var_params: List[List[float]] = [list(p.get_range()) for p in self._var_params]
         variable_block = np.array(list(itertools.product(*(var_params))))
         fixed_block: np.ndarray = np.array([[p.value] * len(variable_block) for p in self._fixed_params], dtype=np.float32).T
