@@ -9,7 +9,7 @@ from maf.mixlearn.MixLearnExperimentMiniBoone import MixLearnExperimentMiniBoone
 
 if __name__ == '__main__':
     ArgParser.parse()
-    Global.set_global('testing_noise', True)
+    Global.set_global('testing_noise', False)
     creator = MAFCreator(batch_norm=True,
                          conditional_one_hot=True,
                          # epochs=epochs,
