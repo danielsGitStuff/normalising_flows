@@ -26,7 +26,7 @@ if __name__ == '__main__':
     cache_dir = StaticMethods.cache_dir()
     checkpoints_dir = Path(cache_dir, "mnist_checkpoints")
     checkpoints_dir.mkdir(exist_ok=True)
-    prefix = "mnist_50"
+    prefix = "mnist_test"
     result_dir: Path = Path("results_mnist")
     Global.set_global('results_dir', result_dir)
     mist = Mist(conditional=True,
@@ -35,12 +35,12 @@ if __name__ == '__main__':
                 norm_layer=False,
                 norm_data='-1 1',
                 dataset_noise_variance=0.0,
-                noise_layer_variance=0.0,
+                noise_layer_variance=0.1,
                 batch_norm=True,
                 epochs=150,
                 use_tanh_made=True,
-                layers=50,
-                hidden_shape=[200, 200])
+                layers=30,
+                hidden_shape=[1024, 1024])
     if LearnedTransformedDistribution.can_load_from(folder=checkpoints_dir, prefix=prefix):
         mist.maf = LearnedTransformedDistribution.load(folder=checkpoints_dir, prefix=prefix)
         if mist.conditional != mist.maf.conditional:
