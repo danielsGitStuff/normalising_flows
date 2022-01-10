@@ -52,6 +52,6 @@ if __name__ == '__main__':
         history_file = Path(checkpoints_dir, f"{prefix}_history.csv")
         hdf.to_csv(history_file)
         # hdf.to_csv(f"checkpoints{os.sep}{prefix}_history.csv")
-
+    print('will sample and print results now')
     mist.test()
     print("end")

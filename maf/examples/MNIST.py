@@ -177,7 +177,7 @@ class Mist:
         self.maf.fit(dataset=dataloader, epochs=self.epochs, batch_size=128, early_stop=es)
 
     def test(self):
-        DEBUG =0
+        DEBUG = 0
         # +1 is for the zero sample
         no_samples = 5
         no_digits = len(self.numbers)
@@ -194,6 +194,8 @@ class Mist:
             file_name = f"{file_name}cond "
         file_name = f"{file_name} numbers {self.numbers} l {m.layers}, e {self.epochs}, h {m.hidden_shape}, bn {m.batch_norm}, nd {self.norm_data}, nl {m.norm_layer}, tanh {m.use_tanh_made}.png"
         for number_index, number in enumerate(self.numbers):
+            r = Runtime(f"sampling no '{number}' {no_samples + 1} times").start()
+            print(r.name)
             s = 'maf '
             if self.conditional:
                 s = f"{s} cond"
@@ -209,6 +211,7 @@ class Mist:
             samples = m.calculate_xs(ys, cond)
             samples = cast_to_ndarray(samples)
             samples = samples.reshape(no_samples + 1, 28, 28)
+            r.stop().print()
             if self.norm_data == "logit":
                 samples = DataLoader.Methods.inverse_logit(samples)
             for sample_index, image in enumerate(samples):
