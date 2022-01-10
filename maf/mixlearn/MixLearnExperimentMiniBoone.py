@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pathlib import Path
 from typing import List, Type
 
@@ -79,51 +80,15 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
         dl3 = MinibooneDL3(dataset_name=self.dataset_name)
         return dl3.execute()
 
-    def create_training_plan(self):
-        # self.training_planner = TrainingPlanner(FixedParam('done', 0),
-        #                                         LambdaParams.tsize_from_dsize(val_size=self.val_size),
-        #                                         LambdaParams.vsize_from_dsize(val_size=self.val_size),
-        #                                         VariableParam('dsize', range_start=self.dataset_size_start, range_end=self.dataset_size_end, range_steps=self.dataset_size_steps),
-        #                                         VariableParam('synthratio', range_start=self.synth_ratio_start, range_end=self.synth_ratio_end, range_steps=self.synth_ratio_steps),
-        #                                         VariableParamInt('model', range_start=0, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
-        #                                         MetricParam('loss'),
-        #                                         MetricParam('accuracy'),
-        #                                         MetricParam('max_epoch'),
-        #                                         MetricParam('tnoise'),
-        #                                         MetricParam('fnoise'),
-        #                                         MetricParam('tsig'),
-        #                                         MetricParam('fsig'),
-        #                                         CopyFromParam('clfsize', source_param='dsize'),
-        #                                         LambdaParams.clf_t_g_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_t_s_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size)) \
-        #     .build_plan()
-        self.training_planner = TrainingPlanner(FixedParam('done', 0),
-                                                LambdaParams.tsize_from_dsize(val_size=self.val_size),
-                                                LambdaParams.vsize_from_dsize(val_size=self.val_size),
-                                                FixedParam('dsize', self.dataset_size_end),
-                                                VariableParam('synthratio', range_start=self.synth_ratio_start, range_end=self.synth_ratio_end, range_steps=self.synth_ratio_steps),
-                                                VariableParamInt('model', range_start=0, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
-                                                MetricParam('loss'),
-                                                MetricParam('accuracy'),
-                                                MetricParam('max_epoch'),
-                                                MetricParam('tnoise'),
-                                                MetricParam('fnoise'),
-                                                MetricParam('tsig'),
-                                                MetricParam('fsig'),
-                                                VariableParam('clfsize', range_start=2500, range_end=110000, range_steps=10),
-                                                LambdaParams.clf_t_g_size_from_clfsize_synthratio(val_size=self.val_size),
-                                                LambdaParams.clf_t_s_size_from_clfsize_synthratio(val_size=self.val_size),
-                                                LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
-                                                LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size)) \
-            .build_plan()
-        print('plan built')
+    def create_training_plan(self) -> MixLearnExperimentMiniBoone:
+        raise NotImplementedError()
+
+
+
 
     @staticmethod
-    def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator, experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
-        # enable_memory_growth()
-        # print(tf.config.list_physical_devices())
+    def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator,
+                    experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
         result_folder = Path('results')
 
         m = MixLearnExperimentMiniBoone(name=experiment_name,
