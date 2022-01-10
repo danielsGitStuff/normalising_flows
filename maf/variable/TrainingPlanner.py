@@ -21,10 +21,12 @@ class TrainingPlanner:
                  *params,
                  classifiers_per_nf: int = 5):
         self.classifiers_per_nf: int = classifiers_per_nf
+        params: List[Param] = list(params)
         self._var_params: List[VariableParam] = [p for p in params if isinstance(p, VariableParam)]
         self._fixed_params: List[FixedParam] = [p for p in params if isinstance(p, FixedParam)]
         self._metric_params: List[MetricParam] = [p for p in params if isinstance(p, MetricParam)]
         self._lambda_params: List[LambdaParam] = [p for p in params if isinstance(p, LambdaParam)]
+        self._varying_params: List[Param] = [p for p in params if p.is_var]
         self.plan: Optional[pd.DataFrame] = None
         self.metrics: List[str] = [p.name for p in self._metric_params]
         self.label_map: Dict[str, str] = {}
@@ -60,15 +62,37 @@ class TrainingPlanner:
                              [p.name for p in self._lambda_params] + \
                              [p.name for p in self._metric_params]
         self.plan = pd.DataFrame(values, columns=columns, dtype=np.float32)
-        if len(self._lambda_params) > 0:
-            for index, row in self.plan.iterrows():
-                for lb in self._lambda_params:
-                    self.plan.at[index, lb.name] = lb.f(row[lb.source_params])
+        available_columns: Set[str] = set()
+        for p in self._var_params + self._fixed_params:
+            available_columns.add(p.name)
+        remaining_lambdas: Dict[str, LambdaParam] = {p.name: p for p in self._lambda_params}
+
+        def check_req(p: LambdaParam):
+            for dependency in p.source_params:
+                if dependency not in available_columns:
+                    return False
+            return True
+
+        while len(remaining_lambdas) > 0:
+            for name, param in remaining_lambdas.copy().items():
+                if not check_req(param):
+                    continue
+                for index, row in self.plan.iterrows():
+                    self.plan.at[index, name] = param.f(row[param.source_params])
+                available_columns.add(name)
+                del remaining_lambdas[name]
+
+        # if len(self._lambda_params) > 0:
+        #     for index, row in self.plan.iterrows():
+        #         for lb in self._lambda_params:
+        #             self.plan.at[index, lb.name] = lb.f(row[lb.source_params])
         return self
 
     def print(self, target_file: Path):
         df: pd.DataFrame = self.plan
-        group_by: List[str] = [p.name for p in self._var_params if p.name != 'model']
+        group_by: List[str] = [p.name for p in self._varying_params if p.name != 'model']
+        if len(group_by) < 2:
+            group_by.append('dsize')
         print(f"print group_by: {group_by}")
         means: pd.DataFrame = df.drop(['tsize', 'vsize'], axis=1).groupby(group_by).mean()
         stddevs: pd.DataFrame = df.drop(['tsize', 'vsize'], axis=1).groupby(group_by).std()
@@ -131,7 +155,9 @@ class TrainingPlanner:
 
     def print_confusion_matrices(self, target_file: Path):
         df: pd.DataFrame = self.plan
-        group_by: List[str] = [p.name for p in self._var_params if p.name != 'model']
+        group_by: List[str] = [p.name for p in self._varying_params if p.name != 'model']
+        if len(group_by) < 2:
+            group_by.append('dsize')
         print(f"print_confusion_matrices group_by: {group_by}")
         means: pd.DataFrame = df.groupby(group_by).mean()
         stddevs: pd.DataFrame = df.groupby(group_by).std()
@@ -169,6 +195,7 @@ class TrainingPlanner:
         plt.rc('lines', linewidth=3)
         shape = d[('Mean', 'tsig')].shape
         fig, axs = StaticMethods.default_fig(no_rows=shape[0], no_columns=shape[1], w=10, h=8)
+        axs = axs.reshape(shape)
         maxis = [d[('Mean', 'tsig')].max().max(), d[('Mean', 'fsig')].max().max(), d[('Mean', 'tnoise')].max().max(), d[('Mean', 'fnoise')].max().max()]
         v_max = max(maxis)
 
@@ -180,7 +207,7 @@ class TrainingPlanner:
                 f_noise = d[('Mean', 'fnoise')].values[row][column]
                 ax = axs[row][column]
                 df = pd.DataFrame(np.array([[t_sig, f_noise], [f_sig, t_noise]]), dtype=np.float32)
-                sns.heatmap(data=df, ax=ax, annot=True, fmt='.2f', square=True, xticklabels=['T', 'N'], yticklabels=['T', 'N'], vmax=v_max, cbar=False)
+                sns.heatmap(data=df, ax=ax, annot=True, fmt='.2f', square=True, xticklabels=['Signal', 'Noise'], yticklabels=['Signal', 'Noise'], vmax=v_max, cbar=False)
                 # ax.set_xlabel('Prediction')
                 # ax.set_ylabel('Truth')
         models_per_config = len(self.plan['model'].unique())

@@ -70,29 +70,10 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
         return dl3.execute()
 
     def _create_training_plan(self):
-        # self.training_planner = TrainingPlanner(FixedParam('done', 0),
-        #                                         LambdaParams.tsize_from_dsize(val_size=self.val_size),
-        #                                         LambdaParams.vsize_from_dsize(val_size=self.val_size),
-        #                                         VariableParam('dsize', range_start=self.dataset_size_start, range_end=self.dataset_size_end, range_steps=self.dataset_size_steps),
-        #                                         VariableParam('synthratio', range_start=self.synth_ratio_start, range_end=self.synth_ratio_end, range_steps=self.synth_ratio_steps),
-        #                                         VariableParamInt('model', range_start=0, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
-        #                                         MetricParam('loss'),
-        #                                         MetricParam('accuracy'),
-        #                                         MetricParam('max_epoch'),
-        #                                         MetricParam('tnoise'),
-        #                                         MetricParam('fnoise'),
-        #                                         MetricParam('tsig'),
-        #                                         MetricParam('fsig'),
-        #                                         CopyFromParam('clfsize', source_param='dsize'),
-        #                                         LambdaParams.clf_t_g_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_t_s_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
-        #                                         LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size)) \
-        #     .build_plan()
         return TrainingPlanner(FixedParam('done', 0),
                                LambdaParams.tsize_from_dsize(val_size=self.val_size),
                                LambdaParams.vsize_from_dsize(val_size=self.val_size),
-                               FixedParam('dsize', self.dataset_size_end),
+                               VariableParamInt('dsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10),
                                FixedParam('synthratio', -8.8),
                                VariableParamInt('model', range_start=1, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
                                MetricParam('loss'),
@@ -103,30 +84,7 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
                                MetricParam('tsig'),
                                MetricParam('fsig'),
                                FixedParam('clf_t_g_size', 15000),
-                               VariableParam('clfsize', range_start=16500, range_end=100000, range_steps=3),
+                               VariableParamInt('clfsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10),
                                LambdaParams.clf_t_s_size_from_clf_t_g_size_clfsize(val_size=self.val_size),
                                LambdaParams.clf_v_g_size_from_clf_t_g_size_clf_t_s_size(val_size=self.val_size),
                                LambdaParams.clf_v_s_size_from_clf_v_g_size(val_size=self.val_size))
-
-    @staticmethod
-    def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator, experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
-        # enable_memory_growth()
-        # print(tf.config.list_physical_devices())
-        result_folder = Path('results')
-
-        m = MixLearnExperimentMiniBoone(name=experiment_name,
-                                        learned_distr_creator=learned_distr_creator,
-                                        dataset_name=dataset_name,
-                                        result_folder=result_folder,
-                                        paper_load=False,
-                                        epochs=100,
-                                        batch_size=1000,
-                                        # layers=20,
-                                        # hidden_shape=[200, 200],
-                                        # norm_layer=False,
-                                        # noise_variance=0.0,
-                                        # batch_norm=True,
-                                        # use_tanh_made=True,
-                                        experiment_init_ds_class=experiment_init_ds_class)
-        m.create_training_plan()
-        m.start()

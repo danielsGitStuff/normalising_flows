@@ -11,7 +11,7 @@ if __name__ == '__main__':
     ArgParser.parse()
     Global.set_global('testing_noise', False)
     creator = MAFCreator(batch_norm=True,
-                         conditional_one_hot=True,
+                         conditional_one_hot=False,
                          # epochs=epochs,
                          hidden_shape=[1024, 1024],
                          input_noise_variance=0.0,

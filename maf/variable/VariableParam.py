@@ -10,6 +10,7 @@ from pandas import Series
 class Param:
     def __init__(self, name: str):
         self.name: str = name
+        self.is_var: bool = False
 
     def get_range(self) -> np.ndarray:
         raise NotImplementedError()
@@ -36,6 +37,7 @@ class MetricParam(Param):
 class VariableParam(Param):
     def __init__(self, name: str, range_start: float, range_end: float, range_steps: int):
         super().__init__(name)
+        self.is_var = True
         self.range_start: float = range_start
         self.range_end: float = range_end
         self.range_steps: int = range_steps
@@ -49,12 +51,13 @@ class VariableParamInt(VariableParam):
         super().__init__(name, range_start, range_end, range_steps)
 
     def get_range(self) -> np.ndarray:
-        return np.ceil(np.linspace(self.range_start, self.range_end, self.range_steps, dtype=np.int32))
+        return np.floor(np.linspace(self.range_start, self.range_end, self.range_steps, dtype=np.int32))
 
 
 class LambdaParam(Param):
-    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[Series], float]):
+    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[Series], float], is_var: bool = False):
         super().__init__(name)
+        self.is_var = is_var
         if isinstance(source_params, str):
             source_params = list([source_params])
         self.source_params: List[str] = source_params
@@ -164,7 +167,7 @@ class LambdaParams:
                 val_take = math.floor(clfsize * val_split)
             return clfsize - clf_t_g_size - val_take
 
-        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f)
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f, is_var=False)
         return lp
 
     @staticmethod
@@ -174,8 +177,7 @@ class LambdaParams:
             clf_t_g_size: float = series['clf_t_g_size']
             if clf_t_s_size == 0:
                 return val_size
-            genuine_synth_ratio: float = clf_t_g_size / clf_t_s_size
-            take = val_size * genuine_synth_ratio
+            take = clf_t_g_size / (clf_t_g_size + clf_t_s_size) * val_size
             return math.floor(take)
 
         lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size'], f=f)
