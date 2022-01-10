@@ -105,13 +105,8 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
                                FixedParam('clf_t_g_size', 15000),
                                VariableParam('clfsize', range_start=16500, range_end=100000, range_steps=3),
                                LambdaParams.clf_t_s_size_from_clf_t_g_size_clfsize(val_size=self.val_size),
-                               # LambdaParams.clf_v_g_size_from_clf_t_g_size_clfsize(val_size=self.val_size),
                                LambdaParams.clf_v_g_size_from_clf_t_g_size_clf_t_s_size(val_size=self.val_size),
-                               LambdaParams.clf_v_s_size_from_clf_t_g_size_clf_t_s_size(val_size=self.val_size))
-                               # LambdaParams.clf_t_g_size_from_clfsize_synthratio(val_size=self.val_size),
-                               # LambdaParams.clf_t_s_size_from_clfsize_synthratio(val_size=self.val_size),
-                               # LambdaParams.clf_v_g_size_from_clfsize_synthratio(val_size=self.val_size),
-                               # LambdaParams.clf_v_s_size_from_clfsize_synthratio(val_size=self.val_size))
+                               LambdaParams.clf_v_s_size_from_clf_v_g_size(val_size=self.val_size))
 
     @staticmethod
     def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator, experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
