@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from pandas import Series
 
 from maf.examples.stuff.StaticMethods import StaticMethods
-from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam
+from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam, Param
 import matplotlib.ticker as ticker
 
 
@@ -28,7 +28,22 @@ class TrainingPlanner:
         self.plan: Optional[pd.DataFrame] = None
         self.metrics: List[str] = [p.name for p in self._metric_params]
         self.label_map: Dict[str, str] = {}
-        self.built:bool = False
+        self.built: bool = False
+        self.sanity_check()
+
+    def sanity_check(self):
+        names: Set[str] = set()
+
+        def put(params: List[Param]):
+            for p in params:
+                if p.name in names:
+                    raise RuntimeError(f"param '{p.name}' has been defined twice. at least.")
+                names.add(p.name)
+
+        put(self._var_params)
+        put(self._fixed_params)
+        put(self._metric_params)
+        put(self._lambda_params)
 
     def build_plan(self) -> TrainingPlanner:
         if self.built:

@@ -141,6 +141,57 @@ class LambdaParams:
         return lp
 
     @staticmethod
+    def clf_v_g_size_from_clf_t_g_size_clfsize(name: str = 'clf_v_g_size', val_size: Optional[int] = None, val_split: Optional[float] = None) -> LambdaParam:
+        def f(series: Series) -> float:
+            clfsize: float = series['clfsize']
+            clf_t_g_size: float = series['clf_t_g_size']
+            clf_t_s_size: float = series['clf_t_s_size']
+            val_take = val_size
+            if val_split is not None:
+                val_take = math.floor(clfsize * val_split)
+            return clfsize - clf_t_g_size - val_take - clf_t_s_size
+        lp = LambdaParam(name, source_params=['clf_t_g_size','clf_t_s_size', 'clfsize'], f=f)
+        return lp
+
+    @staticmethod
+    def clf_t_s_size_from_clf_t_g_size_clfsize(name: str = 'clf_t_s_size', val_size: Optional[int] = None, val_split: Optional[float] = None) -> LambdaParam:
+        def f(series: Series) -> float:
+            clfsize: float = series['clfsize']
+            clf_t_g_size: float = series['clf_t_g_size']
+            val_take = val_size
+            if val_split is not None:
+                val_take = math.floor(clfsize * val_split)
+            return clfsize - clf_t_g_size - val_take
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f)
+        return lp
+
+    @staticmethod
+    def clf_v_g_size_from_clf_t_g_size_clf_t_s_size(name: str = 'clf_v_g_size', val_size: Optional[int] = None) -> LambdaParam:
+        def f(series: Series) -> float:
+            clf_t_s_size: float = series['clf_t_s_size']
+            clf_t_g_size: float = series['clf_t_g_size']
+            if clf_t_s_size == 0:
+                return val_size
+            genuine_synth_ratio : float = clf_t_g_size / clf_t_s_size
+            take = val_size * genuine_synth_ratio
+            return math.floor(take)
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size'], f=f)
+        return lp
+
+    @staticmethod
+    def clf_v_s_size_from_clf_t_g_size_clf_t_s_size(name: str = 'clf_v_s_size', val_size: Optional[int] = None, val_split: Optional[float] = None) -> LambdaParam:
+        def f(series: Series) -> float:
+            clf_t_s_size: float = series['clf_t_s_size']
+            clf_t_g_size: float = series['clf_t_g_size']
+            if clf_t_s_size == 0:
+                return 0
+            genuine_synth_ratio : float = clf_t_g_size / clf_t_s_size
+            take = val_size * genuine_synth_ratio
+            return math.ceil(take)
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clf_t_s_size'], f=f)
+        return lp
+
+    @staticmethod
     def tsize_from_dsize(val_size: Optional[int] = None, val_split: Optional[float] = None, name: str = 'tsize') -> LambdaParam:
         def f(series: Series) -> float:
             dsize = series['dsize']

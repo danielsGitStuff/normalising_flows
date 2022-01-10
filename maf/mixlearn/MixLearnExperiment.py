@@ -147,10 +147,11 @@ class MixLearnExperiment(MafExperiment):
             name = f"{name}.{extension}"
         return Path(self.cache_dir, name)
 
-    def create_training_plan(self):
+    def create_training_plan(self) -> MixLearnExperiment:
         self.training_planner = self._create_training_plan().build_plan()
         with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
             print(self.training_planner.plan)
+        return self
 
     def _create_training_plan(self) -> TrainingPlanner:
         raise NotImplementedError()

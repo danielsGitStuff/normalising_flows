@@ -56,7 +56,7 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          epochs=epochs,
                          # layers=layers,
                          batch_size=batch_size,
-                         # hidden_shape=hidden_shape,
+                         # hidden_shape=hidden_shape,c
                          # norm_layer=norm_layer,
                          # noise_variance=noise_variance,
                          # batch_norm=batch_norm,
@@ -67,6 +67,9 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          learned_distribution_creator=learned_distr_creator,
                          classifier_creator=MiniBooneBinaryClassifierCreator())
 
+    def print_divergences(self):
+        pass
+
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
         checkpoints_dir.mkdir(exist_ok=True)
@@ -75,6 +78,9 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
     def create_data_loader(self, norm_data: bool) -> DL2:
         dl3 = MinibooneDL3(dataset_name=self.dataset_name)
         return dl3.execute()
+
+    def _run(self):
+        self.start()
 
 
     @staticmethod
