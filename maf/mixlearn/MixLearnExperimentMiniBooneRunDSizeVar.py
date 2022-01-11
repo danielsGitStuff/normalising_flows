@@ -9,7 +9,7 @@ from maf.mixlearn.MixLearnExperimentMiniBoone import MixLearnExperimentMiniBoone
 
 if __name__ == '__main__':
     ArgParser.parse()
-    Global.set_global('testing_noise', False)
+    Global.set_global('testing_noise', True)
     creator = MAFCreator(batch_norm=True,
                          conditional_one_hot=False,
                          # epochs=epochs,
@@ -19,7 +19,7 @@ if __name__ == '__main__':
                          norm_layer=False,
                          use_tanh_made=True)
     results_folder = Path('results_miniboone')
-    experiment = MixLearnExperimentMiniBooneDSizeVar(name='miniboone_default',
+    experiment = MixLearnExperimentMiniBooneDSizeVar(name='miniboone_learn_all',
                                 learned_distr_creator=creator,
                                 dataset_name='miniboone',
                                 result_folder=results_folder,
