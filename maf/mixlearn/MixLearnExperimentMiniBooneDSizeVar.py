@@ -96,41 +96,41 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
         #                        FixedIntParam('test_clf_no', test_props.no_of_noise))
 
         just_signal_plan = TrainingPlanner(FixedIntParam('done', 0),
-                               LambdaIntParam('tsize', source_params=['dsize'], f=lambda dsize: dsize - self.val_size),  # todo obsolete
-                               VariableParamInt('dsize', range_start=16500, range_end=self.dataset_size_end, range_steps=2, is_var=True),  # 10
-                               VariableParamInt('model', range_start=1, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
-                               MetricParam('loss'),
-                               MetricParam('accuracy'),
-                               MetricIntParam('max_epoch'),
-                               MetricIntParam('tnoise'),
-                               MetricIntParam('fnoise'),
-                               MetricIntParam('tsig'),
-                               MetricIntParam('fsig'),
-                               FixedIntParam('size_clf_t_ge', 16500 - self.val_size),
-                               LambdaIntParam('size_clf_t_sy', source_params=['size_clf_t_ge', 'clfsize'], f=lambda tge, clfsize: clfsize - self.val_size - tge, is_var=True),
-                               LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'], f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size)),
-                               LambdaIntParam('size_clf_v_sy', source_params=['size_clf_t_ge', 'size_clf_t_sy'], f=lambda tge, tsy: math.ceil(tsy / (tge + tsy) * self.val_size)),
+                                           LambdaIntParam('tsize', source_params=['dsize'], f=lambda dsize: dsize - self.val_size),  # todo obsolete
+                                           VariableParamInt('dsize', range_start=16500, range_end=self.dataset_size_end, range_steps=2, is_var=True),  # 10
+                                           VariableParamInt('model', range_start=1, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
+                                           MetricParam('loss'),
+                                           MetricParam('accuracy'),
+                                           MetricIntParam('max_epoch'),
+                                           MetricIntParam('tnoise'),
+                                           MetricIntParam('fnoise'),
+                                           MetricIntParam('tsig'),
+                                           MetricIntParam('fsig'),
+                                           FixedIntParam('size_clf_t_ge', 16500 - self.val_size),
+                                           LambdaIntParam('size_clf_t_sy', source_params=['size_clf_t_ge', 'clfsize'], f=lambda tge, clfsize: clfsize - self.val_size - tge, is_var=True),
+                                           LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'], f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size)),
+                                           LambdaIntParam('size_clf_v_sy', source_params=['size_clf_t_ge', 'size_clf_t_sy'], f=lambda tge, tsy: math.ceil(tsy / (tge + tsy) * self.val_size)),
 
-                               LambdaIntParam('clf_t_ge_sig', source_params=['size_clf_t_ge'], f=lambda tge: round(signal_ratio * tge)),
-                               LambdaIntParam('clf_t_ge_noi', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
+                                           LambdaIntParam('clf_t_ge_sig', source_params=['size_clf_t_ge'], f=lambda tge: round(signal_ratio * tge)),
+                                           LambdaIntParam('clf_t_ge_noi', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                               f=lambda size_clf_t_ge, size_clf_t_sy: round(
                                                   size_clf_t_ge - (size_clf_t_ge * signal_ratio) + size_clf_t_sy - (size_clf_t_sy * signal_ratio))),
-                               LambdaIntParam('clf_t_sy_sig', source_params=['size_clf_t_sy'], f=lambda tsy: round(signal_ratio * tsy)),
-                               FixedIntParam('clf_t_sy_noi', 0),
-                               LambdaIntParam('clf_v_ge_sig', source_params=['size_clf_v_ge'], f=lambda vge: round(signal_ratio * vge)),
-                               LambdaIntParam('clf_v_ge_noi', source_params=['size_clf_v_ge', 'clf_v_ge_sig', 'size_clf_v_sy'],
+                                           LambdaIntParam('clf_t_sy_sig', source_params=['size_clf_t_sy'], f=lambda tsy: round(signal_ratio * tsy)),
+                                           FixedIntParam('clf_t_sy_noi', 0),
+                                           LambdaIntParam('clf_v_ge_sig', source_params=['size_clf_v_ge'], f=lambda vge: round(signal_ratio * vge)),
+                                           LambdaIntParam('clf_v_ge_noi', source_params=['size_clf_v_ge', 'clf_v_ge_sig', 'size_clf_v_sy'],
                                               f=lambda vge, vgesig, vsy: math.ceil(vge - vgesig + noise_ratio * vsy)),
-                               LambdaIntParam('clf_v_sy_sig', source_params=['size_clf_v_sy'], f=lambda vsy: round(signal_ratio * vsy)),
-                               FixedIntParam('clf_v_sy_noi', 0),
+                                           LambdaIntParam('clf_v_sy_sig', source_params=['size_clf_v_sy'], f=lambda vsy: round(signal_ratio * vsy)),
+                                           FixedIntParam('clf_v_sy_noi', 0),
 
-                               VariableParamInt('clfsize', range_start=16500, range_end=self.dataset_size_end, range_steps=2),  # 10
-                               LambdaIntParam('size_nf_t_sig', source_params=['tsize'], f=lambda tsize: math.floor(signal_ratio * tsize - self.val_size)),
-                               FixedIntParam('size_nf_v_sig', 1500),  # Genuine Signal Val for MAF
-                               FixedIntParam('size_nf_t_noi', 0),
-                               FixedIntParam('size_nf_v_noi', 0),
-                               FixedIntParam('test_clf_sig', test_props.no_of_signals),
-                               FixedIntParam('test_clf_no', test_props.no_of_noise))
-        return just_signal_plan
+                                           VariableParamInt('clfsize', range_start=16500, range_end=self.dataset_size_end, range_steps=2),  # 10
+                                           LambdaIntParam('size_nf_t_sig', source_params=['dsize'], f=lambda dsize: math.floor(signal_ratio * dsize - self.val_size)),
+                                           FixedIntParam('size_nf_v_sig', 1500),  # Genuine Signal Val for MAF
+                                           FixedIntParam('size_nf_t_noi', 0),
+                                           FixedIntParam('size_nf_v_noi', 0),
+                                           FixedIntParam('test_clf_sig', test_props.no_of_signals),
+                                           FixedIntParam('test_clf_no', test_props.no_of_noise))
+        # return just_signal_plan
 
         with_noise_plan = TrainingPlanner(FixedIntParam('done', 0),
                                LambdaIntParam('tsize', source_params=['dsize'], f=lambda dsize: dsize - self.val_size),  # todo obsolete
