@@ -48,12 +48,14 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                  batch_size: int = 128,
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
-                 test_split: float = 0.1):
+                 test_split: float = 0.1,
+                 classifiers_per_nf: int = 3):
         self.paper_load: bool = paper_load
         self.dataset_name: str = dataset_name
 
         super().__init__(name=name,
                          epochs=epochs,
+                         classifiers_per_nf=classifiers_per_nf,
                          # layers=layers,
                          batch_size=batch_size,
                          # hidden_shape=hidden_shape,c

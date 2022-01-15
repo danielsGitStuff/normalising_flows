@@ -22,6 +22,7 @@ from maf.DL import DL2
 
 from maf.mixlearn.KerasETA import KerasETA
 
+
 class BinaryClassifierCreator(Ser):
     def __init__(self):
         super().__init__()
@@ -45,10 +46,19 @@ class ClassifierTrainingProcess(Ser):
                  ds_val_folder: Path = NotProvided(),
                  ds_test_folder: Path = NotProvided(),
                  epochs: int = NotProvided(),
-                 clf_t_g_size: int = NotProvided(),
-                 clf_t_s_size: int = NotProvided(),
-                 clf_v_g_size: int = NotProvided(),
-                 clf_v_s_size: int = NotProvided(),
+                 clf_t_ge_noi: int = NotProvided(),
+                 clf_t_ge_sig: int = NotProvided(),
+                 clf_t_sy_noi: int = NotProvided(),
+                 clf_t_sy_sig: int = NotProvided(),
+                 clf_v_ge_noi: int = NotProvided(),
+                 clf_v_ge_sig: int = NotProvided(),
+                 clf_v_sy_noi: int = NotProvided(),
+                 clf_v_sy_sig: int = NotProvided(),
+
+                 # clf_t_g_size: int = NotProvided(),
+                 # clf_t_s_size: int = NotProvided(),
+                 # clf_v_g_size: int = NotProvided(),
+                 # clf_v_s_size: int = NotProvided(),
                  model_base_file: str = NotProvided(),
                  conditional_dims: int = 0,
                  batch_size: Optional[int] = None):
@@ -68,10 +78,19 @@ class ClassifierTrainingProcess(Ser):
         self.epochs: int = epochs
         self.history_csv_file: Path = history_csv_file
         self.model_base_file: str = model_base_file
-        self.clf_t_g_size: int = clf_t_g_size
-        self.clf_t_s_size: int = clf_t_s_size
-        self.clf_v_g_size: int = clf_v_g_size
-        self.clf_v_s_size: int = clf_v_s_size
+        # self.clf_t_g_size: int = clf_t_g_size
+        # self.clf_t_s_size: int = clf_t_s_size
+        # self.clf_v_g_size: int = clf_v_g_size
+        # self.clf_v_s_size: int = clf_v_s_size
+
+        self.clf_t_ge_noi: int = clf_t_ge_noi
+        self.clf_t_ge_sig: int = clf_t_ge_sig
+        self.clf_t_sy_noi: int = clf_t_sy_noi
+        self.clf_t_sy_sig: int = clf_t_sy_sig
+        self.clf_v_ge_noi: int = clf_v_ge_noi
+        self.clf_v_ge_sig: int = clf_v_ge_sig
+        self.clf_v_sy_noi: int = clf_v_sy_noi
+        self.clf_v_sy_sig: int = clf_v_sy_sig
 
     def create_classifier(self) -> LazyModel:
         input_dim = self.dl_training_genuine.props.dimensions
@@ -90,45 +109,36 @@ class ClassifierTrainingProcess(Ser):
         lm.compile(optimizer='adam', loss=BinaryCrossentropy(), lr=0.001, metrics=['accuracy'])
         return lm
 
-    # def create_classifier(self) -> LazyModel:
-    #     ins = Input(shape=(self.input_dims,))
-    #     b = Dense(200, activation='relu', name='DenseRELU0')(ins)
-    #     b = BatchNormalization()(b)
-    #     b = Dense(200, activation='relu')(b)
-    #     b = BatchNormalization()(b)
-    #     b = Dense(100, activation='relu')(b)
-    #     b = Dense(1, activation='linear', name='out')(b)
-    #     model = Model(inputs=[ins], outputs=[b])
-    #     lm = LazyModel.Methods.wrap(model)
-    #     lm.compile(optimizer='adam', loss=BinaryCrossentropy(from_logits=True), lr=0.001, metrics=['accuracy'])
-    #     return lm
-
     def run(self) -> Dict[str, float]:
-        def prepare(genuine: DL2, synth: DL2, clf_g_size: int, clf_s_size: int) -> DS:
-            signal_noise_ratio: float = genuine.props.no_of_signals / (genuine.props.no_of_noise + genuine.props.no_of_signals)
-            take_genuine_signal = math.ceil(clf_g_size * signal_noise_ratio)
-            take_genuine_noise = clf_g_size - take_genuine_signal
-            take_synth_signal = math.ceil(clf_s_size * signal_noise_ratio)
-            take_synth_noise = clf_s_size - take_synth_signal
+        # def prepare(genuine: DL2, synth: DL2, clf_g_size: int, clf_s_size: int) -> DS:
+        #     signal_noise_ratio: float = genuine.props.no_of_signals / (genuine.props.no_of_noise + genuine.props.no_of_signals)
+        #     take_genuine_signal = math.ceil(clf_g_size * signal_noise_ratio)
+        #     take_genuine_noise = clf_g_size - take_genuine_signal
+        #     take_synth_signal = math.ceil(clf_s_size * signal_noise_ratio)
+        #     take_synth_noise = clf_s_size - take_synth_signal
+        #
+        #     gen = genuine.get_conditional(amount_signal=take_genuine_signal, amount_noise=take_genuine_noise)
+        #     synth = synth.get_conditional(amount_signal=take_synth_signal, amount_noise=take_synth_noise)
+        #     return gen.take(clf_g_size).concatenate(synth.take(clf_s_size))  # .shuffle(buffer_size=len(genuine), reshuffle_each_iteration=reshuffle)
 
-            gen = genuine.get_conditional(amount_signal=take_genuine_signal, amount_noise=take_genuine_noise)
-            synth = synth.get_conditional(amount_signal=take_synth_signal, amount_noise=take_synth_noise)
-            return gen.take(clf_g_size).concatenate(synth.take(clf_s_size))  # .shuffle(buffer_size=len(genuine), reshuffle_each_iteration=reshuffle)
+        def prepare(genuine: DL2, synth: DL2, clf_ge_sig: int, clf_ge_no: int, clf_sy_sig: int, clf_sy_no: int) -> DS:
+            gen = genuine.get_conditional(amount_signal=clf_ge_sig, amount_noise=clf_ge_no)
+            synth = synth.get_conditional(amount_signal=clf_sy_sig, amount_noise=clf_sy_no)
+            return gen.concatenate(synth)
 
         import tensorflow as tf
 
-        ds_train = prepare(genuine=self.dl_training_genuine, synth=self.dl_training_synth, clf_g_size=self.clf_t_g_size, clf_s_size=self.clf_t_s_size)
-        ds_val = prepare(genuine=self.dl_val_genuine, synth=self.dl_val_synth, clf_g_size=self.clf_v_g_size, clf_s_size=self.clf_v_s_size)
-        # ds_train_genuine: DS = tf.data.experimental.load(str(self.ds_training_folder))
-        # ds_train_synth: DS = tf.data.experimental.load(str(self.ds_synth_training_folder))
-        # ds_train = prepare(genuine=ds_train_genuine, synth=ds_train_synth, clf_g_size=self.clf_t_g_size, clf_s_size=self.clf_t_s_size)
-        #
-        # ds_val_genuine: DS = tf.data.experimental.load(str(self.ds_val_folder))
-        # ds_val_synth: DS = tf.data.experimental.load(str(self.ds_synth_val_folder))
-        # ds_val = prepare(genuine=ds_val_genuine, synth=ds_val_synth, clf_g_size=self.clf_v_g_size, clf_s_size=self.clf_v_s_size)
+        ds_train = prepare(genuine=self.dl_training_genuine, synth=self.dl_training_synth,
+                           clf_ge_sig=self.clf_t_ge_sig,
+                           clf_ge_no=self.clf_t_ge_noi,
+                           clf_sy_sig=self.clf_t_sy_sig,
+                           clf_sy_no=self.clf_t_sy_noi)
+        ds_val = prepare(genuine=self.dl_val_genuine, synth=self.dl_val_synth,
+                         clf_ge_sig=self.clf_v_ge_sig,
+                         clf_ge_no=self.clf_v_ge_noi,
+                         clf_sy_sig=self.clf_v_sy_sig,
+                         clf_sy_no=self.clf_v_sy_noi)
 
-        # ds_train = ds_train_synth
-        # ds_val = ds_val_synth
         epoch = None
         if LazyModel.Methods.model_exists(self.model_base_file) and False:
             lm = LazyModel.Methods.load_from_file(self.model_base_file)
@@ -136,7 +146,7 @@ class ClassifierTrainingProcess(Ser):
             lm = self.create_classifier()
 
             print(
-                f"fitting classifier with {len(ds_train)} samples, synth ratio {self.clf_t_s_size / self.clf_t_g_size if self.clf_t_g_size > 0 else 1.0} -> '{self.history_csv_file}'")
+                f"fitting classifier with {len(ds_train)} samples (clf_t_ge_sig {self.clf_t_ge_sig} clf_t_ge_noi {self.clf_t_ge_noi} clf_t_sy_sig {self.clf_t_sy_sig} clf_t_sy_noi {self.clf_t_sy_noi}) -> '{self.history_csv_file}'")
 
             es = EarlyStopping(monitor='val_loss', patience=15, verbose=0, restore_best_weights=True, mode='min')
             eta = KerasETA(interval=10, epochs=self.epochs)
@@ -189,7 +199,7 @@ class ClassifierTrainingProcess(Ser):
     def execute(self) -> Dict[str, float]:
         # return self.run()
         js = jsonloader.to_json(self, pretty_print=True)
-        # print('debug skip pool')
-        # return ClassifierTrainingProcess.static_execute(js)
+        print('debug skip pool')
+        return ClassifierTrainingProcess.static_execute(js)
         res = Global.POOL().run_blocking(ClassifierTrainingProcess.static_execute, args=(js,))
         return res

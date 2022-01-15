@@ -1,43 +1,60 @@
 from __future__ import annotations
 
 import math
-from typing import Optional, Callable, List
+from typing import Optional, Callable, List, Type, TypeVar, Union, Any, Tuple
 
 import numpy as np
 from pandas import Series
 
+from maf.variable.DependencyChecker import Dependency
+
+Converter = Union[int, float, bool, Callable[[Any], Any]]
+
 
 class Param:
-    def __init__(self, name: str):
+    def __init__(self, name: str, converter: Converter = float, is_var: bool = False):
+        """:converter function that casts the value as you wish"""
         self.name: str = name
-        self.is_var: bool = False
+        self.converter: Converter = converter
+        self.is_var: bool = is_var
 
     def get_range(self) -> np.ndarray:
         raise NotImplementedError()
 
+    def cast(self, value: Any) -> Any:
+        return self.converter(value)
+
+    def to_dependency(self) -> Dependency:
+        return Dependency(name=self.name)
+
 
 class FixedParam(Param):
-    def __init__(self, name: str, value: float):
-        super().__init__(name)
+    def __init__(self, name: str, value: float, converter: Converter = float, is_var: bool = False):
+        super().__init__(name, is_var=is_var, converter=converter)
         self.value: float = float(value)
 
     def get_range(self) -> np.ndarray:
         return np.array([self.value], dtype=np.float32)
 
 
-class MetricParam(Param):
-    def __init__(self, name: str):
-        super().__init__(name)
-        self.value: float = -1.0
+class FixedIntParam(FixedParam):
+    def __init__(self, name: str, value: int, converter: Converter = float, is_var: bool = False):
+        super().__init__(name, is_var=is_var, converter=converter, value=value)
 
-    # def get_range(self) -> np.ndarray:
-    #     return np.array([self.value], dtype=np.float32)
+
+class MetricParam(Param):
+    def __init__(self, name: str, converter: Converter = float):
+        super().__init__(name, converter=converter)
+
+
+class MetricIntParam(MetricParam):
+    def __init__(self, name: str):
+        super().__init__(name, converter=int)
 
 
 class VariableParam(Param):
-    def __init__(self, name: str, range_start: float, range_end: float, range_steps: int):
-        super().__init__(name)
-        self.is_var = True
+    def __init__(self, name: str, range_start: float, range_end: float, range_steps: int, is_var: bool = False):
+        super().__init__(name, is_var=is_var)
         self.range_start: float = range_start
         self.range_end: float = range_end
         self.range_steps: int = range_steps
@@ -47,21 +64,31 @@ class VariableParam(Param):
 
 
 class VariableParamInt(VariableParam):
-    def __init__(self, name: str, range_start: int, range_end: int, range_steps: int):
-        super().__init__(name, range_start, range_end, range_steps)
+    def __init__(self, name: str, range_start: int, range_end: int, range_steps: int, is_var: bool = False):
+        super().__init__(name, range_start, range_end, range_steps, is_var=is_var)
 
     def get_range(self) -> np.ndarray:
         return np.floor(np.linspace(self.range_start, self.range_end, self.range_steps, dtype=np.int32))
 
 
 class LambdaParam(Param):
-    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[Series], float], is_var: bool = False):
-        super().__init__(name)
-        self.is_var = is_var
+    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[], float], is_var: bool = False, converter: Converter = float):
+        super().__init__(name, is_var=is_var, converter=converter)
         if isinstance(source_params, str):
             source_params = list([source_params])
         self.source_params: List[str] = source_params
-        self.f: Callable[[Series], float] = f
+        self.f: Callable[[...], float] = f
+
+    def to_dependency(self) -> Dependency:
+        return Dependency(name=self.name, src=self.source_params)
+
+
+class LambdaIntParam(LambdaParam):
+    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[], int], is_var: bool = False):
+        super().__init__(name, is_var=is_var, converter=int, source_params=source_params, f=f)
+
+    def to_dependency(self) -> Dependency:
+        return Dependency(name=self.name, src=self.source_params)
 
 
 class CopyFromParam(LambdaParam):
@@ -73,6 +100,15 @@ class CopyFromParam(LambdaParam):
             return p
 
         self.f = f
+
+
+class LambdaParam2(Param):
+    def __init__(self, name: str, source_params: [str, List[str]], f: Callable[[], float], is_var: bool = False):
+        super().__init__(name, is_var=is_var)
+        if isinstance(source_params, str):
+            source_params = list([source_params])
+        self.source_params: List[str] = source_params
+        self.f: Callable[[], float] = f
 
 
 class LambdaParams:
@@ -167,7 +203,7 @@ class LambdaParams:
                 val_take = math.floor(clfsize * val_split)
             return clfsize - clf_t_g_size - val_take
 
-        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f, is_var=False)
+        lp = LambdaParam(name, source_params=['clf_t_g_size', 'clfsize'], f=f, is_var=True)
         return lp
 
     @staticmethod

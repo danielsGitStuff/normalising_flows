@@ -3,7 +3,7 @@ import itertools
 import math
 import sys
 from pathlib import Path
-from typing import Optional, List, Tuple, Dict, Generator, Set
+from typing import Optional, List, Tuple, Dict, Generator, Set, Any
 
 import numpy as np
 import pandas as pd
@@ -12,7 +12,8 @@ from matplotlib import pyplot as plt
 from pandas import Series
 
 from maf.examples.stuff.StaticMethods import StaticMethods
-from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam, Param
+from maf.variable.DependencyChecker import Dependency, DependencyChecker
+from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam, Param, MetricIntParam
 import matplotlib.ticker as ticker
 
 
@@ -24,7 +25,7 @@ class TrainingPlanner:
         params: List[Param] = list(params)
         self._var_params: List[VariableParam] = [p for p in params if isinstance(p, VariableParam)]
         self._fixed_params: List[FixedParam] = [p for p in params if isinstance(p, FixedParam)]
-        self._metric_params: List[MetricParam] = [p for p in params if isinstance(p, MetricParam)]
+        self._metric_params: List[MetricParam] = [p for p in params if isinstance(p, (MetricParam, MetricIntParam))]
         self._lambda_params: List[LambdaParam] = [p for p in params if isinstance(p, LambdaParam)]
         self._varying_params: List[Param] = [p for p in params if p.is_var]
         self.plan: Optional[pd.DataFrame] = None
@@ -35,6 +36,8 @@ class TrainingPlanner:
 
     def sanity_check(self):
         names: Set[str] = set()
+        dependencies_out: Dict[str, Set[str]] = {}
+        dependencies_in: Dict[str, Set[str]] = {}
 
         def put(params: List[Param]):
             for p in params:
@@ -47,6 +50,10 @@ class TrainingPlanner:
         put(self._metric_params)
         put(self._lambda_params)
 
+        dependencies: List[Dependency] = [p.to_dependency() for p in self._lambda_params + self._var_params + self._fixed_params]
+        checker = DependencyChecker()
+        checker.check_dependencies(dependencies)
+
     def build_plan(self) -> TrainingPlanner:
         if self.built:
             return self
@@ -54,9 +61,13 @@ class TrainingPlanner:
         var_params: List[List[float]] = [list(p.get_range()) for p in self._var_params]
         variable_block = np.array(list(itertools.product(*(var_params))))
         fixed_block: np.ndarray = np.array([[p.value] * len(variable_block) for p in self._fixed_params], dtype=np.float32).T
-        metric_block: np.ndarray = np.array([[p.value] * len(variable_block) for p in self._metric_params], dtype=np.float32).T
+        metric_block: np.ndarray = np.array([[-1.0] * len(variable_block) for p in self._metric_params], dtype=np.float32).T
         lambda_block: np.ndarray = np.array([[-2.0] * len(variable_block) for p in self._lambda_params], dtype=np.float32).T
-        values = np.hstack([fixed_block, variable_block, lambda_block, metric_block])
+        log_block: np.ndarray = np.ndarray
+        # throw out everything that is empty
+        blocks = [block for block in [fixed_block, variable_block, lambda_block, metric_block] if len(block) > 0]
+        # values = np.hstack([fixed_block, variable_block, lambda_block, metric_block])
+        values = np.hstack(blocks)
         columns: List[str] = [p.name for p in self._fixed_params] + \
                              [p.name for p in self._var_params] + \
                              [p.name for p in self._lambda_params] + \
@@ -78,10 +89,17 @@ class TrainingPlanner:
                 if not check_req(param):
                     continue
                 for index, row in self.plan.iterrows():
-                    self.plan.at[index, name] = param.f(row[param.source_params])
+                    series: Series = row[param.source_params]
+                    # ps: Dict[str, Any] = {p: series[p] for p in param.source_params}
+                    tup = tuple([series[p] for p in param.source_params])
+                    self.plan.at[index, name] = param.f(*tup)
+                    # self.plan.at[index, name] = param.f(row[param.source_params])
                 available_columns.add(name)
                 del remaining_lambdas[name]
-
+        self.plan = self.plan.reindex(sorted(self.plan.columns), axis=1)
+        self.plan = self.plan[['done', 'model'] + [col for col in self.plan.columns if col not in ['done', 'model']]]
+        metrics = set([p.name for p in self._metric_params])
+        self.plan = self.plan[[col for col in self.plan.columns if col not in metrics] + sorted(metrics)]
         # if len(self._lambda_params) > 0:
         #     for index, row in self.plan.iterrows():
         #         for lb in self._lambda_params:
@@ -94,8 +112,8 @@ class TrainingPlanner:
         if len(group_by) < 2:
             group_by.append('dsize')
         print(f"print group_by: {group_by}")
-        means: pd.DataFrame = df.drop(['tsize', 'vsize'], axis=1).groupby(group_by).mean()
-        stddevs: pd.DataFrame = df.drop(['tsize', 'vsize'], axis=1).groupby(group_by).std()
+        means: pd.DataFrame = df.drop(['tsize'], axis=1).groupby(group_by).mean()
+        stddevs: pd.DataFrame = df.drop(['tsize'], axis=1).groupby(group_by).std()
         group_by_operations: List[Tuple[str, pd.DataFrame]] = [('Mean', means), ('Std', stddevs)]
         # metrics = list(df.columns)[6:]
         models_per_config = len(df['model'].unique())
@@ -121,7 +139,7 @@ class TrainingPlanner:
         plt.rc('legend', fontsize=small)
         plt.rc('figure', titlesize=big)
         plt.rc('lines', linewidth=3)
-        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=14, h=11)
+        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=19, h=16)
         fig.suptitle(f"Results for {models_per_config} classifiers")
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
@@ -234,22 +252,3 @@ class TrainingPlanner:
     def label(self, param: str, label: str) -> TrainingPlanner:
         self.label_map[param] = label
         return self
-
-
-if __name__ == '__main__':
-    p = TrainingPlanner(FixedParam('done', 0),
-                        LambdaParams.tsize_from_dsize(val_size=1500),
-                        LambdaParams.vsize_from_dsize(val_size=1500),
-                        VariableParam('dsize', range_start=2500, range_end=25000, range_steps=3),
-                        VariableParam('synthratio', range_start=0.0, range_end=1.0, range_steps=3),
-                        VariableParamInt('model', range_start=0, range_end=3, range_steps=3),
-                        MetricParam('loss'),
-                        MetricParam('accuracy'),
-                        MetricParam('max_epoch'),
-                        MetricParam('tnoise'),
-                        MetricParam('fnoise'),
-                        MetricParam('tsig'),
-                        MetricParam('fsig'),
-                        CopyFromParam('clfsize', source_param='dsize'))
-    p.build_plan()
-    print('end')

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import functools
 import gzip
+import sys
+
 import math
 import os
 import shutil
@@ -81,6 +83,7 @@ class MixLearnExperiment(MafExperiment):
                  val_split: float = 0.1,
                  test_split: float = 0.1,
                  sample_variance_multiplier: float = 1.0,
+                 classifiers_per_nf: int = 3,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
         super().__init__(name)
         self.learned_distribution_creator: LearnedDistributionCreator = learned_distribution_creator
@@ -120,22 +123,28 @@ class MixLearnExperiment(MafExperiment):
         self.prefix: str = self.maf_prefix()
         self.val_split: float = val_split
         # account for the test split that comes later! (1 - test_split)
-        self.load_limit: int = math.floor(self.dl_training.props.length * (1 - self.test_split)) if load_limit is None else load_limit
+        self.load_limit: int = self.dl_training.props.length if load_limit is None else load_limit
         # self.load_limit: int = self.data_props.length if load_limit is None else load_limit
 
         self.no_of_synthetic_samples_per_batch: int = 1000
         self.dataset_size_start: int = 2500
         self.dataset_size_end: int = self.load_limit
-        self.classifiers_per_nf: int = 3
+        self.classifiers_per_nf: int = classifiers_per_nf
         self.val_size: int = 1500
 
         self.training_planner: Optional[TrainingPlanner] = None
         self.result_training_plan: Path = Path(self.result_folder, f"{self.name}_training_plan.png")
         self.result_confusion_matrices: Path = Path(self.result_folder, f"{self.name}_confusion.png")
 
-    def get_nf_file(self, dataset_size: int, extension: Optional[str] = None) -> Path:
-        """@return the base file name for everything that just depends on a NF: sample file (.npy), nf file (.json)"""
-        name = f"nf_{dataset_size}"
+    # def get_nf_file(self, dataset_size: int, extension: Optional[str] = None) -> Path:
+    #     """@return the base file name for everything that just depends on a NF: sample file (.npy), nf file (.json)"""
+    #     name = f"nf_{dataset_size}"
+    #     if extension is not None:
+    #         name = f"{name}.{extension}"
+    #     return Path(self.cache_dir, name)
+
+    def get_nf_file(self, size_nf_t_noi: int, size_nf_t_sig: int, size_nf_v_sig: int, size_nf_v_noi: int, extension: Optional[str] = None) -> Path:
+        name = f"nf_ts{size_nf_t_sig}_tn{size_nf_t_noi}_vs{size_nf_v_sig}_vn_{size_nf_v_noi}"
         if extension is not None:
             name = f"{name}.{extension}"
         return Path(self.cache_dir, name)
@@ -151,6 +160,7 @@ class MixLearnExperiment(MafExperiment):
         self.training_planner = self._create_training_plan().build_plan()
         with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
             print(self.training_planner.plan)
+        sys.exit(5)
         return self
 
     def _create_training_plan(self) -> TrainingPlanner:
@@ -165,51 +175,83 @@ class MixLearnExperiment(MafExperiment):
         if self.training_planner is None:
             raise RuntimeError("Configure training parameters and then create a training plan by calling create_training_plan() first.")
         p: TrainingPlanner = self.training_planner
+        plan = p.plan
+        unique_nfs = plan[['size_nf_t_noi', 'size_nf_t_sig', 'size_nf_v_noi', 'size_nf_v_sig']].drop_duplicates()
         dataset_sizes = p.plan['dsize'].unique()
-        for dataset_size in reversed(dataset_sizes):
-            df = p.plan.loc[p.plan['dsize'] == dataset_size]  # [['tsize', 'vsize', 'clf_t_g_size', 'clf_v_g_size']]
-            training_size = df['tsize'].values[0]  # in case you wanna vary the train-to-val-ratio, put a for loop here instead
-            val_size = df['vsize'].values[0]
-            dataset_size = int(dataset_size)
-            training_size = int(training_size)
-            val_size = int(val_size)
-            sample_size = int((df['clf_t_s_size']).max())
-            sample_val_size = int(df['clf_v_s_size'].max())
-            base_name = f"nf_in_{dataset_size}"
-            ds_synth_folder = self.get_nf_file(dataset_size=dataset_size, extension='synth')
-            ds_synth_val_folder = self.get_nf_file(dataset_size=dataset_size, extension='synth.val')
-            if ds_synth_folder.exists() and ds_synth_val_folder.exists():
-                print(f"sample folder '{ds_synth_folder}' already exists. skipping...")
+        for i in range(len(unique_nfs)):
+            uniques = unique_nfs.iloc[i]
+            size_nf_t_noi = int(uniques['size_nf_t_noi'])
+            size_nf_t_sig = int(uniques['size_nf_t_sig'])
+            size_nf_v_noi = int(uniques['size_nf_v_noi'])
+            size_nf_v_sig = int(uniques['size_nf_v_sig'])
+
+            related: pd.DataFrame = plan.loc[(plan['size_nf_t_noi'] == size_nf_t_noi) &
+                                             (plan['size_nf_t_sig'] == size_nf_t_sig) &
+                                             (plan['size_nf_v_noi'] == size_nf_v_noi) &
+                                             (plan['size_nf_v_sig'] == size_nf_v_sig)]
+
+            train_dir = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi, size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='genuine')
+            val_dir = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi, size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='genuine.val')
+            synth_dir = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi, size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='synth')
+            synth_val_dir = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi, size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi,
+                                             extension='synth.val')
+            if synth_dir.exists() and synth_val_dir.exists():
+                print(f"sample folder '{synth_dir}' already exists. skipping...")
                 continue
-            epochs: str = str(getattr(self.learned_distribution_creator, 'epochs')) if hasattr(self.learned_distribution_creator, 'epochs') else "none"
-            print(f"creating NF learning {training_size} samples using {val_size} val samples, epochs: {epochs} -> {base_name}")
-            print(f"fill sample {sample_size} training samples and {sample_val_size} val samples from NF")
-            conditional = self.conditional
-            train_dir = self.get_nf_file(dataset_size, extension='genuine')
-            val_dir = self.get_nf_file(dataset_size, extension='genuine.val')
-            synth_dir = self.get_nf_file(dataset_size, extension='synth')
-            synth_val_dir = self.get_nf_file(dataset_size, extension='synth.val')
+            sample_sig_size: int = int(related['clf_t_sy_sig'].max())
+            sample_noi_size: int = int(related['clf_t_sy_noi'].max())
+            sample_sig_size_val: int = int(related['clf_v_sy_sig'].max())
+            sample_noi_size_val: int = int(related['clf_v_sy_noi'].max())
+
+            take_t_sig: int = int(max(related['clf_t_ge_sig'].max(), size_nf_t_sig))
+            take_t_noi: int = int(max(related['clf_t_ge_noi'].max(), size_nf_t_noi))
+            take_v_sig: int = int(max(related['clf_v_ge_sig'].max(), size_nf_v_sig))
+            take_v_noi: int = int(max(related['clf_v_ge_noi'].max(), size_nf_v_noi))
+
+            # take_t_sig += take_v_sig
+            # take_t_noi += take_v_noi
+
+            nf_bas_file_name: str = self.get_nf_file(size_nf_t_noi=size_nf_t_noi,
+                                                     size_nf_t_sig=size_nf_t_sig,
+                                                     size_nf_v_noi=size_nf_v_noi,
+                                                     size_nf_v_sig=size_nf_v_sig).name
+
             mtp = MAFTrainingProcess(train_dir=train_dir,
                                      learned_distribution_creator=self.learned_distribution_creator,
                                      val_dir=val_dir,
                                      synth_dir=synth_dir,
                                      synth_val_dir=synth_val_dir,
-                                     epochs=self.epochs,
+                                     epochs=10,  # self.epochs,
                                      cache_dir=self.cache_dir,
                                      checkpoint_dir_noise=self.checkpoint_dir_noise,
                                      dl_main=self.initial_dl2,
                                      batch_size=self.batch_size,
-                                     training_size=training_size,
-                                     no_of_generated_samples=sample_size,
-                                     no_of_generated_val_samples=sample_val_size,
+
+                                     size_nf_t_noi=size_nf_t_noi,
+                                     size_nf_t_sig=size_nf_t_sig,
+                                     size_nf_v_noi=size_nf_v_noi,
+                                     size_nf_v_sig=size_nf_v_sig,
+
+                                     gen_sig_samples=sample_sig_size,
+                                     gen_noi_samples=sample_noi_size,
+                                     gen_val_sig_samples=sample_sig_size_val,
+                                     gen_val_noi_samples=sample_noi_size_val,
+
+                                     take_t_sig=take_t_sig,
+                                     take_t_noi=take_t_noi,
+                                     take_v_sig=take_v_sig,
+                                     take_v_noi=take_v_noi,
                                      checkpoint_dir=self.checkpoint_dir,
-                                     base_file_name=base_name,
-                                     conditional=conditional,
+                                     nf_base_file_name=nf_bas_file_name,
+                                     conditional=self.conditional,
                                      conditional_classes=self.dl_training.props.classes,
                                      conditional_one_hot=self.conditional_one_hot,
-                                     val_size=val_size,
-                                     sample_variance_multiplier=self.sample_variance_multiplier)
+                                     # val_size=val_size,
+                                     sample_variance_multiplier=self.sample_variance_multiplier
+                                     )
             mtp.execute()
+        return
+
 
     def __create_classifiers__(self):
         if self.cache_training_plan_file.exists():
@@ -221,19 +263,33 @@ class MixLearnExperiment(MafExperiment):
         for index, row in todo.iterrows():
             print(f"training {index + 1}/{len(todo)} classifiers")
             dataset_size = int(row['dsize'])
+
             history_csv_file = Path(self.cache_dir, self.training_planner.get_classifier_name(row=row, extension='csv'))
             model_base_file = Path(self.cache_dir, self.training_planner.get_classifier_name(row=row))
 
-            ds_training_folder = self.get_nf_file(dataset_size, extension='genuine')
-            ds_val_folder = self.get_nf_file(dataset_size, extension='genuine.val')
-            ds_synth_training_folder = self.get_nf_file(dataset_size, extension='synth')
-            ds_synth_val_folder = self.get_nf_file(dataset_size, extension='synth.val')
+            size_nf_t_noi = int(row['size_nf_t_noi'])
+            size_nf_t_sig = int(row['size_nf_t_sig'])
+            size_nf_v_noi = int(row['size_nf_v_noi'])
+            size_nf_v_sig = int(row['size_nf_v_sig'])
+            ds_training_folder = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi,
+                                                  size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='genuine')
+            ds_val_folder = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi,
+                                             size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='genuine.val')
+            ds_synth_training_folder = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi,
+                                                        size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='synth')
+            ds_synth_val_folder = self.get_nf_file(size_nf_t_sig=size_nf_t_sig, size_nf_t_noi=size_nf_t_noi,
+                                                   size_nf_v_sig=size_nf_v_sig, size_nf_v_noi=size_nf_v_noi, extension='synth.val')
 
-            dl_training_genuine: DL2 = jsonloader.load_json(Path(ds_training_folder, 'dl2.json'))
-            dl_training_synth: DL2 = jsonloader.load_json(Path(ds_synth_training_folder, 'dl2.json'))
-            dl_val_genuine: DL2 = jsonloader.load_json(Path(ds_val_folder, 'dl2.json'))
-            dl_val_synth: DL2 = jsonloader.load_json(Path(ds_synth_val_folder, 'dl2.json'))
-            dl_test: DL2 = jsonloader.load_json(Path(ds_test_folder, 'dl2.json'))
+            # ds_training_folder = self.get_nf_file(dataset_size, extension='genuine')
+            # ds_val_folder = self.get_nf_file(dataset_size, extension='genuine.val')
+            # ds_synth_training_folder = self.get_nf_file(dataset_size, extension='synth')
+            # ds_synth_val_folder = self.get_nf_file(dataset_size, extension='synth.val')
+
+            dl_training_genuine: DL2 = jsonloader.load_json(Path(ds_training_folder, 'dl2.json'), raise_on_404=True)
+            dl_training_synth: DL2 = jsonloader.load_json(Path(ds_synth_training_folder, 'dl2.json'), raise_on_404=True)
+            dl_val_genuine: DL2 = jsonloader.load_json(Path(ds_val_folder, 'dl2.json'), raise_on_404=True)
+            dl_val_synth: DL2 = jsonloader.load_json(Path(ds_synth_val_folder, 'dl2.json'), raise_on_404=True)
+            dl_test: DL2 = jsonloader.load_json(Path(ds_test_folder, 'dl2.json'), raise_on_404=True)
             cp = ClassifierTrainingProcess(dl_training_genuine=dl_training_genuine,
                                            dl_training_synth=dl_training_synth,
                                            dl_val_genuine=dl_val_genuine,
@@ -243,10 +299,20 @@ class MixLearnExperiment(MafExperiment):
                                            history_csv_file=history_csv_file,
                                            conditional_dims=self.conditional_dims,
                                            batch_size=self.batch_size,
-                                           clf_t_g_size=int(row['clf_t_g_size']),
-                                           clf_t_s_size=int(row['clf_t_s_size']),
-                                           clf_v_g_size=int(row['clf_v_g_size']),
-                                           clf_v_s_size=int(row['clf_v_s_size']),
+                                           clf_t_ge_sig=int(row['clf_t_ge_sig']),
+                                           clf_t_ge_noi=int(row['clf_t_ge_noi']),
+                                           clf_t_sy_sig=int(row['clf_t_sy_sig']),
+                                           clf_t_sy_noi=int(row['clf_t_sy_noi']),
+
+                                           clf_v_ge_sig=int(row['clf_v_ge_sig']),
+                                           clf_v_ge_noi=int(row['clf_v_ge_noi']),
+                                           clf_v_sy_sig=int(row['clf_v_sy_sig']),
+                                           clf_v_sy_noi=int(row['clf_v_sy_noi']),
+
+                                           # clf_t_g_size=int(row['clf_t_g_size']),
+                                           # clf_t_s_size=int(row['clf_t_s_size']),
+                                           # clf_v_g_size=int(row['clf_v_g_size']),
+                                           # clf_v_s_size=int(row['clf_v_s_size']),
                                            model_base_file=str(model_base_file))
             results: Dict[str, float] = cp.execute()
             # update plan

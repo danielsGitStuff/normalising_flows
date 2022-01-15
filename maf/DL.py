@@ -95,7 +95,7 @@ class DL2(Ser):
         super().__init__()
         self.amount_of_signals: int = amount_of_signals
         self.amount_of_noise: int = amount_of_noise
-        self.dataset_name: str = dataset_name
+        self.dataset_name: str = dataset_name  # todo obsolete
         self.dir: Path = NotProvided.value_if_not_provided(dir, NotProvided.value_if_provided(dataset_name, lambda name: Path(StaticMethods.cache_dir(), name)))
         self.signal_dir: Path = NotProvided.value_if_provided(dataset_name, lambda name: Path(self.dir, "signal"))
         self.noise_dir: Path = NotProvided.value_if_provided(dataset_name, lambda name: Path(self.dir, "noise"))
@@ -166,6 +166,44 @@ class DL2(Ser):
         jsonloader.to_json(self.props, file=self.props_file, pretty_print=True)
         return test
 
+    def split2(self, test_dir: Path, take_test_sig: int, take_test_noi: int) -> DL2:
+        """BUG: when overwriting the current source directory of a tf.Dataset, the new one will be empty
+        @note this code loads the entire dataset into the memory to work around that bug.
+        """
+        print(f"splitting dataset '{self.dir}'. Split goes to '{test_dir}'")
+        signal = self.signal_source.get_data(self.props.no_of_signals)
+        noise = self.noise_source.get_data(self.props.no_of_noise)
+        signal, _ = cast_dataset_to_tensor(signal)
+        noise, _ = cast_dataset_to_tensor(noise)
+
+        rest_noise: int = self.props.no_of_noise - take_test_noi
+        rest_signals: int = self.props.no_of_signals - take_test_sig
+        test_signals = signal[:take_test_sig]
+        test_noise = noise[:take_test_noi]
+        new_signal = signal[take_test_sig:]
+        new_noise = noise[take_test_noi:]
+        self.props.no_of_signals = rest_signals
+        self.props.no_of_noise = rest_noise
+        self.props.length = rest_noise + rest_signals
+
+        self.amount_of_noise = rest_noise
+        self.amount_of_signals = rest_signals
+        import tensorflow as tf
+        test = DL2(dataset_name='test',
+                   dir=test_dir,
+                   signal_source=DataSource(ds=DS.from_tensor_slices(test_signals)),
+                   noise_source=DataSource(ds=DS.from_tensor_slices(test_noise)),
+                   amount_of_noise=take_test_noi,
+                   amount_of_signals=take_test_sig)
+        test.create_data()
+        shutil.rmtree(self.signal_dir)
+        shutil.rmtree(self.noise_dir)
+        tf.data.experimental.save(DS.from_tensor_slices(new_signal), str(self.signal_dir))
+        tf.data.experimental.save(DS.from_tensor_slices(new_noise), str(self.noise_dir))
+        jsonloader.to_json(self, file=self.js_file, pretty_print=True)
+        jsonloader.to_json(self.props, file=self.props_file, pretty_print=True)
+        return test
+
     def create_data_in_process(self, normalise: bool = False) -> DL2:
         js = jsonloader.to_json(self)
         # print('debug skip pool')
@@ -220,14 +258,14 @@ class DL2(Ser):
         import tensorflow as tf
         ds_signal: DS = tf.data.experimental.load(str(self.signal_dir))
         if len(ds_signal) < amount:
-            ValueError(f"Requested {amount} signal samples, but only got {len(ds_signal)}")
+            raise ValueError(f"Requested {amount} signal samples, but only got {len(ds_signal)}")
         return ds_signal.take(amount)
 
     def get_noise(self, amount: int) -> DS:
         import tensorflow as tf
         ds_noise: DS = tf.data.experimental.load(str(self.noise_dir))
         if len(ds_noise) < amount:
-            ValueError(f"Requested {amount} noise samples, but only got {len(ds_noise)}")
+            raise ValueError(f"Requested {amount} noise samples, but only got {len(ds_noise)}")
         return ds_noise.take(amount)
 
     def get_conditional(self, amount_signal: int = None, amount_noise: int = None) -> DS:
@@ -279,3 +317,9 @@ class DL3(Ser):
             dl2_js = Global.POOL().run_blocking(DL3.execute_static, args=(js,))
             dl2: DL2 = jsonloader.from_json(dl2_js)
         return dl2
+
+
+if __name__ == '__main__':
+    dl = DL2.load('/home/xor/Documents/normalising_flows/.cache/mixlearn_miniboone_default/dl_train/')
+    dl.get_signal(40000)
+    print('ende')
