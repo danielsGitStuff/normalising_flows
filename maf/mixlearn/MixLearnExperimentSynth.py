@@ -47,7 +47,6 @@ class MixLeanExperimentSynth(MixLearnExperiment):
         m.start()
 
     def __init__(self, name: str, dataset_name: str, result_folder: Path, epochs: int, creator: LearnedDistributionCreator, dim: int):
-        Global.set_global('testing_noise', False)
         self.dataset_name: str = dataset_name
         self.dim = dim
         super().__init__(name=name,

@@ -160,7 +160,7 @@ class MixLearnExperiment(MafExperiment):
         self.training_planner = self._create_training_plan().build_plan()
         with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
             print(self.training_planner.plan)
-        sys.exit(5)
+        # sys.exit(5)
         return self
 
     def _create_training_plan(self) -> TrainingPlanner:
@@ -251,7 +251,6 @@ class MixLearnExperiment(MafExperiment):
                                      )
             mtp.execute()
         return
-
 
     def __create_classifiers__(self):
         if self.cache_training_plan_file.exists():

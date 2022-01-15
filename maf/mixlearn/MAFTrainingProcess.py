@@ -136,12 +136,13 @@ class MAFTrainingProcess(Ser):
         one_hot = None
         conditional_dims = 0
         noise_maf: Optional[MaskedAutoregressiveFlow] = None
+        lean_noise: bool = self.gen_noi_samples +self.gen_val_noi_samples > 0
         if self.conditional:
-            one_hot = ClassOneHot(enabled=self.conditional_one_hot, classes=self.conditional_classes, typ='int').init()
+            # one_hot = ClassOneHot(enabled=self.conditional_one_hot, classes=self.conditional_classes, typ='int').init()
             conditional_dims = self.dl_main.conditional_dims
         if MaskedAutoregressiveFlow.can_load_from(self.checkpoint_dir, prefix=self.nf_base_file_name):
             maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.checkpoint_dir, prefix=self.nf_base_file_name)
-            if Global.equals('testing_noise', True) and not self.conditional:
+            if lean_noise and not self.conditional:
                 noise_maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.checkpoint_dir_noise, prefix=self.nf_base_file_name)
         else:
             dl_main_copy_dir = Path(self.cache_dir, 'dl_train')
@@ -188,8 +189,7 @@ class MAFTrainingProcess(Ser):
             else:
                 ds_train = dl_train.get_signal(amount=self.size_nf_t_sig)
                 ds_val = dl_val.get_signal(amount=self.size_nf_v_sig)
-                print(f"DEBUG noise {Global.d['testing_noise']}")
-                if Global.equals('testing_noise', True) and not self.conditional:
+                if lean_noise and not self.conditional:
                     print('fitting noise')
                     ds_train_noise = dl_train.get_noise(amount=self.size_nf_t_noi)
                     ds_val_noise = dl_val.get_noise(amount=self.size_nf_v_noi)
@@ -222,7 +222,7 @@ class MAFTrainingProcess(Ser):
 
         if not DL2.can_load(self.synth_dir):
             print('sampling training data...')
-            if Global.equals('testing_noise', True) and not self.conditional:
+            if lean_noise and not self.conditional:
                 self.sample(maf=maf, synth_folder=self.synth_dir, gen_sig_samples=self.gen_sig_samples, gen_noi_samples=self.gen_noi_samples,
                             noise_source=DataSource(distribution=noise_maf))
             else:
@@ -274,6 +274,6 @@ class MAFTrainingProcess(Ser):
 
     def execute(self):
         js = jsonloader.to_json(self, pretty_print=True)
-        print('debug skip pool')
-        return MAFTrainingProcess.static_execute(js)
-        # Global.POOL().run_blocking(MAFTrainingProcess.static_execute, args=(js,))
+        # print('debug skip pool')
+        # return MAFTrainingProcess.static_execute(js)
+        Global.POOL().run_blocking(MAFTrainingProcess.static_execute, args=(js,))
