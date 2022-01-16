@@ -99,7 +99,7 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
         if self.just_signal_plan:
             return TrainingPlanner(FixedIntParam('done', 0),
                                    LambdaIntParam('tsize', source_params=['dsize'], f=lambda dsize: dsize - self.val_size),  # todo obsolete
-                                   VariableParamInt('dsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10),  # 10
+                                   VariableParamInt('dsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10, is_var=True),  # 10
                                    VariableParamInt('model', range_start=1, range_end=self.classifiers_per_nf, range_steps=self.classifiers_per_nf),
                                    MetricParam('loss'),
                                    MetricParam('accuracy'),
@@ -128,7 +128,7 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
                                    LambdaIntParam('clf_v_sy_sig', source_params=['size_clf_v_sy'], f=lambda vsy: round(signal_ratio * vsy)),
                                    FixedIntParam('clf_v_sy_noi', 0),
 
-                                   VariableParamInt('clfsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10, is_var=True),  # 10
+                                   VariableParamInt('clfsize', range_start=16500, range_end=self.dataset_size_end, range_steps=10),  # 10
                                    LambdaIntParam('size_nf_t_sig', source_params=['dsize'], f=lambda dsize: math.floor(signal_ratio * dsize - self.val_size)),
                                    FixedIntParam('size_nf_v_sig', 1500),  # Genuine Signal Val for MAF
                                    FixedIntParam('size_nf_t_noi', 0),

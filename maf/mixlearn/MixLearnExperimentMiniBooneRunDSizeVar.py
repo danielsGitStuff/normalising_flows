@@ -15,7 +15,7 @@ if __name__ == '__main__':
                          norm_layer=False,
                          use_tanh_made=True)
     results_folder = Path('results_miniboone')
-    experiment = MixLearnExperimentMiniBooneDSizeVar(name='miniboone_just_signal',
+    experiment = MixLearnExperimentMiniBooneDSizeVar(name='miniboone_signal_and_noise',
                                                      learned_distr_creator=creator,
                                                      dataset_name='miniboone',
                                                      result_folder=results_folder,
@@ -23,5 +23,5 @@ if __name__ == '__main__':
                                                      epochs=100,
                                                      batch_size=1000,
                                                      classifiers_per_nf=3,
-                                                     just_signal_plan=True)
+                                                     just_signal_plan=False)
     experiment.create_training_plan().run()
