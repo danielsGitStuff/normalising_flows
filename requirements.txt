@@ -6,5 +6,4 @@ tensorflow-probability
 tensorflow-datasets
 numpy
 seaborn
-plotly
-kaleido
+plotly==5.4.0

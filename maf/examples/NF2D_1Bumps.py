@@ -1,8 +1,11 @@
+from pathlib import Path
+
 from typing import List
 
 import numpy as np
 import tensorflow as tf
 
+from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.LearnedDistribution import EarlyStop
@@ -22,7 +25,7 @@ class NF2D_1Bumps(Foursome2DMafExperiment):
         self.no_samples: int = 8000
         self.no_val_samples: int = 1000
         self.epochs = 50
-        self.vmax = None
+        self.vmax = 'auto'
 
     def create_data_distribution(self) -> Distribution:
         # return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[2 ** 2, 1])])
@@ -67,6 +70,7 @@ class NF2D_1BumpsOlde(MafExperiment):
 
 
 if __name__ == '__main__':
+    Global.set_global('results_dir', Path('results_artificial'))
     NF2D_1Bumps().run()
 
 # code may fail learning

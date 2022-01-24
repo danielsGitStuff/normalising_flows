@@ -8,6 +8,9 @@ class SS1DMafExperiment(MafExperiment):
     def __init__(self):
         super().__init__("SS1DExample")
 
+    def print_divergences(self):
+        pass
+
     def _run(self):
         fig, axs = self.default_fig(1, 2)
         columns_x = ['x', 'p(x)']

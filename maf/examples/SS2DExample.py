@@ -10,6 +10,9 @@ class SS2DMafExperiment(MafExperiment):
     def __init__(self):
         super().__init__("SS2DExample")
 
+    def print_divergences(self):
+        pass
+
     def _run(self):
         no_rows = 2
         no_columns = 2

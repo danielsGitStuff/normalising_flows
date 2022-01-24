@@ -40,7 +40,7 @@ class Foursome2DMafExperiment(MafExperiment):
         self.xmax: float = 4.0
         self.ymin: float = -4.0
         self.ymax: float = 4.0
-        self.vmax: Optional[float] = None
+        self.vmax: Optional[float, str] = None
         self.no_samples: int = 80000
         self.no_val_samples: int = 2000
         self.batch_size: int = 128

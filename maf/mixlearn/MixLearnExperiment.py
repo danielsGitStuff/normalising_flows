@@ -224,7 +224,7 @@ class MixLearnExperiment(MafExperiment):
                                      epochs=10,  # self.epochs,
                                      cache_dir=self.cache_dir,
                                      checkpoint_dir_noise=self.checkpoint_dir_noise,
-                                     dl_main=self.initial_dl2,
+                                     dl_init=self.initial_dl2,
                                      batch_size=self.batch_size,
 
                                      size_nf_t_noi=size_nf_t_noi,

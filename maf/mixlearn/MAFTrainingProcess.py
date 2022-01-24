@@ -37,7 +37,7 @@ class MAFTrainingProcess(Ser):
                  val_dir: Path = NotProvided(),
                  synth_dir: Path = NotProvided(),
                  synth_val_dir: Path = NotProvided(),
-                 dl_main: DL2 = NotProvided(),
+                 dl_init: DL2 = NotProvided(),
                  # training_size: int = NotProvided(),
                  epochs: int = NotProvided(),
                  batch_size: int = NotProvided(),
@@ -93,7 +93,7 @@ class MAFTrainingProcess(Ser):
         self.sample_variance_multiplier: float = sample_variance_multiplier
         self.epochs: int = epochs
         self.batch_size: int = NotProvided.value_if_not_provided(batch_size, None)
-        self.dl_main: DL2 = dl_main
+        self.dl_init: DL2 = dl_init
         self.val_size: int = val_size
 
         # self.training_size: int = training_size
@@ -114,6 +114,7 @@ class MAFTrainingProcess(Ser):
         # self.norm_layer: bool = norm_layer
         # self.use_tanh_made: bool = use_tanh_made
         # self.input_noise_variance: float = input_noise_variance
+        self.dl_main: Optional[DL2] =None
 
     def create_dirs(self):
         def create(d: [Path, NotProvided]):
@@ -139,7 +140,7 @@ class MAFTrainingProcess(Ser):
         lean_noise: bool = self.gen_noi_samples +self.gen_val_noi_samples > 0
         if self.conditional:
             # one_hot = ClassOneHot(enabled=self.conditional_one_hot, classes=self.conditional_classes, typ='int').init()
-            conditional_dims = self.dl_main.conditional_dims
+            conditional_dims = self.dl_init.conditional_dims
         if MaskedAutoregressiveFlow.can_load_from(self.checkpoint_dir, prefix=self.nf_base_file_name):
             maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.checkpoint_dir, prefix=self.nf_base_file_name)
             if lean_noise and not self.conditional:
@@ -148,10 +149,10 @@ class MAFTrainingProcess(Ser):
             dl_main_copy_dir = Path(self.cache_dir, 'dl_train')
             dl_main_test_dir = Path(self.cache_dir, 'dl_test')
             if not dl_main_copy_dir.exists() or not dl_main_test_dir.exists():
-                dl_main = self.dl_main.clone(dl_main_copy_dir)
-                dl_test = dl_main.split(test_dir=dl_main_test_dir, test_split=0.1)
+                self.dl_main = self.dl_init.clone(dl_main_copy_dir)
+                dl_test = self.dl_main.split(test_dir=dl_main_test_dir, test_split=0.1)
             else:
-                dl_main = DL2.load(dl_main_copy_dir)
+                self.dl_main = DL2.load(dl_main_copy_dir)
 
             # If a saved train/test data set exists: use these.
             # Otherwise: load them from data loader, split them, save them and never load them from the data loader anymore.
@@ -168,8 +169,8 @@ class MAFTrainingProcess(Ser):
                                dir=self.train_dir,
                                amount_of_noise=self.take_t_noi + self.take_v_noi,
                                amount_of_signals=self.take_t_sig + self.take_v_sig,
-                               signal_source=dl_main.signal_source.ref(),
-                               noise_source=dl_main.noise_source.ref())
+                               signal_source=self.dl_main.signal_source.ref(),
+                               noise_source=self.dl_main.noise_source.ref())
                 dl_train.create_data()
 
             if DL2.can_load(self.val_dir):
@@ -197,7 +198,7 @@ class MAFTrainingProcess(Ser):
                     #                                      hidden_shape=self.hidden_shape,
                     #                                      norm_layer=self.norm_layer, use_tanh_made=self.use_tanh_made, input_noise_variance=self.input_noise_variance,
                     #                                      conditional_dims=conditional_dims, class_one_hot=one_hot)
-                    noise_maf = self.learned_distribution_creator.create(input_dim=self.dl_main.props.dimensions,
+                    noise_maf = self.learned_distribution_creator.create(input_dim=self.dl_init.props.dimensions,
                                                                          conditional_dims=conditional_dims,
                                                                          conditional_classes=self.conditional_classes)
                     es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=10, restore_best_model=True)
@@ -211,7 +212,7 @@ class MAFTrainingProcess(Ser):
             #                                hidden_shape=self.hidden_shape,
             #                                norm_layer=self.norm_layer, use_tanh_made=self.use_tanh_made, input_noise_variance=self.input_noise_variance,
             #                                conditional_dims=conditional_dims, class_one_hot=one_hot)
-            maf: LearnedDistribution = self.learned_distribution_creator.create(input_dim=self.dl_main.props.dimensions,
+            maf: LearnedDistribution = self.learned_distribution_creator.create(input_dim=self.dl_init.props.dimensions,
                                                                                 conditional_classes=self.conditional_classes,
                                                                                 conditional_dims=conditional_dims)
             maf.fit(dataset=ds_train, epochs=self.epochs, batch_size=self.batch_size, val_xs=ds_val, early_stop=es, shuffle=True)

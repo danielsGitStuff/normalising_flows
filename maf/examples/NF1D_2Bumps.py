@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from typing import List
 
+from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
@@ -24,5 +27,7 @@ class NF1D_2Bumps(Foursome2DMafExperiment):
     def create_data_title(self) -> str:
         return "X ~ N(-2.5; 0.5^2) & N(2.5; 0.5^2)"
 
+
 if __name__ == '__main__':
+    Global.set_global('results_dir', Path('results_artificial'))
     NF1D_2Bumps().run()

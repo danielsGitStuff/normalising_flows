@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from typing import List
 
+from common.globals import Global
 from distributions.Distribution import Distribution
 from maf.VaryingParametersExperiment import Defaults
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
@@ -10,6 +13,7 @@ class NF2D_Row3(Foursome2DMafExperiment):
     def __init__(self):
         super().__init__("NF2D_Row3")
         self.set_minmax_square(10.0)
+        self.vmax = 'auto'
 
     def create_data_distribution(self) -> Distribution:
         return Defaults.create_gauss_3_y(0.0)
@@ -22,4 +26,5 @@ class NF2D_Row3(Foursome2DMafExperiment):
 
 
 if __name__ == '__main__':
+    Global.set_global('results_dir', Path('results_artificial'))
     NF2D_Row3().run()

@@ -1,6 +1,6 @@
 import math
 from pathlib import Path
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Union
 
 from matplotlib.colors import Colormap
 
@@ -23,7 +23,7 @@ class MafExperiment:
         self.heat_map_cmap = None
         self.fig = None
         self.cuts: Optional[List[Tuple[CutThroughData, CutThroughData]]] = None
-        self.denses: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[float]]]] = None
+        self.denses: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
         self.overall_runtime: Runtime = Runtime(f"overall runtime for '{self.name}'").start()
         self.print_3d_for_denses: bool = False
         self.log_scale: bool = False
@@ -56,7 +56,7 @@ class MafExperiment:
         self.cuts.append((maf.heatmap_creator.cut_along_x(x_start=x_start, x_end=x_end, mesh_count=mesh_count, pre_title=pre_title),
                           maf.heatmap_creator.cut_along_y(y_start=y_start, y_end=y_end, mesh_count=mesh_count, pre_title=pre_title)))
 
-    def hm(self, dist: Distribution, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None, vmax: Optional[float] = None,
+    def hm(self, dist: Distribution, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None, vmax: Optional[Union[float, str]] = None,
            columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None):
         if self.denses is None:
             self.denses = []
@@ -77,6 +77,10 @@ class MafExperiment:
             return
         fig, axs = self.default_fig(int(math.ceil(len(self.denses) / 2)), 2)
         for (dp, vmin, vmax), ax in zip(self.denses, axs.flatten()):
+            if vmax == 'auto':
+                vmax = 0
+                for d, _, _ in self.denses:
+                    vmax = max(vmax, d.values.max())
             dp.print_yourself(ax, vmax=vmax, vmin=vmin)
         # remove empty diagram
         if len(axs.shape) == 2 and axs.shape[0] * axs.shape[1] > len(self.denses):
