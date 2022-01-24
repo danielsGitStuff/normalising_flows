@@ -66,7 +66,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           MetricIntParam('fsig'),
 
                                           VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2 * props.length, range_steps=10, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length, range_steps=10, is_var=True),
                                           # VariableParam('clf_ge_sy_ratio', range_start=0.0, range_end=1.0, range_steps=3),
                                           # LambdaIntParam('size_clf_t_ge', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round(r * (clfsize - 1500))),
                                           # LambdaIntParam('size_clf_t_sy', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round((1 - r) * (clfsize - 1500))),

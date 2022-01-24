@@ -15,7 +15,7 @@ if __name__ == '__main__':
                          norm_layer=False,
                          use_tanh_made=True)
     results_folder = Path('results_miniboone')
-    experiment = MixLearnExperimentMiniBooneClfVar(name='miniboone_clfvar2x',
+    experiment = MixLearnExperimentMiniBooneClfVar(name='miniboone_clfvar1x',
                                                      learned_distr_creator=creator,
                                                      dataset_name='miniboone',
                                                      result_folder=results_folder,
