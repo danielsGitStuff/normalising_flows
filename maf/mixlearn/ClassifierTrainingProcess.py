@@ -110,16 +110,8 @@ class ClassifierTrainingProcess(Ser):
         return lm
 
     def run(self) -> Dict[str, float]:
-        # def prepare(genuine: DL2, synth: DL2, clf_g_size: int, clf_s_size: int) -> DS:
-        #     signal_noise_ratio: float = genuine.props.no_of_signals / (genuine.props.no_of_noise + genuine.props.no_of_signals)
-        #     take_genuine_signal = math.ceil(clf_g_size * signal_noise_ratio)
-        #     take_genuine_noise = clf_g_size - take_genuine_signal
-        #     take_synth_signal = math.ceil(clf_s_size * signal_noise_ratio)
-        #     take_synth_noise = clf_s_size - take_synth_signal
-        #
-        #     gen = genuine.get_conditional(amount_signal=take_genuine_signal, amount_noise=take_genuine_noise)
-        #     synth = synth.get_conditional(amount_signal=take_synth_signal, amount_noise=take_synth_noise)
-        #     return gen.take(clf_g_size).concatenate(synth.take(clf_s_size))  # .shuffle(buffer_size=len(genuine), reshuffle_each_iteration=reshuffle)
+        # todo continue training broken
+        # the code depends on an EarlyStop object which is of course non existent when the model was loaded.
 
         def prepare(genuine: DL2, synth: DL2, clf_ge_sig: int, clf_ge_no: int, clf_sy_sig: int, clf_sy_no: int) -> DS:
             gen = genuine.get_conditional(amount_signal=clf_ge_sig, amount_noise=clf_ge_no)
@@ -140,6 +132,7 @@ class ClassifierTrainingProcess(Ser):
                          clf_sy_no=self.clf_v_sy_noi)
 
         epoch = None
+        es = None
         if LazyModel.Methods.model_exists(self.model_base_file) and False:
             lm = LazyModel.Methods.load_from_file(self.model_base_file)
         else:
@@ -147,16 +140,20 @@ class ClassifierTrainingProcess(Ser):
 
             print(
                 f"fitting classifier with {len(ds_train)} samples (clf_t_ge_sig {self.clf_t_ge_sig} clf_t_ge_noi {self.clf_t_ge_noi} clf_t_sy_sig {self.clf_t_sy_sig} clf_t_sy_noi {self.clf_t_sy_noi}) -> '{self.history_csv_file}'")
-
             es = EarlyStopping(monitor='val_loss', patience=15, verbose=0, restore_best_weights=True, mode='min')
-            eta = KerasETA(interval=10, epochs=self.epochs)
-            history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=self.epochs, callbacks=[es, eta],
-                                      shuffle=True)
-            lm.base_file = self.model_base_file
-            lm.save()
-            epoch = self.epochs
-            if es.best_epoch is not None and es.best_epoch != self.epochs:
-                epoch = es.best_epoch
+            if len(ds_train) > 0:
+                eta = KerasETA(interval=10, epochs=self.epochs)
+                history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=self.epochs, callbacks=[es, eta],
+                                          shuffle=True)
+                lm.base_file = self.model_base_file
+                lm.save()
+                epoch = self.epochs
+                if es.best_epoch is not None and es.best_epoch != self.epochs:
+                    epoch = es.best_epoch
+            else:
+                history = lambda : None
+                history.epoch = -1
+                history.history = {'accuracy':[ -1.0], 'loss': [-1.0], 'val_loss':[ -1.0]}
 
         h_d: Dict[str, List[float]] = history.history.copy()
         h_d['epoch'] = history.epoch
@@ -164,7 +161,8 @@ class ClassifierTrainingProcess(Ser):
         # cut off stuff that is beyond es.best_epoch
         columns = list(h_pd.columns)
         vs: np.ndarray = h_pd.values
-        vs = vs[:es.best_epoch + 1]
+        if hasattr(es, 'best_epoch'):
+            vs = vs[:es.best_epoch + 1]
         h_pd: pd.DataFrame = pd.DataFrame(vs, columns=columns)
         h_pd.to_csv(self.history_csv_file)
         del ds_val, ds_train

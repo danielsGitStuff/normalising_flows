@@ -3,6 +3,7 @@ from __future__ import annotations
 import importlib
 import os
 import pathlib
+import sys
 from enum import Enum
 from pydoc import locate
 from typing import Tuple, Callable, Optional, List, Dict, Set, Any, Union
@@ -502,6 +503,7 @@ class LazyModel(Ser):
 
         ds_train = self.prepare_ds(ds_train, conditional_dims=conditional_dims)
         ds_val = self.prepare_ds(ds_val, conditional_dims=conditional_dims)
+
         if shuffle:
             ds_train = ds_train.shuffle(buffer_size=len(ds_train), reshuffle_each_iteration=True)
         if batch_size is None:

@@ -120,6 +120,7 @@ class MixLearnExperiment(MafExperiment):
         self.conditional_dims: int = self.dl_training.conditional_dims
         self.checkpoint_dir: Path = self.create_checkpoint_dir()
         self.checkpoint_dir_noise: Path = self.checkpoint_dir.with_name(f"{self.checkpoint_dir.name}_noise")
+        self.checkpoint_dir_noise.mkdir(exist_ok=True)
         self.prefix: str = self.maf_prefix()
         self.val_split: float = val_split
         # account for the test split that comes later! (1 - test_split)
