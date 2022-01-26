@@ -1,42 +1,13 @@
 from __future__ import annotations
 from pathlib import Path
-from typing import List, Type
+from typing import Type
 
-from keras import Input, Model
-from keras.layers import Dense
-from keras.losses import BinaryCrossentropy
-
-from keta.lazymodel import LazyModel
 from maf.DL import DL2
-from maf.MaskedAutoregressiveFlow import MAFCreator
 from distributions.LearnedDistribution import LearnedDistributionCreator
-from maf.mixlearn.ClassifierTrainingProcess import BinaryClassifierCreator
+from maf.mixlearn.classifiers.Miniboone import MiniBooneBinaryClassifierCreator
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 from maf.mixlearn.MixLearnExperiment import MixLearnExperiment
-from maf.variable.TrainingPlanner import TrainingPlanner
-from maf.variable.VariableParam import FixedParam, LambdaParams, VariableParam, VariableParamInt, MetricParam
-
-
-class MiniBooneBinaryClassifierCreator(BinaryClassifierCreator):
-    def __init__(self):
-        super().__init__()
-
-    def create_classifier(self, input_dims: int) -> LazyModel:
-        ins = Input(shape=(input_dims,))
-        b = Dense(512, activation='relu')(ins)
-        # b = Dropout()
-        b = Dense(512, activation='relu')(b)
-        b = Dense(1, activation='sigmoid')(b)
-        # b = Dense(100, activation='relu', name='DenseRELU0')(ins)
-        # b = Dense(100, activation='relu')(b)
-        # b = BatchNormalization()(b)
-        # b = Dense(100, activation='relu')(b)
-        # b = Dense(1, activation='linear', name='out')(b)
-        model = Model(inputs=[ins], outputs=[b])
-        lm = LazyModel.Methods.wrap(model)
-        lm.compile(optimizer='adam', loss=BinaryCrossentropy(), lr=0.001, metrics=['accuracy'])
-        return lm
 
 
 class MixLearnExperimentMiniBoone(MixLearnExperiment):

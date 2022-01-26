@@ -4,11 +4,25 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+from common.NotProvided import NotProvided
 from common.util import Runtime
 from distributions.Distribution import Distribution
 
 
 class StaticMethods:
+
+    @staticmethod
+    def norm(d: np.ndarray, mean: Optional[np.ndarray] = NotProvided(), std: Optional[np.ndarray] = NotProvided()) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        # remove conditional column
+        pre: np.ndarray = d[:, 0]
+        rest: np.ndarray = d[:, 1:]
+        mean = NotProvided.value_if_not_provided(mean, rest.mean(axis=0))
+        std = NotProvided.value_if_not_provided(std, rest.std(axis=0))
+        normalised = (rest - mean) / std
+        # reattach conditional column
+        normalised = np.concatenate([pre.reshape(pre.shape[0], 1), normalised], axis=1)
+        return normalised, mean, std
 
     @staticmethod
     def cache_dir() -> Path:

@@ -89,16 +89,7 @@ class MinibooneDL3(DL3):
         self.props.no_of_columns = data.shape[1]
         jsonloader.to_json(self.props, file=self.props_file, pretty_print=True)
 
-        def norm(d: np.ndarray, mean: Optional[np.ndarray] = NotProvided(), std: Optional[np.ndarray] = NotProvided()) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-            # remove conditional column
-            pre: np.ndarray = d[:, 0]
-            rest: np.ndarray = d[:, 1:]
-            mean = NotProvided.value_if_not_provided(mean, rest.mean(axis=0))
-            std = NotProvided.value_if_not_provided(std, rest.std(axis=0))
-            normalised = (rest - mean) / std
-            # reattach conditional column
-            normalised = np.concatenate([pre.reshape(pre.shape[0], 1), normalised], axis=1)
-            return normalised, mean, std
+
 
         if self.paper_load:
             """ from: https://github.com/gpapamak/maf/blob/master/datasets/miniboone.py
@@ -152,7 +143,7 @@ class MinibooneDL3(DL3):
             # split
             data: np.ndarray = np.concatenate([signals, noise], axis=0)
             # normalise
-            normalised, mean, std = norm(data)
+            normalised, mean, std = StaticMethods.norm(data)
             normalised_signal = normalised[:len(signals), 1:]
             normalised_noise = normalised[len(signals):, 1:]
             normalised_signal = DS.from_tensor_slices(normalised_signal)

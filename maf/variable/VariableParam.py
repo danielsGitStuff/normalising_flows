@@ -53,8 +53,8 @@ class MetricIntParam(MetricParam):
 
 
 class VariableParam(Param):
-    def __init__(self, name: str, range_start: float, range_end: float, range_steps: int, is_var: bool = False):
-        super().__init__(name, is_var=is_var)
+    def __init__(self, name: str, range_start: float, range_end: float, range_steps: int, is_var: bool = False, converter: Converter = float):
+        super().__init__(name, is_var=is_var, converter=converter)
         self.range_start: float = range_start
         self.range_end: float = range_end
         self.range_steps: int = range_steps
@@ -65,7 +65,7 @@ class VariableParam(Param):
 
 class VariableParamInt(VariableParam):
     def __init__(self, name: str, range_start: int, range_end: int, range_steps: int, is_var: bool = False):
-        super().__init__(name, range_start, range_end, range_steps, is_var=is_var)
+        super().__init__(name, range_start, range_end, range_steps, is_var=is_var, converter=int)
 
     def get_range(self) -> np.ndarray:
         return np.floor(np.linspace(self.range_start, self.range_end, self.range_steps, dtype=np.int32))

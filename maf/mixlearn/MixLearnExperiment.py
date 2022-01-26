@@ -61,6 +61,7 @@ class DatasetFetcher:
 class MixLearnExperiment(MafExperiment):
 
     def _run(self):
+        print('MixLearnExperiment.run() is not implemented', file=sys.stderr)
         pass
 
     def __init__(self, name: str,
@@ -162,6 +163,7 @@ class MixLearnExperiment(MafExperiment):
         with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
             print(self.training_planner.plan)
         # sys.exit(5)
+        self.training_planner.plan.to_csv(self.cache_training_plan_file, index=False)
         return self
 
     def _create_training_plan(self) -> TrainingPlanner:

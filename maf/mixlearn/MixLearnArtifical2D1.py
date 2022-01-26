@@ -1,50 +1,65 @@
-import math
 from pathlib import Path
 
+import math
 from typing import Type
 
 from distributions.LearnedDistribution import LearnedDistributionCreator
 from maf.DL import DL2
 from maf.DS import DatasetProps
-from maf.mixlearn.MixLearnExperimentMiniBoone import MixLearnExperimentMiniBoone
-from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
+from maf.mixlearn.ClassifierTrainingProcess import BinaryClassifierCreator
+from maf.mixlearn.MixLearnExperiment import MixLearnExperiment
+from maf.mixlearn.classifiers.Arttificial2D1 import Artificial2D1ClassifierCreator
+from maf.mixlearn.dl3.ArtificialDL3 import ArtificialIntersection2DDL3
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.variable.TrainingPlanner import TrainingPlanner
-from maf.variable.VariableParam import FixedParam, LambdaParams, VariableParamInt, MetricParam, MetricIntParam, LambdaParam, FixedIntParam, LambdaIntParam, VariableParam
+from maf.variable.VariableParam import VariableParamInt, MetricParam, MetricIntParam, FixedIntParam, LambdaIntParam
 
 
-class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
+class ArtificalMixLearnExperiment(MixLearnExperiment):
+    def __init__(self, name: str, learned_distribution_creator: LearnedDistributionCreator, classifier_creator: BinaryClassifierCreator, result_folder: Path, epochs: int,
+                 classifiers_per_nf: int, batch_size: int):
+        super().__init__(name,
+                         learned_distribution_creator=learned_distribution_creator,
+                         classifier_creator=classifier_creator,
+                         result_folder=result_folder,
+                         epochs=epochs,
+                         batch_size=batch_size)
+        self.classifiers_per_nf = classifiers_per_nf  # todo move to super class
+
+    def _run(self):
+        self.start()
+
+    def print_divergences(self):
+        pass
+
+
+class MixLearnArtificial2D1(ArtificalMixLearnExperiment):
     def __init__(self, name: str,
-                 learned_distr_creator: LearnedDistributionCreator,
-                 dataset_name: str,
+                 learned_distribution_creator: LearnedDistributionCreator,
                  result_folder: Path,
                  epochs: int,
                  batch_size: int = 128,
-                 paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
                  test_split: float = 0.1,
                  classifiers_per_nf: int = 3,
                  just_signal_plan: bool = False):
         super().__init__(
+            classifier_creator=Artificial2D1ClassifierCreator(),
+            learned_distribution_creator=learned_distribution_creator,
             classifiers_per_nf=classifiers_per_nf,
             name=name,
-            learned_distr_creator=learned_distr_creator,
-            dataset_name=dataset_name,
             result_folder=result_folder,
             epochs=epochs,
-            batch_size=batch_size,
-            paper_load=paper_load,
-            experiment_init_ds_class=experiment_init_ds_class,
-            test_split=test_split)
+            batch_size=batch_size)
         self.just_signal_plan: bool = just_signal_plan
 
     def create_checkpoint_dir(self) -> Path:
-        checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
+        checkpoints_dir = Path(self.cache_dir, f"{self.name}_checkpoints")
         checkpoints_dir.mkdir(exist_ok=True)
         return checkpoints_dir
 
     def create_data_loader(self, norm_data: bool) -> DL2:
-        dl3 = MinibooneDL3(dataset_name=self.dataset_name)
+        dl3 = ArtificialIntersection2DDL3()
         return dl3.execute()
 
     def _create_training_plan(self):
@@ -65,8 +80,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           MetricIntParam('tsig'),
                                           MetricIntParam('fsig'),
 
-                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2*props.length, range_steps=10, is_var=True),
+                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=3, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2 * props.length, range_steps=3, is_var=True),
                                           # VariableParam('clf_ge_sy_ratio', range_start=0.0, range_end=1.0, range_steps=3),
                                           # LambdaIntParam('size_clf_t_ge', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round(r * (clfsize - 1500))),
                                           # LambdaIntParam('size_clf_t_sy', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round((1 - r) * (clfsize - 1500))),

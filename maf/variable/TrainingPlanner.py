@@ -28,6 +28,7 @@ class TrainingPlanner:
         self._metric_params: List[MetricParam] = [p for p in params if isinstance(p, (MetricParam, MetricIntParam))]
         self._lambda_params: List[LambdaParam] = [p for p in params if isinstance(p, LambdaParam)]
         self._varying_params: List[Param] = [p for p in params if p.is_var]
+        self._param_dict: Dict[str, Param] = {p.name: p for p in params}
         self.plan: Optional[pd.DataFrame] = None
         self.metrics: List[str] = [p.name for p in self._metric_params]
         self.label_map: Dict[str, str] = {}
@@ -139,6 +140,12 @@ class TrainingPlanner:
         plt.rc('legend', fontsize=small)
         plt.rc('figure', titlesize=big)
         plt.rc('lines', linewidth=3)
+
+        def format_2_str(number:Any) -> str:
+            if isinstance(number, float):
+                return "{:.2f}".format(number)
+            return str(number)
+
         fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=19, h=16)
         fig.suptitle(f"Results for {models_per_config} classifiers")
         if not isinstance(axs, np.ndarray):
@@ -156,13 +163,15 @@ class TrainingPlanner:
             sns.heatmap(data=pivoted, annot=True, fmt='.2f', ax=ax, square=True, )
             ax.xaxis.set_major_formatter(ticker.EngFormatter(places=3))
             # ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{}".format(x)))
+            x_param: Param = self._param_dict[group_by[0]]
+            y_param: Param = self._param_dict[group_by[1]]
             ys: List[float] = list(pivoted.index)
             ax.set_yticks(list(range(len(ys))))
-            ax.set_yticklabels(["{:.2f}".format(y) for y in ys])
+            ax.set_yticklabels([format_2_str(y_param.cast(y)) for y in ys])
 
             xs: List[float] = list(pivoted.columns)
             ax.set_xticks(list(range(len(xs))))
-            ax.set_xticklabels(["{:.2f}".format(x) for x in xs])
+            ax.set_xticklabels([format_2_str(x_param.cast(x)) for x in xs])
             # ax.set_xlabel(self.label_map.get(group_by[0], group_by[0]))
             # ax.set_ylabel(self.label_map.get(group_by[1], group_by[1]))
 
