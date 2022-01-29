@@ -11,7 +11,7 @@ from common.NotProvided import NotProvided
 from distributions.base import enable_memory_growth
 from maf.DS import DataLoader
 from maf.mixlearn.MixLearnExperiment import MixLearnExperiment, DatasetFetcher
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 import tensorflow as tf
 
 

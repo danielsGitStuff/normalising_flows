@@ -13,7 +13,7 @@ from distributions.base import enable_memory_growth
 from distributions.kl.KL import KullbackLeiblerDivergence
 from keta.lazymodel import LazyModel
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.MafExperiment import MafExperiment
+from maf.stuff.MafExperiment import MafExperiment
 import pandas as pd
 
 

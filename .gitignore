@@ -1,8 +1,8 @@
 /pyinstall/
 /venv/
-/maf/examples/results/
-/maf/examples/cut/
-/maf/examples/.cache/
+/maf/visual_examples/results/
+/maf/visual_examples/cut/
+/maf/visual_examples/.cache/
 /maf/mixlearn/.cache/
 /maf/mixlearn/results/
 .pytest_cache

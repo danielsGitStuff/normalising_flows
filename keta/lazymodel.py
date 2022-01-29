@@ -241,7 +241,7 @@ class LazyCustomObject(Ser):
         else:
             self.object = object
             self.klass = LazyField.Methods.class_path(object)
-            if hasattr(object,'name'):
+            if hasattr(object, 'name'):
                 self.name = object.name
             # print(f"in goes {self.klass}")
 
@@ -437,7 +437,7 @@ class LazyModel(Ser):
     def eager(self, compile: bool = True):
         self.eager_load()
         if compile:
-            self.compile()
+            self.compile(optimizer=self.optimizer.create(), loss=self.losses.create(), metrics=self.metrics.create(), lr=self.lr.create())
 
     def eager_load(self):
         if not self.model:
@@ -464,6 +464,8 @@ class LazyModel(Ser):
                 if type(layer) == Normalization:
                     layer: Normalization = layer
                     layer.set_weights(layer.get_weights())
+            # self.compile(optimizer=self.optimizer,lr=self.lr,loss=self.losses,metrics=self.metrics)
+            self.compile(optimizer=self.optimizer.create(), lr=self.lr.create(), loss=losses, metrics=metrics)
 
     def fit_generator(self, gen: Sequence, val_gen: Sequence = None, batch_size=None, epochs=None, verbose=0, callbacks: Optional[Dict[str, List[Callable]]] = None) -> History:
         cbs: Dict[str, Callback] = {out: callbacks[out] for out in self.outputs}
@@ -482,6 +484,7 @@ class LazyModel(Ser):
         return ds
 
     def predict_data_set(self, ds: DS, conditional_dims: int, batch_size: Optional[int] = NotProvided()):
+        self.eager(compile=True)
         ds = self.prepare_ds(ds, conditional_dims=conditional_dims)
         batch_size = NotProvided.value_if_not_provided(batch_size, len(ds))
         ds = ds.batch(batch_size=batch_size)
@@ -489,10 +492,13 @@ class LazyModel(Ser):
         return ps
 
     def evaluate_data_set(self, ds: DS, conditional_dims: int, batch_size: Optional[int] = NotProvided()) -> Tuple[List[float], List[str]]:
+        self.eager(compile=True)
         ds = self.prepare_ds(ds, conditional_dims=conditional_dims)
         batch_size = NotProvided.value_if_not_provided(batch_size, len(ds))
         ds = ds.batch(batch_size=batch_size)
         ps = self.model.evaluate(x=ds)
+        if not isinstance(ps, List):
+            ps = [ps]
         return ps, self.model.metrics_names
 
     def fit_data_set(self, ds_train: DS, conditional_dims: int, ds_val: DSOpt = None, batch_size=None, epochs: int = None, verbose=0,
@@ -517,7 +523,7 @@ class LazyModel(Ser):
             callbacks: Optional[List[Callable]] = None,
             validation_data: Optional[Tuple[ndarray, ndarray]] = None, validation_split=0.0, shuffle: bool = True,
             sample_weights: ndarray = None) -> History:
-        self.eager_load()
+        self.eager(compile=True)
         if validation_data and len(validation_data[0]) == 0:
             validation_data = None
         if isinstance(xs, tf.data.Dataset):

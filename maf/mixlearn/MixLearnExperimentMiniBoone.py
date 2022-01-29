@@ -2,7 +2,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Type
 
-from maf.DL import DL2
+from maf.DL import DL2, DL3
 from distributions.LearnedDistribution import LearnedDistributionCreator
 from maf.mixlearn.classifiers.Miniboone import MiniBooneBinaryClassifierCreator
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
@@ -48,9 +48,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
         checkpoints_dir.mkdir(exist_ok=True)
         return checkpoints_dir
 
-    def create_data_loader(self, norm_data: bool) -> DL2:
-        dl3 = MinibooneDL3(dataset_name=self.dataset_name)
-        return dl3.execute()
+    def create_dl3(self) -> DL3:
+        return MinibooneDL3(dataset_name=self.dataset_name)
 
     def _run(self):
         self.start()

@@ -11,7 +11,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from pandas import Series
 
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 from maf.variable.DependencyChecker import Dependency, DependencyChecker
 from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam, Param, MetricIntParam
 import matplotlib.ticker as ticker

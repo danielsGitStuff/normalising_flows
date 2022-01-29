@@ -14,8 +14,8 @@ from distributions.LearnedTransformedDistribution import LearnedTransformedDistr
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import cast_to_ndarray
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.MafExperiment import MafExperiment
-from maf.examples.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.stuff.MafExperiment import MafExperiment
+from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 
 
 class NF2D_4Rect(Foursome2DMafExperiment):

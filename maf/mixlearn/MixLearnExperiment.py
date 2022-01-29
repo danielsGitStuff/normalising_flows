@@ -7,6 +7,8 @@ import sys
 import math
 import os
 import shutil
+
+from common.globals import Global
 from keta.argparseer import ArgParser
 from pathlib import Path
 from typing import Optional, List, Dict, Type
@@ -17,9 +19,9 @@ import requests
 from common import jsonloader
 from common.NotProvided import NotProvided
 from maf.DS import DatasetProps
-from maf.DL import DL2
-from maf.examples.stuff.MafExperiment import MafExperiment
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.DL import DL2, DL3
+from maf.stuff.MafExperiment import MafExperiment
+from maf.stuff.StaticMethods import StaticMethods
 from maf.mixlearn.ClassifierTrainingProcess import ClassifierTrainingProcess, BinaryClassifierCreator
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.MAFTrainingProcess import MAFTrainingProcess
@@ -63,6 +65,9 @@ class MixLearnExperiment(MafExperiment):
     def _run(self):
         print('MixLearnExperiment.run() is not implemented', file=sys.stderr)
         pass
+
+    def create_dl3(self) -> DL3:
+        raise NotImplementedError()
 
     def __init__(self, name: str,
                  learned_distribution_creator: LearnedDistributionCreator,
@@ -109,6 +114,7 @@ class MixLearnExperiment(MafExperiment):
         self.epochs: int = epochs
         # self.norm_layer: bool = norm_layer
         self.norm_data: bool = norm_data
+        self.initial_dl3: DL3 = self.create_dl3()
         self.initial_dl2: DL2 = self.create_data_loader(norm_data)
         self.initial_dl2 = self.initial_dl2.create_data_in_process(normalise=norm_data)
         self.init_process: DSInitProcess = self.experiment_init_ds_class(dl_cache_dir=self.initial_dl2.dir, experiment_cache_dir=self.cache_dir, test_split=self.test_split)
@@ -163,7 +169,8 @@ class MixLearnExperiment(MafExperiment):
         with pd.option_context('display.max_rows', None, 'display.max_columns', None, 'display.expand_frame_repr', False):  # more options can be specified also
             print(self.training_planner.plan)
         # sys.exit(5)
-        self.training_planner.plan.to_csv(self.cache_training_plan_file, index=False)
+        if not self.cache_training_plan_file.exists():
+            self.training_planner.plan.to_csv(self.cache_training_plan_file, index=False)
         return self
 
     def _create_training_plan(self) -> TrainingPlanner:
@@ -333,7 +340,12 @@ class MixLearnExperiment(MafExperiment):
         self.training_planner.print_confusion_matrices(self.result_confusion_matrices)
 
     def create_data_loader(self, norm_data: bool) -> DL2:
-        raise NotImplementedError()
+        dl3 = self.create_dl3()
+        js = dl3.to_json()
+        dl2_js: str = Global.POOL().run_blocking(DL3.execute_static, args=(js,))
+        # dl2_js: str = DL3.execute_static(js)
+        return jsonloader.from_json(dl2_js)
+        # return dl3.execute()
 
     def create_checkpoint_dir(self) -> Path:
         raise NotImplementedError()

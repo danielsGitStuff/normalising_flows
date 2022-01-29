@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from distributions.Distribution import DensityPlotData
 from distributions.GaussianMultivariate import GaussianMultivariate
-from maf.examples.stuff.MafExperiment import MafExperiment
-from maf.examples.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
+from maf.stuff.MafExperiment import MafExperiment
+from maf.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
 
 
 class SS2DMafExperiment(MafExperiment):

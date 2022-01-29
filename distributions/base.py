@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 
 from common.globals import Global
-from typing import Union, Optional, Tuple, Dict, List
+from typing import Union, Optional, Tuple, Dict, List, Callable
 import numpy as np
 import tensorflow as tf
 from tensorflow import Tensor
@@ -53,7 +53,27 @@ class BaseMethods:
             return True
         return False
 
-        # helper methods
+    @staticmethod
+    def random_covariance_matrix(n: int, sample_f: Callable[[], float], dtype=np.float32) -> np.ndarray:
+        m = np.zeros((n, n), dtype=dtype)
+        for i in range(n):
+            j = 0
+            for j in range(n):
+                if j > i:
+                    break
+                cov = sample_f()
+                if i == j:
+                    cov = np.abs(cov)
+                m[i, j] = cov
+                m[j, i] = cov
+        # print(m)
+        return m
+
+    @staticmethod
+    def un_nan(t: Tensor, replacement=0.0) -> Tensor:
+        nans = tf.math.is_nan(t)
+        t = tf.where(tf.logical_not(nans), t, replacement)
+        return t
 
 
 def set_gpu():

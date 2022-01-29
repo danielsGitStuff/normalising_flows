@@ -6,7 +6,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 
 
 class NF1D_1Bumps(Foursome2DMafExperiment):

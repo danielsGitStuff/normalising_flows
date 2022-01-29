@@ -10,8 +10,8 @@ from distributions.LearnedTransformedDistribution import LearnedTransformedDistr
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.MafExperiment import MafExperiment
-from maf.examples.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.stuff.MafExperiment import MafExperiment
+from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 
 
 class U_NF2D_2Bumps(Foursome2DMafExperiment):

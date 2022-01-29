@@ -10,7 +10,7 @@ from common import jsonloader
 from common.NotProvided import NotProvided
 from maf.DS import DatasetProps, DS
 from maf.DL import DL3, DL2, DataSource
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 from maf.mixlearn.MixLearnExperiment import DatasetFetcher
 
 

@@ -1,7 +1,7 @@
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
-from maf.examples.stuff.MafExperiment import MafExperiment
+from maf.stuff.MafExperiment import MafExperiment
 
 
 class ShowCase1D1(MafExperiment):

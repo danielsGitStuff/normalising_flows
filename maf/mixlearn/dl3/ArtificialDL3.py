@@ -4,11 +4,12 @@ from pathlib import Path
 import numpy as np
 from typing import Optional, List
 
+from distributions.Distribution import Distribution
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from maf.DL import DL3, DL2, DataSource
 from maf.DS import DS
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 
 
 class ArtificialDL3(DL3, ABC):
@@ -18,31 +19,33 @@ class ArtificialDL3(DL3, ABC):
         self.snr: float = 0.5
         self.signal_dir: Path = Path(self.dl_folder, 'signal')
         self.noise_dir: Path = Path(self.dl_folder, 'noise')
+        self.signal_distribution: Distribution = None
+        self.noise_distribution: Distribution = None
 
 
 class ArtificialIntersection2DDL3(ArtificialDL3):
     def __init__(self):
         super().__init__(dl_folder=Path(StaticMethods.cache_dir(), 'artificial_intersection_2d_1'))
-        self.signal_distr: MultimodalDistribution = MultimodalDistribution(input_dim=2, distributions=[
-            UniformMultivariate(input_dim=2, lows=[-1, -1], highs=[3, 3]),
-            UniformMultivariate(input_dim=2, lows=[-1, 4], highs=[0, 5])
+        self.signal_distribution: MultimodalDistribution = MultimodalDistribution(input_dim=2, distributions=[
+            UniformMultivariate(input_dim=2, lows=[-1, -1], highs=[1, 1]),
+            UniformMultivariate(input_dim=2, lows=[-1, 2], highs=[0, 3])
         ])
-        self.noise_distr: MultimodalDistribution = MultimodalDistribution(input_dim=2, distributions=[
-            UniformMultivariate(input_dim=2, lows=[1, 1], highs=[-3, -3]),
-            UniformMultivariate(input_dim=2, lows=[1, -4], highs=[2, -5])
+        self.noise_distribution: MultimodalDistribution = MultimodalDistribution(input_dim=2, distributions=[
+            UniformMultivariate(input_dim=2, lows=[-2, -2], highs=[0, 0]),
+            UniformMultivariate(input_dim=2, lows=[2, -3], highs=[3, -2])
         ])
 
     def fetch_impl(self):
-        if DL2.can_load(self.signal_dir) and DL2.can_load(self.noise_dir):
+        if DL2.can_load(self.dl_folder):
             return
         no_sig: int = round(self.size * self.snr)
         no_noi: int = self.size - no_sig
-        signal = self.signal_distr.sample(size=no_sig)
-        noise = self.noise_distr.sample(size=no_noi)
+        signal = self.signal_distribution.sample(size=no_sig)
+        noise = self.noise_distribution.sample(size=no_noi)
         data = np.concatenate([signal, noise])
         normalised, mean, std = StaticMethods.norm(data)
-        normalised_signal = normalised[:len(signal), 1:]
-        normalised_noise = normalised[len(signal):, 1:]
+        normalised_signal = normalised[:len(signal), :]
+        normalised_noise = normalised[len(signal):, :]
         normalised_signal = DS.from_tensor_slices(normalised_signal)
         normalised_noise = DS.from_tensor_slices(normalised_noise)
         dl = DL2(dataset_name=self.dl_folder.name,

@@ -4,6 +4,9 @@ import math
 import os
 import sys
 from pathlib import Path
+
+import pandas as pd
+from tabulate import tabulate
 from typing import List, Union, Optional, Dict, Any
 
 import numpy as np
@@ -15,7 +18,8 @@ from tensorflow import Tensor
 from tensorflow.python.data import Dataset
 from tensorflow_probability.python import distributions as tfd
 from tensorflow_probability.python.distributions import Distribution as TD
-from tensorflow_probability.python.bijectors import Bijector
+from tensorflow_probability.python.bijectors import Bijector, AutoregressiveNetwork
+from tensorflow_probability.python.bijectors import MaskedAutoregressiveFlow as TFMAF
 
 from common import jsonloader
 from common.util import Runtime
@@ -25,10 +29,10 @@ from maf.CustomMade import CustomMade
 from maf.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
 from maf.SaveSettings import SaveSettings
-from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs
+from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs, BaseMethods
 from distributions.Distribution import DensityPlotData, HeatmapCreator, CutThroughData
 from distributions.LearnedDistribution import LearnedConfig, LearnedDistribution, EarlyStop, LearnedDistributionCreator
-from maf.NoiseNormBijector import NoiseNormBijectorBuilder
+from maf.NoiseNormBijector import NoiseNormBijectorBuilder, NoiseNormBijector
 
 """(large) parts of this code are adapted from https://github.com/LukasRinder/normalizing-flows"""
 
@@ -201,7 +205,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             f"building MAF: dim: {self.input_dim}, layers: {self.layers}, norm_layer: {self.norm_layer}, batch_norm: {self.batch_norm}, tahn_made: {self.use_tanh_made}, activation: {self.activation}")
         self.base_dist = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=self.input_dim, dtype=tf.float32))
         self._build_permutations()
-        bijectors = []
+        bijectors: List[Bijector] = []
         counter = 0
         bijectors.append(self.noise_norm_builder.create())
         event_shape = (self.input_dim,)
@@ -234,6 +238,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         #                                                             bijector=bijector)
         self.transformed_distribution = tfd.TransformedDistribution(distribution=self.base_dist,
                                                                     bijector=bijector)
+
         self.set_training(False)
 
     def adapt(self, dataset: Dataset):
@@ -246,9 +251,28 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             print("adapting done.")
             self.build_transformation()
 
+    def _print_model(self):
+        xx = np.ones((2, self.input_dim), dtype=np.float32)
+        self.transformed_distribution.log_prob(xx)
+        rows = []
+
+        for b in self.transformed_distribution.bijector.bijectors:
+            # type[layer, dist], class, name, nodes, activation
+            if isinstance(b, TFMAF):
+                line = ['Layer', type(b).__name__, b.name, f"hs: {self.hidden_shape}", f"act: {self.activation}"]
+            elif isinstance(b, NoiseNormBijector):
+                line = ['Layer', type(b).__name__, b.name, f"noise: {b.noise_stddev > 0.0}", f"norm: {b.normalise}"]
+            else:
+                line = ['Layer', type(b).__name__, b.name, None, None]
+            rows.append(line)
+        rows.append(['Distr', type(self.base_dist).__name__, self.base_dist.name, None, None])
+        maf_df: pd.DataFrame = pd.DataFrame(rows, columns=['type', 'class', 'name', 'params', 'params'])
+        print(tabulate(maf_df, headers="keys", tablefmt="psql"))
+        # sys.exit(8)
+
     def fit(self, dataset: [DS, DataLoader], epochs: int, batch_size: Optional[int] = None, val_xs: DSOpt = None, val_ys: TDataOpt = None,
             early_stop: Optional[EarlyStop] = None,
-            plot_data_every: Optional[int] = None, lr: float = NotProvided(), val_contains_truth=False, shuffle:bool = False) -> Optional[List[DensityPlotData]]:
+            plot_data_every: Optional[int] = None, lr: float = NotProvided(), val_contains_truth=False, shuffle: bool = False) -> Optional[List[DensityPlotData]]:
         ds_xs: DSOpt = None
         ds_val_xs: DSOpt = None
         ds_val_truth_exp: DSOpt = None
@@ -265,6 +289,8 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             self.transformed_distribution.log_prob(xx)
             self.set_training(False)
             return []
+
+        self._print_model()
         if epochs == -1:
             epochs = 99 * 99  # not infinite but big enough
             if early_stop is None:
@@ -277,8 +303,8 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate_fn)
         plot_data: List[DensityPlotData] = []
         runtime = Runtime("fit")
-        worked = False
-        nan_errors = 0
+        # worked = False
+        # nan_errors = 0
 
         ds_xs = DSMethods.batch(ds_xs, batch_size)
         ds_cond = DSMethods.batch(ds_cond, batch_size)
@@ -287,86 +313,91 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         ds_val_truth_exp = DSMethods.batch(ds_val_truth_exp, batch_size)
 
         print("stating fit...")
+        epoch = 0
+        # while not worked:
+        if early_stop:
+            early_stop = early_stop.new()
+            early_stop.before_training_starts(self)
+        try:
+            for epoch in range(1, epochs + 1):
+                runtime.start()
+                batch_train_losses = []
+                vs = zip(ds_xs, ds_cond) if self.conditional else zip(ds_xs, ds_xs)
+                for xs, cond in vs:
+                    if not self.conditional:
+                        cond = None
+                    bijector_kwargs = self._create_bijector_kwargs(cond, training=True)
+                    train_loss = self.train_density_estimation(xs, bijector_kwargs)
+                    batch_train_losses.append(train_loss)
+                    if tf.math.is_nan(train_loss):
+                        raise NanError(f"had a nan in epoch {epoch}")
+                        # raise NanError()
+                batch_val_losses = []
+                batch_val_kl_divs = []
+                if ds_val_xs is not None:
+                    # there are no Ys
+                    if ds_val_truth_exp is None:
+                        vs = zip(ds_val_xs, ds_val_cond) if self.conditional else zip(ds_val_xs, ds_val_xs)
+                        for xs, cond in vs:
+                            if not self.conditional:
+                                cond = None
+                            val_ps = self.log_prob(xs, cond=cond)
+                            val_loss = -tf.reduce_mean(val_ps)
+                            batch_val_losses.append(val_loss)
+                    else:
+                        # there are Ys. loop over them
+                        vs = zip(ds_val_xs, ds_val_cond, ds_val_truth_exp) if self.conditional else zip(ds_val_xs, ds_val_xs, ds_val_truth_exp)
+                        for d_xs, cond, d_ys_exp in vs:
+                            if not self.conditional:
+                                cond = None
+                            val_ps = self.log_prob(d_xs, cond=cond)
+                            kl_divergence = tf.reduce_sum(d_ys_exp * (d_ys_exp - val_ps))
+                            batch_val_kl_divs.append(kl_divergence)
+                            # self.history.add("kl", kl_divergence)
+                            val_loss = -tf.reduce_mean(val_ps)
+                            batch_val_losses.append(val_loss)
 
-        while not worked:
-            if early_stop:
-                early_stop = early_stop.new()
-                early_stop.before_training_starts(self)
-            try:
-                for i in range(1, epochs + 1):
-                    runtime.start()
-                    batch_train_losses = []
-                    vs = zip(ds_xs, ds_cond) if self.conditional else zip(ds_xs, ds_xs)
-                    for xs, cond in vs:
-                        if not self.conditional:
-                            cond = None
-                        bijector_kwargs = self._create_bijector_kwargs(cond, training=True)
-                        train_loss = self.train_density_estimation(xs, bijector_kwargs)
-                        batch_train_losses.append(train_loss)
-                        if tf.math.is_nan(train_loss):
-                            raise NanError()
-                    batch_val_losses = []
-                    batch_val_kl_divs = []
-                    if ds_val_xs is not None:
-                        # there are no Ys
-                        if ds_val_truth_exp is None:
-                            vs = zip(ds_val_xs, ds_val_cond) if self.conditional else zip(ds_val_xs, ds_val_xs)
-                            for xs, cond in vs:
-                                if not self.conditional:
-                                    cond = None
-                                val_ps = self.log_prob(xs, cond=cond)
-                                val_loss = -tf.reduce_mean(val_ps)
-                                batch_val_losses.append(val_loss)
-                        else:
-                            # there are Ys. loop over them
-                            vs = zip(ds_val_xs, ds_val_cond, ds_val_truth_exp) if self.conditional else zip(ds_val_xs, ds_val_xs, ds_val_truth_exp)
-                            for d_xs, cond, d_ys_exp in vs:
-                                if not self.conditional:
-                                    cond = None
-                                val_ps = self.log_prob(d_xs, cond=cond)
-                                kl_divergence = tf.reduce_sum(d_ys_exp * (d_ys_exp - val_ps))
-                                batch_val_kl_divs.append(kl_divergence)
-                                # self.history.add("kl", kl_divergence)
-                                val_loss = -tf.reduce_mean(val_ps)
-                                batch_val_losses.append(val_loss)
+                train_loss = tf.reduce_mean(batch_train_losses)
+                self.history.add("loss", train_loss)
+                line = f"e {epoch} loss {train_loss} "
+                if ds_val_xs is not None:
+                    val_loss = tf.reduce_mean(batch_val_losses)
+                    self.history.add("val_loss", val_loss)
+                    line += f"val_loss {val_loss} "
 
-                    train_loss = tf.reduce_mean(batch_train_losses)
-                    self.history.add("loss", train_loss)
-                    line = f"e {i} loss {train_loss} "
-                    if ds_val_xs is not None:
-                        val_loss = tf.reduce_mean(batch_val_losses)
-                        self.history.add("val_loss", val_loss)
-                        line += f"val_loss {val_loss} "
+                if len(batch_val_kl_divs) > 0:
+                    kl = tf.reduce_mean(batch_val_kl_divs)
+                    self.history.add("kl", kl)
+                    line += f"kl {kl} "
 
-                    if len(batch_val_kl_divs) > 0:
-                        kl = tf.reduce_mean(batch_val_kl_divs)
-                        self.history.add("kl", kl)
-                        line += f"kl {kl} "
+                if early_stop is not None:
+                    stop = early_stop.on_epoch_end(epoch, self.history)
+                    if stop:
+                        print(f"stopping after {epoch} epochs")
+                        break
 
-                    if early_stop is not None:
-                        stop = early_stop.on_epoch_end(i, self.history)
-                        if stop:
-                            print(f"stopping after {i} epochs")
-                            break
+                runtime.stop()
+                line += f"{runtime.to_string()} "
+                print(line)
+                runtime.reset()
+                if plot_data_every is not None and epoch % plot_data_every == 0:
+                    plot_data.append(self.heatmap_creator.heatmap_2d_data(title=f"after {epoch} epochs"))
 
-                    runtime.stop()
-                    line += f"{runtime.to_string()} "
-                    print(line)
-                    runtime.reset()
-                    if plot_data_every is not None and i % plot_data_every == 0:
-                        plot_data.append(self.heatmap_creator.heatmap_2d_data(title=f"after {i} epochs"))
+        except NanError as e:
+            print(f"error: {e}")
+            if epoch < 2:
+                raise e
 
-                worked = True
-                if early_stop:
-                    early_stop.after_training_ends()
+        if early_stop:
+            early_stop.after_training_ends()
 
-            except NanError:
-                print("got NaN. restarting...", file=sys.stderr)
-                nan_errors += 1
-                self.create_base_distribution()
-                self.set_training(False)
-                if nan_errors == 10:
-                    raise NanError
+            # except NanError:
+            #     print("got NaN. restarting...", file=sys.stderr)
+            #     nan_errors += 1
+            #     self.create_base_distribution()
+            #     self.set_training(False)
+            #     if nan_errors == 10:
+            #         raise NanError()
         self.set_training(False)
         if plot_data_every is not None:
             return plot_data
@@ -383,7 +414,11 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         """
         with tf.GradientTape() as tape:
             tape.watch(self.transformed_distribution.trainable_variables)
-            loss = -tf.reduce_mean(self.transformed_distribution.log_prob(xs, bijector_kwargs=bijector_kwargs))  # negative log likelihood
+            ps = self.transformed_distribution.log_prob(xs, bijector_kwargs=bijector_kwargs)
+            # ps = BaseMethods.un_nan(ps, replacement=tf.float32.min)
+            # if tf.reduce_any(tf.math.is_nan(ps)):
+            #     print('nan')
+            loss = -tf.reduce_mean(ps)  # negative log likelihood
             # loss = -distribution.log_prob(batch)
             gradients = tape.gradient(loss, self.transformed_distribution.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.transformed_distribution.trainable_variables))
@@ -419,12 +454,14 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         xs, cond = self.extract_xs_cond(xs, cond)
         bijector_kwargs = self._create_bijector_kwargs(cond)
         probs: Tensor = self.transformed_distribution.prob(xs, bijector_kwargs=bijector_kwargs)
+        probs = BaseMethods.un_nan(probs)
         return self.cast_2_likelihood(input_tensor=xs, result=probs)
 
     def _log_likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
         xs, cond = self.extract_xs_cond(xs, cond)
         bijector_kwargs = self._create_bijector_kwargs(cond)
         probs: Tensor = self.transformed_distribution.log_prob(xs, bijector_kwargs=bijector_kwargs)
+        probs = BaseMethods.un_nan(probs, replacement=tf.float32.min)
         return self.cast_2_likelihood(result=probs, input_tensor=xs)
 
     def calculate_us(self, xs: TTensor, cond: TTensorOpt = None) -> tf.Tensor:

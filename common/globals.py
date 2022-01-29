@@ -120,6 +120,26 @@ class Global:
     def get_noise_decline_stop() -> int:
         return Global.d["noise_decline_stop"]
 
+    @staticmethod
+    def set_seed(seed_value: int):
+        for _ in range(1):
+            print(f"FIXING SEED TO {seed_value}", file=sys.stderr)
+        # 1. Set `PYTHONHASHSEED` environment variable at a fixed value
+        # import os
+        # os.environ['PYTHONHASHSEED'] = str(seed_value)
+
+        # 2. Set `python` built-in pseudo-random generator at a fixed value
+        import random
+        random.seed(seed_value)
+
+        # 3. Set `numpy` pseudo-random generator at a fixed value
+        import numpy as np
+        np.random.seed(seed_value)
+
+        # 4. Set the `tensorflow` pseudo-random generator at a fixed value
+        import tensorflow as tf
+        tf.random.set_seed(seed_value)
+
 
 Global.d = {"global_max": 1, "gen_xs_dtype": np.float, "width_teams": 5, "width_time": 4, "noise_decline_start": 100, "noise_decline_stop": 180, "computation_pool_size": 8}
 Global.Testing.d = {}

@@ -6,7 +6,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from maf.VaryingParametersExperiment import Defaults
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 
 
 class NF2D_Row4(Foursome2DMafExperiment):

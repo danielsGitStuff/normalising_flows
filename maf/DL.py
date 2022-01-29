@@ -13,7 +13,7 @@ from common.jsonloader import Ser
 from distributions.Distribution import Distribution
 from distributions.base import TTensor, cast_dataset_to_tensor, TTensorOpt, cast_to_ndarray
 from maf.DS import DataLoader, DatasetProps, DS, DSOpt
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 
 
 class DataSource(Ser):

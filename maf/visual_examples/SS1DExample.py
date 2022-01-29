@@ -1,7 +1,7 @@
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
-from maf.examples.stuff.MafExperiment import MafExperiment
-from maf.examples.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
+from maf.stuff.MafExperiment import MafExperiment
+from maf.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
 
 
 class SS1DMafExperiment(MafExperiment):

@@ -133,8 +133,13 @@ class ClassifierTrainingProcess(Ser):
 
         epoch = None
         es = None
-        if LazyModel.Methods.model_exists(self.model_base_file) and False:
+        loaded = False
+        self.epochs = 10
+        if LazyModel.Methods.model_exists(self.model_base_file):
             lm = LazyModel.Methods.load_from_file(self.model_base_file)
+            loaded = True
+            h_pd: pd.DataFrame = pd.read_csv(self.history_csv_file, index_col=False)
+            epoch = int(h_pd['epoch'].max())
         else:
             lm = self.create_classifier()
 
@@ -145,27 +150,28 @@ class ClassifierTrainingProcess(Ser):
                 eta = KerasETA(interval=10, epochs=self.epochs)
                 history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=self.epochs, callbacks=[es, eta],
                                           shuffle=True)
-                lm.base_file = self.model_base_file
-                lm.save()
                 epoch = self.epochs
                 if es.best_epoch is not None and es.best_epoch != self.epochs:
                     epoch = es.best_epoch
             else:
-                history = lambda : None
+                history = lambda: None
                 history.epoch = -1
-                history.history = {'accuracy':[ -1.0], 'loss': [-1.0], 'val_loss':[ -1.0]}
+                history.history = {'accuracy': [-1.0], 'loss': [-1.0], 'val_loss': [-1.0]}
+            lm.base_file = self.model_base_file
+            lm.save()
+        if not loaded:
+            h_d: Dict[str, List[float]] = history.history.copy()
+            h_d['epoch'] = history.epoch
+            h_pd: pd.DataFrame = pd.DataFrame.from_dict(h_d)
+            # cut off stuff that is beyond es.best_epoch
+            columns = list(h_pd.columns)
+            vs: np.ndarray = h_pd.values
+            if hasattr(es, 'best_epoch'):
+                vs = vs[:es.best_epoch + 1]
+            h_pd: pd.DataFrame = pd.DataFrame(vs, columns=columns)
+            h_pd.to_csv(self.history_csv_file)
+            del ds_val, ds_train
 
-        h_d: Dict[str, List[float]] = history.history.copy()
-        h_d['epoch'] = history.epoch
-        h_pd: pd.DataFrame = pd.DataFrame.from_dict(h_d)
-        # cut off stuff that is beyond es.best_epoch
-        columns = list(h_pd.columns)
-        vs: np.ndarray = h_pd.values
-        if hasattr(es, 'best_epoch'):
-            vs = vs[:es.best_epoch + 1]
-        h_pd: pd.DataFrame = pd.DataFrame(vs, columns=columns)
-        h_pd.to_csv(self.history_csv_file)
-        del ds_val, ds_train
         ds_test = self.dl_test.get_conditional()
         # ds_test = tf.data.experimental.load(str(self.ds_test_folder))
         vs, ms = lm.evaluate_data_set(ds_test, conditional_dims=self.conditional_dims)

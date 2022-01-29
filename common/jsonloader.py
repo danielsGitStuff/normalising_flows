@@ -25,7 +25,7 @@ class Ser(ABC):
         self.m__ = self.__class__.__module__
         if self.m__ == '__main__':
             raise RuntimeError(
-                f"class '{self.k__}' was instantiated in your '__main__' module. T This way it can only be deserialised in this very module again. Whatever '__main__' refers to right now. It is impossible to find the correct absolute module name for now.")
+                f"class '{self.k__}' was instantiated in your '__main__' module. This way it can only be deserialised in this very module (whatever '__main__' refers to right now) again. It is impossible to find the correct absolute module name for now.")
         self.dates: Set[str] = set()
         self.datetimes: Set[str] = set()
         self.ignored: Set[str] = {"ignored", "dates", "datetimes", "ser_deserialize_lazy", "ser_deserialize_lazy_z"}

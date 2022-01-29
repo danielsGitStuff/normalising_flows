@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Type
 
 from distributions.LearnedDistribution import LearnedDistributionCreator
-from maf.DL import DL2
+from maf.DL import DL2, DL3
 from maf.DS import DatasetProps
 from maf.mixlearn.MixLearnExperimentMiniBoone import MixLearnExperimentMiniBoone
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
@@ -43,10 +43,6 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
         checkpoints_dir.mkdir(exist_ok=True)
         return checkpoints_dir
 
-    def create_data_loader(self, norm_data: bool) -> DL2:
-        dl3 = MinibooneDL3(dataset_name=self.dataset_name)
-        return dl3.execute()
-
     def _create_training_plan(self):
         props: DatasetProps = self.dl_training.props
         test_props: DatasetProps = self.dl_test.props
@@ -66,7 +62,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           MetricIntParam('fsig'),
 
                                           VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2*props.length, range_steps=10, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
                                           # VariableParam('clf_ge_sy_ratio', range_start=0.0, range_end=1.0, range_steps=3),
                                           # LambdaIntParam('size_clf_t_ge', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round(r * (clfsize - 1500))),
                                           # LambdaIntParam('size_clf_t_sy', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round((1 - r) * (clfsize - 1500))),

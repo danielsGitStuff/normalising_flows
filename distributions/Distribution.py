@@ -115,7 +115,8 @@ class Distribution(Ser):
         if self.tfd_distribution is None:
             self.create_base_distribution()
         if batch_size is None:
-            return self._sample(size=size, cond=cond)
+            samples = self._sample(size=size, cond=cond)
+            return self.cast_2_float_ndarray(samples)
         results = []
         if cond is None:
             rest = size

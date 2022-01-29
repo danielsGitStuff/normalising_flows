@@ -25,7 +25,7 @@ from maf.ClassOneHot import ClassOneHot
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.DS import DS, DataLoader
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 
 
 class MnistLoader(DataLoader):

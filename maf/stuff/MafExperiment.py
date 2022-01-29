@@ -9,7 +9,7 @@ from common.util import Runtime
 from common.NotProvided import NotProvided
 from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.examples.stuff.StaticMethods import StaticMethods
+from maf.stuff.StaticMethods import StaticMethods
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -76,15 +76,18 @@ class MafExperiment:
         if self.denses is None:
             return
         fig, axs = self.default_fig(int(math.ceil(len(self.denses) / 2)), 2)
+        for ax in axs.flatten():
+            ax.set_axis_off()
         for (dp, vmin, vmax), ax in zip(self.denses, axs.flatten()):
+            ax.set_axis_on()
             if vmax == 'auto':
                 vmax = 0
                 for d, _, _ in self.denses:
                     vmax = max(vmax, d.values.max())
             dp.print_yourself(ax, vmax=vmax, vmin=vmin)
         # remove empty diagram
-        if len(axs.shape) == 2 and axs.shape[0] * axs.shape[1] > len(self.denses):
-            axs[-1][-1].set_axis_off()
+        # if len(axs.shape) == 2 and axs.shape[0] * axs.shape[1] > len(self.denses):
+        #     axs[-1][-1].set_axis_off()
         self.save_fig(name=name)
         if self.print_3d_for_denses and not Global.Testing.has('kaleido_missing_hack'):
             for dp, vmin, vmax in self.denses[1:]:

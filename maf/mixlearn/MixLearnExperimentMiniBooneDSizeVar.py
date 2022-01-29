@@ -43,10 +43,6 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
         checkpoints_dir.mkdir(exist_ok=True)
         return checkpoints_dir
 
-    def create_data_loader(self, norm_data: bool) -> DL2:
-        dl3 = MinibooneDL3(dataset_name=self.dataset_name)
-        return dl3.execute()
-
     def _create_training_plan(self):
         props: DatasetProps = self.dl_training.props
         test_props: DatasetProps = self.dl_test.props

@@ -1,19 +1,36 @@
+import sys
 from pathlib import Path
 
 import math
 from typing import Type
 
+from common import jsonloader
+from common.globals import Global
+from common.jsonloader import Ser
 from distributions.LearnedDistribution import LearnedDistributionCreator
-from maf.DL import DL2
+from maf.DL import DL2, DL3
 from maf.DS import DatasetProps
 from maf.mixlearn.ClassifierTrainingProcess import BinaryClassifierCreator
 from maf.mixlearn.MixLearnExperiment import MixLearnExperiment
 from maf.mixlearn.classifiers.Arttificial2D1 import Artificial2D1ClassifierCreator
-from maf.mixlearn.dl3.ArtificialDL3 import ArtificialIntersection2DDL3
+from maf.mixlearn.dl3.ArtificialDL3 import ArtificialIntersection2DDL3, ArtificialDL3
 from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.variable.TrainingPlanner import TrainingPlanner
 from maf.variable.VariableParam import VariableParamInt, MetricParam, MetricIntParam, FixedIntParam, LambdaIntParam
 
+
+class ArtificialPrinter(Ser):
+    @staticmethod
+    def static_execute(js: str):
+        p: ArtificialPrinter = jsonloader.from_json(js)
+        p._run()
+
+    def execute(self):
+        js = jsonloader.to_json(self)
+        Global.POOL().run_blocking(ArtificialPrinter.static_execute, js)
+
+    def _run(self):
+        print('running')
 
 class ArtificalMixLearnExperiment(MixLearnExperiment):
     def __init__(self, name: str, learned_distribution_creator: LearnedDistributionCreator, classifier_creator: BinaryClassifierCreator, result_folder: Path, epochs: int,
@@ -31,6 +48,14 @@ class ArtificalMixLearnExperiment(MixLearnExperiment):
 
     def print_divergences(self):
         pass
+
+    def start(self):
+        # print dataset here if possible
+        self._print_dataset()
+        sys.exit(6)
+        super(ArtificalMixLearnExperiment, self).start()
+
+
 
 
 class MixLearnArtificial2D1(ArtificalMixLearnExperiment):
@@ -58,9 +83,8 @@ class MixLearnArtificial2D1(ArtificalMixLearnExperiment):
         checkpoints_dir.mkdir(exist_ok=True)
         return checkpoints_dir
 
-    def create_data_loader(self, norm_data: bool) -> DL2:
-        dl3 = ArtificialIntersection2DDL3()
-        return dl3.execute()
+    def create_dl3(self) -> DL3:
+        return ArtificialIntersection2DDL3()
 
     def _create_training_plan(self):
         props: DatasetProps = self.dl_training.props
@@ -80,8 +104,8 @@ class MixLearnArtificial2D1(ArtificalMixLearnExperiment):
                                           MetricIntParam('tsig'),
                                           MetricIntParam('fsig'),
 
-                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=3, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2 * props.length, range_steps=3, is_var=True),
+                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=2, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=2 * props.length, range_steps=2, is_var=True),
                                           # VariableParam('clf_ge_sy_ratio', range_start=0.0, range_end=1.0, range_steps=3),
                                           # LambdaIntParam('size_clf_t_ge', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round(r * (clfsize - 1500))),
                                           # LambdaIntParam('size_clf_t_sy', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round((1 - r) * (clfsize - 1500))),
