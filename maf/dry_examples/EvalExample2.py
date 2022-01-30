@@ -70,7 +70,7 @@ class EvalExample2(DivergenceExperiment):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[100, 100], norm_layer=True, use_tanh_made=True, batch_norm=False) for
-                layers in [3, 21, 100]]
+                layers in [21, 100]]
 
     def create_data_title(self) -> str:
         return 'testi!!!'
