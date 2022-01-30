@@ -9,7 +9,7 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
-from distributions.base import enable_memory_growth
+from distributions.base import enable_memory_growth, set_gpu
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from keta.argparseer import ArgParser
@@ -83,6 +83,7 @@ class EvalExample2(DivergenceExperiment):
 
 if __name__ == '__main__':
     ArgParser.parse()
+    set_gpu()
     enable_memory_growth()
     Global.set_seed(67)
     Global.set_global('results_dir', Path('results_artificial'))
