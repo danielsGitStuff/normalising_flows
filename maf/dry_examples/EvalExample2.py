@@ -9,6 +9,7 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
+from distributions.base import enable_memory_growth
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
@@ -26,8 +27,8 @@ class EvalExample2(DivergenceExperiment):
         self.mesh_count = 500
         self.divergence_half_width = 4.0
         self.divergence_step_size = 0.1
-        self.no_samples = 80000
-        self.no_val_samples = 8000
+        self.no_samples = 8000
+        self.no_val_samples = 1000
         self.xmin = -6
         self.xmax = 6
         self.ymin = -6
@@ -39,12 +40,13 @@ class EvalExample2(DivergenceExperiment):
             UniformMultivariate(input_dim=2, lows=[-1, 2], highs=[0, 3])
         ])
         DIM: int = 2
-        O = .5
+        O = 3
         R = 3
         H_MIN = 0.6
         d = WeightedMultimodalMultivariate(input_dim=DIM)
-        for i in range(2):
+        for i in range(7):
             weight = np.random.random() + 3
+            # weight = 1.0
             src_offsets = np.random.uniform(-O, O, DIM)
             src_lows = np.random.uniform(-R, R, DIM)
             src_highs = np.random.uniform(-R, R, DIM)
@@ -67,8 +69,8 @@ class EvalExample2(DivergenceExperiment):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[10, 10], norm_layer=True, use_tanh_made=False, batch_norm=True) for
-                layers in [1, 3, 5]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[100, 100], norm_layer=True, use_tanh_made=True, batch_norm=False) for
+                layers in [3, 21, 100]]
 
     def create_data_title(self) -> str:
         return 'testi!!!'
@@ -78,9 +80,8 @@ class EvalExample2(DivergenceExperiment):
         super(EvalExample2, self)._run()
 
 
-
-
 if __name__ == '__main__':
-    Global.set_seed(5)
+    enable_memory_growth()
+    Global.set_seed(67)
     Global.set_global('results_dir', Path('results_artificial'))
     EvalExample2().run()

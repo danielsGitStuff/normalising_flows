@@ -30,6 +30,8 @@ class DivergenceExperiment(MafExperiment):
         self.vmax: Optional[float, str] = None
         self.no_samples: int = 80000
         self.no_val_samples: int = 2000
+        self.mesh_count: int = 1000
+        self.meh_count_cut: int = 200
         self.batch_size: int = 128
         self.epochs: int = 200
         r = Runtime("creating MAFs").start()
@@ -54,7 +56,7 @@ class DivergenceExperiment(MafExperiment):
             suffix = f"_{suffix}"
         if self.data_distribution.input_dim == 2:
             # plt.scatter(xs[:, 0], xs[:, 1])
-            plt.figure(figsize=(10,10))
+            plt.figure(figsize=(10, 10))
             sns.scatterplot(x=xs[:, 0], y=xs[:, 1])
             plt.ylim(self.ymin, self.ymax)
             plt.xlim(self.xmin, self.xmax)
@@ -77,6 +79,9 @@ class DivergenceExperiment(MafExperiment):
 
         ds: DS = DS.from_tensor_slices(xs)
         val_ds: DS = DS.from_tensor_slices(val_xs)
+        if self.data_distribution.input_dim < 3:
+            self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax,
+                    mesh_count=self.mesh_count)
         mafs = []
         for i, maf in enumerate(self.mafs):
             prefix = self.maf_prefix(maf.layers)
@@ -87,9 +92,13 @@ class DivergenceExperiment(MafExperiment):
                 maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es)
                 maf.save(self.cache_dir, prefix=prefix)
             mafs.append(maf)
-            title = f"MAF {maf.layers}L"
-            print(f"heatmap for '{title}'")
-            print(f"cut for '{title}'")
+            if self.data_distribution.input_dim < 3:
+                title = f"MAF {maf.layers}L"
+                print(f"heatmap for '{title}'")
+                self.hm(dist=maf, title=title, xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax, mesh_count=self.mesh_count,
+                        true_distribution=self.data_distribution)
+                print(f"cut for '{title}'")
+                self.cut(maf, x_start=self.xmin, x_end=self.xmax, y_start=self.ymin, y_end=self.ymax, mesh_count=self.meh_count_cut, pre_title=title)
         self.mafs = mafs
         # add 3d
         # dp, _ = self.denses[-1]
