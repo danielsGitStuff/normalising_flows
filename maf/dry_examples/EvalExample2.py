@@ -12,6 +12,7 @@ from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMulti
 from distributions.base import enable_memory_growth
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.DivergenceExperiment import DivergenceExperiment
 from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
@@ -70,7 +71,7 @@ class EvalExample2(DivergenceExperiment):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[100, 100], norm_layer=True, use_tanh_made=True, batch_norm=False) for
-                layers in [21, 100]]
+                layers in [100]]
 
     def create_data_title(self) -> str:
         return 'testi!!!'
@@ -81,6 +82,7 @@ class EvalExample2(DivergenceExperiment):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     enable_memory_growth()
     Global.set_seed(67)
     Global.set_global('results_dir', Path('results_artificial'))
