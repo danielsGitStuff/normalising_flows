@@ -9,6 +9,7 @@ from distributions.base import TTensor, TTensorOpt, cast_to_ndarray
 
 
 class MultimodalDistribution(Distribution):
+    # todo merge with WeightedMultimodalMultivariate
     """Glues together multiple Distributions of the same dimension an makes them behave like one."""
 
     def _create_base_distribution(self) -> Optional[TD]:

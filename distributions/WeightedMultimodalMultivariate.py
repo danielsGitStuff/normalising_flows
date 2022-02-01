@@ -5,10 +5,12 @@ import numpy as np
 from common.NotProvided import NotProvided
 from distributions.Distribution import Distribution, TfpD
 from distributions.UniformMultivariate import UniformMultivariate
-from distributions.base import TTensor, TTensorOpt
+from distributions.base import TTensor, TTensorOpt, BaseMethods
+import tensorflow as tf
 
 
 class WeightedMultimodalMultivariate(Distribution):
+    # todo merge with MultimodalDistribution
     def __init__(self, input_dim: int = NotProvided(), conditional_dims: int = 0):
         super().__init__(input_dim=input_dim, conditional_dims=conditional_dims)
         self._distributions: List[Distribution] = []
@@ -26,20 +28,20 @@ class WeightedMultimodalMultivariate(Distribution):
         return None
 
     def _log_likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
-        weights = self.normalised_distribution_weights()
+        weights = np.log(self.normalised_distribution_weights())
         ll_sum = None
         for weight, d in zip(weights, self._distributions):
             ls = d.log_likelihoods(xs=xs, cond=cond) + weight
             if ll_sum is None:
                 ll_sum = ls
             else:
-                ll_sum += ls
+                ll_sum = np.logaddexp(ll_sum, ls)
         return self.cast_2_likelihood(input_tensor=xs, result=ll_sum)
 
     def _sample(self, size: int = 1, cond: TTensorOpt = None, **kwargs) -> np.ndarray:
         weights = self.normalised_distribution_weights()
         vss = []
-        distribution_idx = np.random.choice([i for i, _ in enumerate(self._distributions)], size,p=weights)
+        distribution_idx = np.random.choice([i for i, _ in enumerate(self._distributions)], size, p=weights)
         distribution_idx, counts = np.unique(distribution_idx, return_counts=True)
         for distribution_index, count in zip(distribution_idx, counts):
             distribution = self._distributions[distribution_index]
@@ -47,7 +49,6 @@ class WeightedMultimodalMultivariate(Distribution):
             vss.append(vs)
         vss = np.concatenate(vss)
         return self.cast_2_float_ndarray(vss)
-
 
     def _likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
         weights = self.normalised_distribution_weights()

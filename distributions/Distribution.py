@@ -114,6 +114,7 @@ class Distribution(Ser):
         to call_fn."""
         if self.tfd_distribution is None:
             self.create_base_distribution()
+        self.check_condition(cond=cond)
         if batch_size is None:
             samples = self._sample(size=size, cond=cond)
             return self.cast_2_float_ndarray(samples)

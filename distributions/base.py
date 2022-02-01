@@ -2,14 +2,15 @@ from __future__ import annotations
 
 import sys
 
+import math
+
 from common.globals import Global
 from typing import Union, Optional, Tuple, Dict, List, Callable
 import numpy as np
-import tensorflow as tf
 from tensorflow import Tensor
 from tensorflow.python.data import Dataset
 from tensorflow.python.framework.ops import EagerTensor
-
+import tensorflow as tf
 # types
 from tensorflow.python.ops.gen_dataset_ops import BatchDataset
 
@@ -22,6 +23,17 @@ TDataOpt = Optional[TData]
 
 
 class BaseMethods:
+    @staticmethod
+    def filter_log_space_neg_inf(log_p: TTensor, log_q: TTensor) -> Tuple[Tensor, Tensor]:
+        # this filters out zero probabilities in log space
+        # if not done, a zero prob might lead to infinite values, positive and negative, in log space or zero divisions in normal space
+        mask_p = tf.equal(log_p, -math.inf)
+        mask_q = tf.equal(log_q, - math.inf)
+        mask = tf.logical_not(tf.logical_or(mask_q, mask_p))
+        log_p = tf.boolean_mask(log_p, mask)
+        log_q = tf.boolean_mask(log_q, mask)
+        return log_p, log_q
+
     @staticmethod
     def extract_xs_cond(xs: Union[TTensor, Tuple[Tensor, Tensor]], cond: TTensorOpt = None) -> Tuple[Tensor, Optional[Tensor]]:
         if isinstance(xs, Tuple) and cond is not None:

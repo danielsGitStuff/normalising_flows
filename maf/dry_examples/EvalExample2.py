@@ -27,13 +27,14 @@ class EvalExample2(DivergenceExperiment):
         super().__init__('Eval2')
         self.mesh_count = 500
         self.divergence_half_width = 4.0
-        self.divergence_step_size = 0.1
+        self.divergence_step_size = 0.8
         self.no_samples = 8000
-        self.no_val_samples = 1000
+        self.no_val_samples = 1500
         self.xmin = -6
         self.xmax = 6
         self.ymin = -6
         self.ymax = 6
+        self.epochs = 2000
 
     def create_data_distribution(self) -> Distribution:
         d = MultimodalDistribution(input_dim=2, distributions=[
@@ -71,7 +72,7 @@ class EvalExample2(DivergenceExperiment):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[100, 100], norm_layer=True, use_tanh_made=True, batch_norm=False) for
-                layers in [100]]
+                layers in [1, 3, 5]]
 
     def create_data_title(self) -> str:
         return 'testi!!!'

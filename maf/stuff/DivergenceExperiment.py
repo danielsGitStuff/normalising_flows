@@ -32,7 +32,7 @@ class DivergenceExperiment(MafExperiment):
         self.no_val_samples: int = 2000
         self.mesh_count: int = 1000
         self.meh_count_cut: int = 200
-        self.batch_size: int = 128
+        self.batch_size: int = 1024
         self.epochs: int = 200
         r = Runtime("creating MAFs").start()
         self.mafs: List[MaskedAutoregressiveFlow] = self.create_mafs()
@@ -116,8 +116,8 @@ class DivergenceExperiment(MafExperiment):
         for maf in self.mafs:
             j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
-            jsd = j.calculate()
-            kld = k.calculate()
+            jsd = j.calculate_sample_distribution(10000)
+            kld = k.calculate_sample_distribution(10000)
             row = [maf.layers, kld, jsd]
             values.append(row)
         values = np.array(values, dtype=np.float32)

@@ -10,15 +10,16 @@ from distributions.base import BaseMethods
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
+from maf.stuff.DivergenceExperiment import DivergenceExperiment
 from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 from maf.stuff.MafExperiment import MafExperiment
 from typing import List
 
 
-class EvalExample3(Foursome2DMafExperiment):
+class EvalExample3(DivergenceExperiment):
 
     def __init__(self):
-        self.input_dimensions: int = 2
+        self.input_dimensions: int = 5
         super().__init__('Eval3')
         self.mesh_count = 100
         self.divergence_half_width = 4.0

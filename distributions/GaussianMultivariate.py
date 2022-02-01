@@ -18,8 +18,7 @@ class GaussianMultivariate(Distribution):
         assert len(self.mus) == len(self.cov_matrix) == self.input_dim
         return MultivariateNormalDiag(loc=self.mus, scale_diag=np.sqrt(self.cov_matrix).astype(np.float32), )
 
-    def _sample(self, size: int = 1, cond: TTensorOpt = None) -> np.ndarray:
-        self.check_condition(cond)
+    def _sample(self, size: int = 1, cond: TTensorOpt = None, **kwargs) -> np.ndarray:
         samples = self.tfd_distribution.sample(size)
         return cast_to_ndarray(samples)
 
