@@ -155,12 +155,15 @@ class ConditionalLearnedDistribution(LearnedDistribution, ABC):
 
 class FitHistory:
     def __init__(self):
-        self._d: Dict[str, List[float]] = {}
+        self._d: Dict[str, List[Optional[float]]] = {}
 
-    def add(self, key: str, value: Union[Tensor, float]):
+    def add(self, key: str, value: Optional[Union[Tensor, float]]):
         if key not in self._d:
             self._d[key] = []
-        self._d[key].append(float(value))
+        if value is not None:
+            self._d[key].append(float(value))
+        else:
+            self._d[key].append(None)
 
     def to_dict(self) -> Dict[str, List[float]]:
         return self._d

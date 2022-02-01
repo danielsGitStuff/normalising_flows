@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pandas as pd
 from typing import Union, Optional
 
 import tensorflow as tf
@@ -47,9 +48,15 @@ class LearnedTransformedDistribution(LearnedDistribution):
         os.makedirs(folder, exist_ok=True)
         complete_prefix = str(Path(folder, prefix))
         json_file = f"{complete_prefix}.model.json"
-        self.to_json(json_file, pretty_print=True)
+        # tf checkpoint
         check = tf.train.Checkpoint(model=self.transformed_distribution)
         check.write(file_prefix=complete_prefix)
+        # history
+        if self.history is not None:
+            history: pd.DataFrame = pd.DataFrame(self.history.to_dict())
+            history.to_csv(f"{complete_prefix}.history.csv", index=False)
+        # config
+        self.to_json(json_file, pretty_print=True)
 
     def calculate_us(self, xs: TTensor, cond: TTensorOpt = None) -> tf.Tensor:
         xs, cond = self.extract_xs_cond(xs, cond)

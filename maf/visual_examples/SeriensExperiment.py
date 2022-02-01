@@ -64,7 +64,7 @@ class KLExperiment(MafExperiment):
             maf = self.create_maf(dim=dim, layers=layers)
             maf.fit(dataset=distribution.sample(samples), epochs=30, batch_size=10)
             kld = KullbackLeiblerDivergence(p=distribution, q=maf, half_width=self.plan.kl_half_width, step_size=self.plan.kl_step_size, batch_size=self.plan.kl_batch_size)
-            kl = kld.calculate_sample_space()
+            kl = kld.calculate_by_sampling_space()
             # kl_tf = maf.transformed_distribution.kl_divergence(distribution.tfd_distribution)
             # kl_tf = distribution.tfd_distribution.kl_divergence(maf.transformed_distribution)
             # print(f"{samples} samples -> {kl_tf} kl_tf")

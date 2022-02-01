@@ -25,6 +25,7 @@ from common import jsonloader
 from common.util import Runtime
 from common.NotProvided import NotProvided
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
+from distributions.kl.DivergenceMetric import DivergenceMetric
 from maf.CustomMade import CustomMade
 from maf.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
@@ -270,9 +271,18 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         print(tabulate(maf_df, headers="keys", tablefmt="psql"))
         # sys.exit(8)
 
-    def fit(self, dataset: [DS, DataLoader], epochs: int, batch_size: Optional[int] = None, val_xs: DSOpt = None, val_ys: TDataOpt = None,
+    def fit(self, dataset: [DS, DataLoader],
+            epochs: int,
+            batch_size: Optional[int] = None,
+            val_xs: DSOpt = None,
+            val_ys: TDataOpt = None,
             early_stop: Optional[EarlyStop] = None,
-            plot_data_every: Optional[int] = None, lr: float = NotProvided(), val_contains_truth=False, shuffle: bool = False) -> Optional[List[DensityPlotData]]:
+            plot_data_every: Optional[int] = None,
+            lr: float = NotProvided(),
+            val_contains_truth=False,
+            shuffle: bool = False,
+            divergence_metric: Optional[DivergenceMetric] = None
+            ) -> Optional[List[DensityPlotData]]:
         ds_xs: DSOpt = None
         ds_val_xs: DSOpt = None
         ds_val_truth_exp: DSOpt = None
@@ -333,7 +343,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                         raise NanError(f"had a nan in epoch {epoch}")
                         # raise NanError()
                 batch_val_losses = []
-                batch_val_kl_divs = []
+                # batch_val_kl_divs = []
                 if ds_val_xs is not None:
                     # there are no Ys
                     if ds_val_truth_exp is None:
@@ -351,8 +361,8 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                             if not self.conditional:
                                 cond = None
                             val_ps = self.log_prob(d_xs, cond=cond)
-                            kl_divergence = tf.reduce_sum(d_ys_exp * (d_ys_exp - val_ps))
-                            batch_val_kl_divs.append(kl_divergence)
+                            # kl_divergence = tf.reduce_sum(d_ys_exp * (d_ys_exp - val_ps))
+                            # batch_val_kl_divs.append(kl_divergence)
                             # self.history.add("kl", kl_divergence)
                             val_loss = -tf.reduce_mean(val_ps)
                             batch_val_losses.append(val_loss)
@@ -365,10 +375,15 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                     self.history.add("val_loss", val_loss)
                     line += f"val_loss {val_loss} "
 
-                if len(batch_val_kl_divs) > 0:
-                    kl = tf.reduce_mean(batch_val_kl_divs)
-                    self.history.add("kl", kl)
-                    line += f"kl {kl} "
+                if divergence_metric is not None:
+                    divergence_metric.calculate(self.history, epoch)
+
+                self.history.add('epoch', epoch)
+
+                # if len(batch_val_kl_divs) > 0:
+                #     kl = tf.reduce_mean(batch_val_kl_divs)
+                #     self.history.add("kl", kl)
+                #     line += f"kl {kl} "
 
                 if early_stop is not None:
                     stop = early_stop.on_epoch_end(epoch, self.history)
