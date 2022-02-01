@@ -20,7 +20,7 @@ class EvalExample2(DivergenceExperiment):
         self.mesh_count = 500
         self.divergence_half_width = 4.0
         self.divergence_step_size = 0.8
-        self.no_samples = 8000
+        self.no_samples = 24000
         self.no_val_samples = 1500
         self.xmin = -7
         self.xmax = 7
