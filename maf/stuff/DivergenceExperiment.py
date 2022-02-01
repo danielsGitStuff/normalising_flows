@@ -80,7 +80,6 @@ class DivergenceExperiment(MafExperiment):
         val_xs: np.ndarray = self.data_distribution.sample(self.no_val_samples)
         self._print_dataset(xs=xs, suffix="xs")
         self._print_dataset(xs=val_xs, suffix="xs_val")
-
         ds: DS = DS.from_tensor_slices(xs)
         val_ds: DS = DS.from_tensor_slices(val_xs)
         if self.data_distribution.input_dim < 3:
@@ -90,7 +89,7 @@ class DivergenceExperiment(MafExperiment):
         ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size)).batch(self.batch_size)
         log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(ds_samples)).batch(self.batch_size)
         for i, maf in enumerate(self.mafs):
-            prefix = self.maf_prefix(maf.layers)
+            prefix = self.maf_prefix(f"l{maf.layers}.{i}")
             if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=prefix):
                 maf: MaskedAutoregressiveFlow = LearnedTransformedDistribution.load(self.cache_dir, prefix=prefix)
             else:

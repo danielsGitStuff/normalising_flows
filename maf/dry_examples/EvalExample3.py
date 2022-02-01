@@ -31,9 +31,9 @@ class EvalExample3(DivergenceExperiment):
         self.xmax = 10
         self.ymin = -10
         self.ymax = 10
-        self.epochs = 2000
+        self.epochs = 5000
         self.use_early_stop = True
-        self.patiences = [50, 50, 50]
+        self.patiences = [100, 100, 100]
 
     def create_data_distribution(self) -> Distribution:
         sample_f = lambda: np.random.normal(scale=2.0)
@@ -66,7 +66,7 @@ class EvalExample3(DivergenceExperiment):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers
-                in [3, 5]]
+                in [10]]
 
     def create_data_title(self) -> str:
         return f"7 Gaussians"
