@@ -11,6 +11,8 @@ python_url='https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz'
 python_md5='a2da2a456c078db131734ff62de10ed5'
 target_root="$(pwd)/pyinstall"
 
+cpu_cores=$(nproc --all)
+
 # check if there is something to do
 if [ -d "$target_root" ]; then
   echo "python binary dir '$target_root' already exists. skipping build..."
@@ -43,7 +45,7 @@ fi
 # build that thing
 cd $python_src_dir || exit
 ./configure --enable-optimizations -prefix="$target_root"
-make
+make -j "$cpu_cores"
 make install
 
 # clean up
