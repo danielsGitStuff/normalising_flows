@@ -39,6 +39,7 @@ class DivergenceExperiment(MafExperiment):
         r.stop().print()
         self.divergence_half_width: Optional[float] = None
         self.divergence_step_size: Optional[float] = None
+        self.divergence_sample_size: Optional[int] = None
         self.data_distribution: Distribution = self.create_data_distribution()
         self.patiences: List[int] = [10, 10, 20]
 
@@ -111,15 +112,19 @@ class DivergenceExperiment(MafExperiment):
         #     f"MAF {maf.layers}L", show=True, image_base_path=self.get_base_path())
 
     def print_divergences(self):
-        if self.divergence_half_width is None or self.divergence_step_size is None:
-            print("If you want KL/JS-divergence set 'divergence_half_width' and 'divergence_step_size'")
+        if (self.divergence_half_width is None or self.divergence_step_size is None) and self.divergence_sample_size is None:
+            print("If you want KL/JS-divergence set either 'divergence_half_width' and 'divergence_step_size, or 'divergence_sample_size''")
+            return
+        if self.divergence_sample_size is not None and (self.divergence_step_size is not None or self.divergence_half_width is not None):
+            print(f"You defined 'divergence_half_width' or 'divergence_step_size' and additionally 'divergence_sample_size'. Set the first two only or the latter.",
+                  file=sys.stderr)
             return
         values = []
         for maf in self.mafs:
             j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
-            jsd = j.calculate_sample_distribution(10000)
-            kld = k.calculate_sample_distribution(10000)
+            jsd = j.calculate_sample_distribution(self.divergence_sample_size) if self.divergence_sample_size is not None else j.calculate_sample_space()
+            kld = k.calculate_sample_distribution(self.divergence_sample_size) if self.divergence_sample_size is not None else k.calculate_sample_space()
             row = [maf.layers, kld, jsd]
             values.append(row)
         values = np.array(values, dtype=np.float32)
