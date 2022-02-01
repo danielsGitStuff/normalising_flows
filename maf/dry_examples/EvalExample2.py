@@ -1,24 +1,16 @@
-import sys
 from pathlib import Path
-
 import numpy as np
-
 from common.globals import Global
 from distributions.Distribution import Distribution
-from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import enable_memory_growth, set_gpu
-from distributions.kl.JS import JensenShannonDivergence
-from distributions.kl.KL import KullbackLeiblerDivergence
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.DivergenceExperiment import DivergenceExperiment
 from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
-from maf.stuff.MafExperiment import MafExperiment
-from typing import List, Optional
-import matplotlib.pyplot as plt
+from typing import List
 
 
 class EvalExample2(DivergenceExperiment):
@@ -30,11 +22,13 @@ class EvalExample2(DivergenceExperiment):
         self.divergence_step_size = 0.8
         self.no_samples = 8000
         self.no_val_samples = 1500
-        self.xmin = -6
-        self.xmax = 6
-        self.ymin = -6
-        self.ymax = 6
+        self.xmin = -7
+        self.xmax = 7
+        self.ymin = -7
+        self.ymax = 7
         self.epochs = 2000
+        self.use_early_stop = True
+        self.patiences = [50, 50, 50]
 
     def create_data_distribution(self) -> Distribution:
         d = MultimodalDistribution(input_dim=2, distributions=[
@@ -71,8 +65,8 @@ class EvalExample2(DivergenceExperiment):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[100, 100], norm_layer=True, use_tanh_made=True, batch_norm=False) for
-                layers in [1, 3, 5]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True, batch_norm=False) for
+                layers in [5, 10, 15]]
 
     def create_data_title(self) -> str:
         return 'testi!!!'

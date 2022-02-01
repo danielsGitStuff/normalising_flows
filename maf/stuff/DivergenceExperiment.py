@@ -88,7 +88,9 @@ class DivergenceExperiment(MafExperiment):
             if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=prefix):
                 maf: MaskedAutoregressiveFlow = LearnedTransformedDistribution.load(self.cache_dir, prefix=prefix)
             else:
-                es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patiences[i], restore_best_model=True)
+                es = None
+                if self.use_early_stop:
+                    es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patiences[i], restore_best_model=True)
                 maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es)
                 maf.save(self.cache_dir, prefix=prefix)
             mafs.append(maf)

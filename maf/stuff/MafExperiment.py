@@ -28,6 +28,7 @@ class MafExperiment:
         self.print_3d_for_denses: bool = False
         self.log_scale: bool = False
         self.h_offset: int = 0
+        self.use_early_stop:bool = True
         plt.clf()
 
     def default_fig(self, no_rows: int, no_columns: int):
