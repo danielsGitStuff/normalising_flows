@@ -42,7 +42,7 @@ fi
 
 # build that thing
 cd $python_src_dir || exit
-./configure -prefix="$target_root" # --enable-optimizations
+./configure -prefix="$target_root" --enable-optimizations
 make
 make install
 
