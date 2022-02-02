@@ -31,7 +31,7 @@ class MixLearnExperimentMiniBooneDSizeVar(MixLearnExperimentMiniBoone):
             learned_distr_creator=learned_distr_creator,
             dataset_name=dataset_name,
             result_folder=result_folder,
-            epochs=epochs,
+            clf_epochs=epochs,
             batch_size=batch_size,
             paper_load=paper_load,
             experiment_init_ds_class=experiment_init_ds_class,

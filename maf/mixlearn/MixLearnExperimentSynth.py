@@ -52,7 +52,7 @@ class MixLeanExperimentSynth(MixLearnExperiment):
         super().__init__(name=name,
                          norm_data=True,
                          result_folder=result_folder,
-                         epochs=epochs,
+                         clf_epochs=epochs,
                          learned_distribution_creator=creator,
                          batch_size=1000,
                          conditional=False,

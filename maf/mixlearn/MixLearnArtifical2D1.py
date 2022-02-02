@@ -39,7 +39,7 @@ class ArtificalMixLearnExperiment(MixLearnExperiment):
                          learned_distribution_creator=learned_distribution_creator,
                          classifier_creator=classifier_creator,
                          result_folder=result_folder,
-                         epochs=epochs,
+                         clf_epochs=epochs,
                          batch_size=batch_size)
         self.classifiers_per_nf = classifiers_per_nf  # todo move to super class
 

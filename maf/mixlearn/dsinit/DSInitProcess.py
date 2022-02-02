@@ -41,6 +41,8 @@ class DSInitProcess(Ser):
             self.after_initialisation()
             return
         dl_main = DL2.load(self.dl_cache_dir)
+        dl_main = self.after_loading_main(dl_main)
+        print(f"main data set, which is the source for subsequent actions: '{dl_main.dir}'")
         dl_train = dl_main.clone(self.train_dir)
         dl_test = dl_train.split(self.test_dir, test_split=self.test_split)
         self.after_initialisation()
@@ -49,3 +51,7 @@ class DSInitProcess(Ser):
         """you may modify the training or test set here.
         CHECK IF YOU MUST RUN HERE by looking for a file or something. """
         pass
+
+    def after_loading_main(self, main: DL2) -> DL2:
+        """called when the complete dataset (that means before test split) is loaded. You may do things like balancing here."""
+        return main

@@ -204,6 +204,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
     def build_transformation(self):
         if self.transformed_distribution is not None:
             return
+        self.layers = Global.Testing.get('testing_nf_layers', self.layers)
         print(
             f"building MAF: dim: {self.input_dim}, layers: {self.layers}, norm_layer: {self.norm_layer}, batch_norm: {self.batch_norm}, tahn_made: {self.use_tanh_made}, activation: {self.activation}")
         self.base_dist = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=self.input_dim, dtype=tf.float32))

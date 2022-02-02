@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
 from pathlib import Path
 
 from RunAllProcessWrapper import ProcessWrapper
 from keta.argparseer import ArgParser
 from maf.dry_examples.EvalExample3 import EvalExample3
-from maf.mixlearn.MixLearnExperimentMiniBooneRunClfVar import MixLearnExperimentMiniBooneClfVarRunner
+from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
 from common.globals import Global
 from typing import List, Type
@@ -25,7 +26,7 @@ if __name__ == '__main__':
         for t in examples:
             print(f"executing example '{t.__name__}'")
             pw = ProcessWrapper(module=t.__module__, klass=t.__name__)
-            pw.run()
+            pw.execute()
             print(f"example '{t.__name__}' done")
 
 
@@ -48,12 +49,14 @@ if __name__ == '__main__':
     ]
 
     Global.Testing.set('testing_epochs', 1)
+    Global.Testing.set('testing_nf_layers', 1)
 
-    examples_mix_learn: List[Type] = [MixLearnExperimentMiniBooneClfVarRunner]
+    examples_mix_learn: List[Type] = [MixLearnExperimentMiniBooneClfVarRunner,
+                                      MixLearnExperimentMiniBooneClfVarRunnerBalanced]
 
-    Global.set_global('results_dir', Path('results_artificial'))
-    run(examples_artificial)
-    Global.set_global('results_dir', Path('results_dry'))
-    run(examples_dry)
-    # Global.set_global('results_dir', Path('results_mix_learn'))
-    # run(examples_mix_learn)
+    # Global.set_global('results_dir', Path('results_artificial'))
+    # run(examples_artificial)
+    # Global.set_global('results_dir', Path('results_dry'))
+    # run(examples_dry)
+    Global.set_global('results_dir', Path('results_mix_learn'))
+    run(examples_mix_learn)

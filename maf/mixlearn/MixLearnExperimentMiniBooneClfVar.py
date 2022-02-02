@@ -1,4 +1,6 @@
 import math
+
+from maf.mixlearn.dsinit.DSBalanceInitProcess import DSBalanceInitProcess
 from pathlib import Path
 
 from typing import Type
@@ -18,7 +20,10 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                  learned_distr_creator: LearnedDistributionCreator,
                  dataset_name: str,
                  result_folder: Path,
-                 epochs: int,
+                 clf_epochs: int,
+                 nf_epochs: int,
+                 clf_patience: int = 10,
+                 nf_patience: int = 10,
                  batch_size: int = 128,
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
@@ -31,7 +36,10 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
             learned_distr_creator=learned_distr_creator,
             dataset_name=dataset_name,
             result_folder=result_folder,
-            epochs=epochs,
+            clf_epochs=clf_epochs,
+            clf_patience=clf_patience,
+            nf_epochs=nf_epochs,
+            nf_patience=nf_patience,
             batch_size=batch_size,
             paper_load=paper_load,
             experiment_init_ds_class=experiment_init_ds_class,

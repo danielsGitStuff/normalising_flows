@@ -41,6 +41,7 @@ class MAFTrainingProcess(Ser):
                  # training_size: int = NotProvided(),
                  epochs: int = NotProvided(),
                  batch_size: int = NotProvided(),
+                 patience: int = NotProvided(),
                  # no_of_generated_samples: int = NotProvided(),
                  # no_of_generated_val_samples: int = NotProvided(),
                  conditional: bool = NotProvided(),
@@ -92,6 +93,7 @@ class MAFTrainingProcess(Ser):
         self.synth_val_dir: Path = synth_val_dir
         self.sample_variance_multiplier: float = sample_variance_multiplier
         self.epochs: int = epochs
+        self.patience: int = NotProvided.value_if_not_provided(patience, 10)
         self.batch_size: int = NotProvided.value_if_not_provided(batch_size, None)
         self.dl_init: DL2 = dl_init
         self.val_size: int = val_size
@@ -114,7 +116,7 @@ class MAFTrainingProcess(Ser):
         # self.norm_layer: bool = norm_layer
         # self.use_tanh_made: bool = use_tanh_made
         # self.input_noise_variance: float = input_noise_variance
-        self.dl_main: Optional[DL2] =None
+        self.dl_main: Optional[DL2] = None
 
     def create_dirs(self):
         def create(d: [Path, NotProvided]):
@@ -137,7 +139,7 @@ class MAFTrainingProcess(Ser):
         one_hot = None
         conditional_dims = 0
         noise_maf: Optional[MaskedAutoregressiveFlow] = None
-        lean_noise: bool = self.gen_noi_samples +self.gen_val_noi_samples > 0
+        lean_noise: bool = self.gen_noi_samples + self.gen_val_noi_samples > 0
         if self.conditional:
             # one_hot = ClassOneHot(enabled=self.conditional_one_hot, classes=self.conditional_classes, typ='int').init()
             conditional_dims = self.dl_init.conditional_dims
@@ -201,13 +203,13 @@ class MAFTrainingProcess(Ser):
                     noise_maf = self.learned_distribution_creator.create(input_dim=self.dl_init.props.dimensions,
                                                                          conditional_dims=conditional_dims,
                                                                          conditional_classes=self.conditional_classes)
-                    es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=10, restore_best_model=True)
+                    es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=self.patience, restore_best_model=True)
                     noise_maf.fit(ds_train_noise, epochs=self.epochs, batch_size=self.batch_size, val_xs=ds_val_noise, early_stop=es, shuffle=True)
                     noise_maf.save(folder=self.checkpoint_dir_noise, prefix=self.nf_base_file_name)
                     hdf = pd.DataFrame(noise_maf.history.to_dict())
                     hdf.to_csv(Path(self.cache_dir, f"{self.nf_base_file_name}_noise_history.csv"))
             # ds_train = ds_train.shuffle(buffer_size=len(ds_train), reshuffle_each_iteration=True)
-            es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=10, restore_best_model=True)
+            es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=self.patience, restore_best_model=True)
             # maf = MaskedAutoregressiveFlow(input_dim=self.dl_main.props.dimensions, layers=self.layers, batch_norm=self.batch_norm,
             #                                hidden_shape=self.hidden_shape,
             #                                norm_layer=self.norm_layer, use_tanh_made=self.use_tanh_made, input_noise_variance=self.input_noise_variance,

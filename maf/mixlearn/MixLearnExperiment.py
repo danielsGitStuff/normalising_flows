@@ -73,7 +73,10 @@ class MixLearnExperiment(MafExperiment):
                  learned_distribution_creator: LearnedDistributionCreator,
                  classifier_creator: BinaryClassifierCreator,
                  result_folder: Path,
-                 epochs: int,
+                 clf_epochs: int,
+                 nf_epochs: int,
+                 clf_patience: int = 10,
+                 nf_patience: int = 10,
                  # layers: int,
                  batch_size: Optional[int] = None,
                  data_batch_size: Optional[int] = None,
@@ -111,7 +114,10 @@ class MixLearnExperiment(MafExperiment):
         # self.noise_variance: float = noise_variance
         # self.hidden_shape: List[int] = hidden_shape
         # self.layers: int = layers
-        self.epochs: int = epochs
+        self.clf_epochs: int = clf_epochs
+        self.clf_patience: int = clf_patience
+        self.nf_epochs: int = nf_epochs
+        self.nf_patience: int = nf_patience
         # self.norm_layer: bool = norm_layer
         self.norm_data: bool = norm_data
         self.initial_dl3: DL3 = self.create_dl3()
@@ -231,7 +237,8 @@ class MixLearnExperiment(MafExperiment):
                                      val_dir=val_dir,
                                      synth_dir=synth_dir,
                                      synth_val_dir=synth_val_dir,
-                                     epochs=10,  # self.epochs,
+                                     epochs=self.nf_epochs,
+                                     patience=self.nf_patience,
                                      cache_dir=self.cache_dir,
                                      checkpoint_dir_noise=self.checkpoint_dir_noise,
                                      dl_init=self.initial_dl2,
@@ -304,7 +311,7 @@ class MixLearnExperiment(MafExperiment):
                                            dl_val_genuine=dl_val_genuine,
                                            dl_val_synth=dl_val_synth,
                                            dl_test=dl_test,
-                                           epochs=self.epochs,
+                                           epochs=self.clf_epochs,
                                            history_csv_file=history_csv_file,
                                            conditional_dims=self.conditional_dims,
                                            batch_size=self.batch_size,

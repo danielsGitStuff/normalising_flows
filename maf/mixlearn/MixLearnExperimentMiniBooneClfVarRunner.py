@@ -1,3 +1,7 @@
+from typing import Type
+
+from common.globals import Global
+from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.stuff.MafExperiment import MafExperiment
 from pathlib import Path
 
@@ -19,20 +23,25 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                              layers=30,
                              norm_layer=False,
                              use_tanh_made=True)
-        results_folder = Path('results_miniboone')
+        results_folder = Global.get_default('results_dir', Path('results_miniboone'))
         experiment = MixLearnExperimentMiniBooneClfVar(name=self.name,
                                                        learned_distr_creator=creator,
                                                        dataset_name='miniboone',
                                                        result_folder=results_folder,
+                                                       experiment_init_ds_class=self.experiment_init_ds_class,
                                                        paper_load=False,
-                                                       epochs=100,
-                                                       batch_size=1000,
+                                                       clf_epochs=100,
+                                                       clf_patience=10,
+                                                       nf_epochs=4000,
+                                                       nf_patience=100,
+                                                       batch_size=1024,
                                                        classifiers_per_nf=3,
                                                        just_signal_plan=False)
         experiment.create_training_plan().run()
 
-    def __init__(self):
-        super().__init__('miniboone_clfvar')
+    def __init__(self, name='miniboone_clfvar'):
+        super().__init__(name)
+        self.experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess
 
 
 if __name__ == '__main__':

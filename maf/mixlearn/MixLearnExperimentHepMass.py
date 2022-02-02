@@ -85,7 +85,7 @@ class MixLearnExperimentHepMass(MixLearnExperiment):
                  noise_variance: float = 0.0,
                  batch_norm: bool = False,
                  use_tanh_made: bool = False, conditional: bool = False):
-        super().__init__(name=name, epochs=epochs, layers=layers, batch_size=batch_size, data_batch_size=data_batch_size, hidden_shape=hidden_shape, norm_layer=norm_layer,
+        super().__init__(name=name, clf_epochs=epochs, layers=layers, batch_size=batch_size, data_batch_size=data_batch_size, hidden_shape=hidden_shape, norm_layer=norm_layer,
                          norm_data=norm_data, noise_variance=noise_variance,
                          batch_norm=batch_norm, use_tanh_made=use_tanh_made, conditional_dims=conditional)
 
