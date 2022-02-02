@@ -69,9 +69,10 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           MetricIntParam('tsig'),
                                           MetricIntParam('fsig'),
 
-                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                               LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
+                                          # VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
+                                          FixedIntParam('size_clf_t_ge', 0, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length - 1500, range_steps=3, is_var=True),
+                                          LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
                                           LambdaIntParam('size_clf_v_sy', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.ceil(tsy / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
@@ -86,7 +87,6 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           LambdaIntParam('clf_v_sy_sig', source_params=['size_clf_v_sy'], f=lambda vsy: round(signal_ratio * vsy)),
                                           LambdaIntParam('clf_v_sy_noi', source_params=['size_clf_v_sy'], f=lambda vsy: round(vsy - signal_ratio * vsy)),
 
-                                          # VariableParamInt('clfsize', range_start=2500, range_end=self.dataset_size_end, range_steps=3),  # 10
                                           LambdaIntParam('clfsize', source_params=['size_clf_t_ge', 'size_clf_t_sy', 'size_clf_v_ge', 'size_clf_v_sy'],
                                                          f=lambda tge, tsy, vge, vsy: tge + tsy + vge + vsy),
 

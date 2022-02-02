@@ -30,12 +30,12 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        result_folder=results_folder,
                                                        experiment_init_ds_class=self.experiment_init_ds_class,
                                                        paper_load=False,
-                                                       clf_epochs=100,
-                                                       clf_patience=10,
+                                                       clf_epochs=1000,
+                                                       clf_patience=20,
                                                        nf_epochs=4000,
                                                        nf_patience=100,
                                                        batch_size=1024,
-                                                       classifiers_per_nf=3,
+                                                       classifiers_per_nf=1,
                                                        just_signal_plan=False)
         experiment.create_training_plan().run()
 
@@ -46,4 +46,6 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
 
 if __name__ == '__main__':
     ArgParser.parse()
+    # Global.Testing.set('testing_nf_layers', 1)
+    # Global.Testing.set('testing_epochs', 1)
     MixLearnExperimentMiniBooneClfVarRunner().run()
