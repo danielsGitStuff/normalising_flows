@@ -22,10 +22,10 @@ class NF2D_3Rect(Foursome2DMafExperiment):
     def __init__(self):
         super().__init__("NF2D_3Rect")
         print(self.vmax)
-        self.no_samples: int = 8000
-        self.no_val_samples: int = 1000
-        self.epochs = 50
-        self.vmax = 'auto'
+        # self.no_samples: int = 24000
+        # self.no_val_samples: int = 2000
+        # self.epochs = 2000
+        # self.vmax = 'auto'
 
     def create_data_distribution(self) -> Distribution:
         # return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[2 ** 2, 1])])
@@ -35,10 +35,10 @@ class NF2D_3Rect(Foursome2DMafExperiment):
                                                                   UniformMultivariate(input_dim=2, lows=[1, 1], highs=[2, 3])])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [3]]
 
     def create_data_title(self) -> str:
-        return ''
+        return '3 Uniforms'
 
 
 if __name__ == '__main__':

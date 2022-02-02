@@ -28,7 +28,7 @@ class DivergenceExperiment(MafExperiment):
         self.xmax: float = 4.0
         self.ymin: float = -4.0
         self.ymax: float = 4.0
-        self.vmax: Optional[float, str] = None
+        self.vmax: Optional[float, str] = 'auto'
         self.no_samples: int = 80000
         self.no_val_samples: int = 2000
         self.mesh_count: int = 1000
@@ -41,10 +41,13 @@ class DivergenceExperiment(MafExperiment):
         # todo deprecate sampling space
         self.divergence_half_width: Optional[float] = None
         self.divergence_step_size: Optional[float] = None
-        self.divergence_sample_size: Optional[int] = None
+        self.divergence_sample_size: Optional[int] = 10000
         self.data_distribution: Distribution = self.create_data_distribution()
         self.divergence_metric_every_epoch: int = 50
         self.patiences: List[int] = [50, 50, 50]
+
+        self.ds_samples: Optional[DS] = None
+        self.log_ps_samples: Optional[DS] = None
 
     def _print_datadistribution(self):
         plt.clf()
@@ -86,8 +89,9 @@ class DivergenceExperiment(MafExperiment):
             self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax,
                     mesh_count=self.mesh_count)
         mafs = []
-        ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size)).batch(self.batch_size)
-        log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(ds_samples)).batch(self.batch_size)
+        if self.divergence_metric_every_epoch > 0:
+            self.ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size)).batch(self.batch_size)
+            self.log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(self.ds_samples)).batch(self.batch_size)
         for i, maf in enumerate(self.mafs):
             prefix = self.maf_prefix(f"l{maf.layers}.{i}")
             if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=prefix):
@@ -96,7 +100,9 @@ class DivergenceExperiment(MafExperiment):
                 es = None
                 if self.use_early_stop:
                     es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patiences[i], restore_best_model=True)
-                divergence_metric = DivergenceMetric(maf=maf, ds_samples=ds_samples, log_ps_samples=log_ps_samples, run_every_epoch=self.divergence_metric_every_epoch)
+                divergence_metric = None
+                if self.ds_samples is not None:
+                    divergence_metric = DivergenceMetric(maf=maf, ds_samples=self.ds_samples, log_ps_samples=self.log_ps_samples, run_every_epoch=self.divergence_metric_every_epoch)
                 maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
                 maf.save(self.cache_dir, prefix=prefix)
             mafs.append(maf)
@@ -128,8 +134,12 @@ class DivergenceExperiment(MafExperiment):
         for maf in self.mafs:
             j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
-            jsd = j.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else j.calculate_by_sampling_space()
-            kld = k.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else k.calculate_by_sampling_space()
+            if self.ds_samples is None:
+                jsd = j.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else j.calculate_by_sampling_space()
+                kld = k.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else k.calculate_by_sampling_space()
+            else:
+                jsd = j.calculate_from_samples_vs_p(ds_q_samples=self.ds_samples,log_q_samples=self.log_ps_samples)
+                kld = k.calculate_from_samples_vs_p(ds_q_samples=self.ds_samples,log_q_samples=self.log_ps_samples)
             row = [maf.layers, kld, jsd]
             values.append(row)
         values = np.array(values, dtype=np.float32)

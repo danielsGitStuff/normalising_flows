@@ -205,6 +205,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         if self.transformed_distribution is not None:
             return
         self.layers = Global.Testing.get('testing_nf_layers', self.layers)
+        self.norm_layer = Global.Testing.get('testing_nf_norm_layer', self.norm_layer)
         print(
             f"building MAF: dim: {self.input_dim}, layers: {self.layers}, norm_layer: {self.norm_layer}, batch_norm: {self.batch_norm}, tahn_made: {self.use_tanh_made}, activation: {self.activation}")
         self.base_dist = tfd.MultivariateNormalDiag(loc=tf.zeros(shape=self.input_dim, dtype=tf.float32))
@@ -286,6 +287,12 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             shuffle: bool = False,
             divergence_metric: Optional[DivergenceMetric] = None
             ) -> Optional[List[DensityPlotData]]:
+        if Global.Testing.has('testing_nf_norm_layer'):
+            self.norm_layer = Global.Testing.get('testing_nf_norm_layer', self.norm_layer)
+            if not self.norm_layer:
+                self.noise_norm_builder.normalise = False
+                self.build_transformation()
+                self.set_training(True)
         ds_xs: DSOpt = None
         ds_val_xs: DSOpt = None
         ds_val_truth_exp: DSOpt = None
@@ -299,7 +306,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
 
         epochs = Global.Testing.get('testing_epochs', epochs)
 
-        print(f"MAF has {len(self.transformed_distribution.trainable_variables)} trainable variables")
+        # print(f"MAF has {len(self.transformed_distribution.trainable_variables)} trainable variables")
         if epochs == 0:
             xx = np.ones((2, self.input_dim), dtype=np.float32)
             self.transformed_distribution.log_prob(xx)
@@ -317,6 +324,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.set_training(True)
         learning_rate_fn = NotProvided.value_if_not_provided(lr, tf.keras.optimizers.schedules.PolynomialDecay(self.base_lr, epochs, self.end_lr, power=0.5))
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate_fn)
+        # import tensorflow.keras.optimizers as OOO
+        # self.optimizer = OOO.Adadelta(lr=1.0)
+        # self.optimizer = OOO.RMSprop()
         plot_data: List[DensityPlotData] = []
         runtime = Runtime("fit")
         # worked = False

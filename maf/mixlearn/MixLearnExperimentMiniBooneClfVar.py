@@ -71,11 +71,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
 
                                           VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
                                           VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
-                                          # VariableParam('clf_ge_sy_ratio', range_start=0.0, range_end=1.0, range_steps=3),
-                                          # LambdaIntParam('size_clf_t_ge', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round(r * (clfsize - 1500))),
-                                          # LambdaIntParam('size_clf_t_sy', source_params=['clf_ge_sy_ratio', 'clfsize'], f=lambda r, clfsize: round((1 - r) * (clfsize - 1500))),
-
-                                          LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
+                                               LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
                                           LambdaIntParam('size_clf_v_sy', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.ceil(tsy / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
