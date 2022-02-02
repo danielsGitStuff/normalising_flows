@@ -147,11 +147,12 @@ class ClassifierTrainingProcess(Ser):
                 f"fitting classifier with {len(ds_train)} samples (clf_t_ge_sig {self.clf_t_ge_sig} clf_t_ge_noi {self.clf_t_ge_noi} clf_t_sy_sig {self.clf_t_sy_sig} clf_t_sy_noi {self.clf_t_sy_noi}) -> '{self.history_csv_file}'")
             es = EarlyStopping(monitor='val_loss', patience=15, verbose=0, restore_best_weights=True, mode='min')
             if len(ds_train) > 0:
-                eta = KerasETA(interval=10, epochs=self.epochs)
-                history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=self.epochs, callbacks=[es, eta],
+                epochs = Global.Testing.get('testing_epochs', self.epochs)
+                eta = KerasETA(interval=10, epochs=epochs)
+                history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=epochs, callbacks=[es, eta],
                                           shuffle=True)
-                epoch = self.epochs
-                if es.best_epoch is not None and es.best_epoch != self.epochs:
+                epoch = epochs
+                if es.best_epoch is not None and es.best_epoch != epochs:
                     epoch = es.best_epoch
             else:
                 history = lambda: None

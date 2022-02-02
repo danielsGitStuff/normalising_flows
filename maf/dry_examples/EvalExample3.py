@@ -7,7 +7,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
-from distributions.base import BaseMethods
+from distributions.base import BaseMethods, enable_memory_growth
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
@@ -65,7 +65,8 @@ class EvalExample3(DivergenceExperiment):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers
+        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True,
+                                         batch_norm=False) for layers
                 in [10]]
 
     def create_data_title(self) -> str:
@@ -86,4 +87,5 @@ class EvalExample3(DivergenceExperiment):
 
 if __name__ == '__main__':
     Global.set_global('results_dir', Path('results_artificial'))
+    enable_memory_growth()
     EvalExample3().run()

@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 import os
 import sys
+
+from common.globals import Global
 from pathlib import Path
 
 import pandas as pd
@@ -293,6 +295,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                                                                                         val_contains_truth=val_contains_truth, shuffle=shuffle)
             self.adapt(ds_xs)
             self.set_training(True)
+
+        epochs = Global.Testing.get('testing_epochs', epochs)
+
         print(f"MAF has {len(self.transformed_distribution.trainable_variables)} trainable variables")
         if epochs == 0:
             xx = np.ones((2, self.input_dim), dtype=np.float32)
