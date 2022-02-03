@@ -46,19 +46,19 @@ if __name__ == '__main__':
 
 
     examples_artificial: List[Type] = [NF1D_1Bumps,
-                                       # NF1D_2Bumps,
-                                       # NF2D_1Bumps,
-                                       # NF2D_2Bumps,
-                                       # NF2D_10Bumps,
-                                       # NF2D_1Rect,
-                                       # NF2D_3Rect,
-                                       # NF2D_4Rect,
-                                       # SS1DMafExperiment,
-                                       # SS2DMafExperiment,
-                                       # ShowCase1D1,
-                                       # NF2D_Diag4,
-                                       # NF2D_Row3,
-                                       # NF2D_Row4
+                                       NF1D_2Bumps,
+                                       NF2D_1Bumps,
+                                       NF2D_2Bumps,
+                                       NF2D_10Bumps,
+                                       NF2D_1Rect,
+                                       NF2D_3Rect,
+                                       NF2D_4Rect,
+                                       SS1DMafExperiment,
+                                       SS2DMafExperiment,
+                                       ShowCase1D1,
+                                       NF2D_Diag4,
+                                       NF2D_Row3,
+                                       NF2D_Row4
                                        ]
 
     examples_dry: List[Type] = [  # EvalExample,
@@ -68,19 +68,16 @@ if __name__ == '__main__':
     ]
 
     # this speeds up training!
-    Global.Testing.set('testing_epochs', 1)
-    Global.Testing.set('testing_nf_layers', 1)
-    Global.Testing.set('testing_nf_norm_layer', False)
+    # Global.Testing.set('testing_epochs', 1)
+    # Global.Testing.set('testing_nf_layers', 1)
+    # Global.Testing.set('testing_nf_norm_layer', False)
 
     examples_mix_learn: List[Type] = [MixLearnExperimentMiniBooneClfVarRunner,
                                       MixLearnExperimentMiniBooneClfVarRunnerBalanced]
 
-    # Global.set_global('results_dir', Path('results_artificial'))
     run(examples_artificial, results_dir=Path('results_artificial'))
-    # Global.set_global('results_dir', Path('results_dry'))
-    # run(examples_dry, results_dir=Path('results_dry'))
+    run(examples_dry, results_dir=Path('results_dry'))
 
-    # Global.set_global('results_dir', Path('results_mix_learn'))
     mixlearn_dir = Path('results_mix_learn')
     if args['big_machine']:
         run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
