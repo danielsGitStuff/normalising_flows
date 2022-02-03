@@ -84,7 +84,7 @@ class GPUProcessWrapper(Ser):
         return klass()
 
     def run(self):
-        setproctitle.setproctitle(f"W {Global.get_default('tf_gpu', -1)} {self.klass}")
+        setproctitle.setproctitle(f"W {Global.get_default('tf_gpu', -1)} {self.klass} {Global.get_default('tf_gpu', -1)}")
         cache = StaticMethods.cache_dir()
         Global.set_global('results_dir', Path(self.results_dir))
         check_file: Path = Path(cache, f"done_{self.module}.{self.klass}")
