@@ -10,6 +10,7 @@ from common.util import Runtime
 from distributions.Distribution import Distribution
 from distributions.LearnedDistribution import EarlyStop
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
+from distributions.base import enable_memory_growth
 from distributions.kl.DivergenceMetric import DivergenceMetric
 from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
@@ -36,6 +37,7 @@ class DivergenceExperiment(MafExperiment):
         self.batch_size: int = 1024
         self.epochs: int = 200
         r = Runtime("creating MAFs").start()
+        enable_memory_growth()
         self.mafs: List[MaskedAutoregressiveFlow] = self.create_mafs()
         r.stop().print()
         # todo deprecate sampling space
