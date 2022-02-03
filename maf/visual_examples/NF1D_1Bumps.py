@@ -12,6 +12,7 @@ from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 class NF1D_1Bumps(Foursome2DMafExperiment):
     def __init__(self):
         super().__init__("NF1D_1Bumps")
+        self.epochs = 20
 
     def create_data_distribution(self) -> Distribution:
         return GaussianMultivariate(input_dim=1, mus=[-2.5], cov=[0.5 ** 2])

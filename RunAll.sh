@@ -2,4 +2,9 @@
 DIR="$(dirname "$0")"
 cd "$DIR" || exit
 
-(./RunArtificial.sh 0 && ./RunDry.sh 0) & ./RunMixlearn.sh 2 &
+#(./RunArtificial.sh 0 && ./RunDry.sh 0) & ./RunMixlearn.sh 2 &
+
+./RunMixlearn.sh&
+./RunArtificial.sh 0
+./RunDry.sh 0
+#,/RunMixlearn.sh 2
