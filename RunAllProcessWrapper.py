@@ -37,12 +37,13 @@ class GPUProcessWrapperPool(Ser):
 
     def launch(self):
         if len(self.d.keys()) > 1:
+            pool = Global.NEW_POOL()
             for gpu in self.d.keys():
                 self.current_gpu = gpu
                 js = jsonloader.to_json(self, pretty_print=True)
-                Global.POOL().apply_async(GPUProcessWrapperPool.Methods.static_launch, args=(js,))
+                pool.apply_async(GPUProcessWrapperPool.Methods.static_launch, args=(js,))
                 # GPUProcessWrapperPool.Methods.static_launch(js)
-            Global.POOL().join()
+            pool.join()
         else:
             gpu = list(self.d.keys())[0]
             for pw in self.d[gpu]:

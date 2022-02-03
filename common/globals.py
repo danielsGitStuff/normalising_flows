@@ -10,6 +10,7 @@ from common.poolreplacement import RestartingPoolReplacement
 
 pool_key = "pool//instance"
 
+
 class Global:
     class Testing:
         """This is for the crazy stuff like injecting code where it normally does not belong. Use with care!"""
@@ -110,6 +111,11 @@ class Global:
         if pool_key not in Global.d:
             Global.set_global(pool_key, RestartingPoolReplacement(Global.d["computation_pool_size"]))
         pool: RestartingPoolReplacement = Global.d[pool_key]
+        return pool
+
+    @staticmethod
+    def NEW_POOL() -> RestartingPoolReplacement:
+        pool = RestartingPoolReplacement(Global.d["computation_pool_size"])
         return pool
 
     @staticmethod

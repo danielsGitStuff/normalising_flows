@@ -3,6 +3,9 @@ from __future__ import annotations
 import sys
 
 from maf.DL import DL3
+from maf.dry_examples.EvalExample1 import EvalExample1
+from maf.dry_examples.EvalExample2 import EvalExample2
+from maf.dry_examples.EvalExample4 import EvalExample4
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 from maf.visual_examples.NF1D_1Bumps import NF1D_1Bumps
@@ -65,11 +68,11 @@ if __name__ == '__main__':
                                        NF2D_Row4
                                        ]
 
-    examples_dry: List[Type] = [  # EvalExample,
-        # EvalExample2,
-        EvalExample3,
-        # EvalExample4
-    ]
+    examples_dry: List[Type] = [EvalExample1,
+                                EvalExample2,
+                                EvalExample3,
+                                EvalExample4
+                                ]
 
     # this speeds up training!
     # Global.Testing.set('testing_epochs', 1)
@@ -79,14 +82,15 @@ if __name__ == '__main__':
     examples_mix_learn: List[Type] = [MixLearnExperimentMiniBooneClfVarRunner,
                                       MixLearnExperimentMiniBooneClfVarRunnerBalanced]
 
+    # make sure the dataset is already in place before starting processes relying on it. Might cause race conditions otherwise
+    pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
+    pw.execute()
+
     run(examples_artificial, results_dir=Path('results_artificial'))
     run(examples_dry, results_dir=Path('results_dry'))
 
     mixlearn_dir = Path('results_mix_learn')
     if args['big_machine']:
-        # make sure the dataset is already in place before starting processes relying on it. Might cause race conditions otherwise
-        pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
-        pw.execute()
         run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
         run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
     else:
