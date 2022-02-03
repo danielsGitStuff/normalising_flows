@@ -83,15 +83,15 @@ if __name__ == '__main__':
                                       MixLearnExperimentMiniBooneClfVarRunnerBalanced]
 
     # make sure the dataset is already in place before starting processes relying on it. Might cause race conditions otherwise
-    test_pool = GPUProcessWrapperPool()
+    # test_pool = GPUProcessWrapperPool()
     pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
-    test_pool.add_to_pool(pw, 2)
-    Global.set_global('tf_gpu', 1)
-    test_pool.add_to_pool(GPUProcessWrapper(module=NF2D_3Rect.__module__, klass=NF2D_3Rect.__name__, results_dir='results_artificial'), 2)
-    Global.set_global('tf_gpu', 1)
-    test_pool.launch()
-    sys.exit(9)
-    # pw.execute()
+    # test_pool.add_to_pool(pw, 2)
+    # Global.set_global('tf_gpu', 1)
+    # test_pool.add_to_pool(GPUProcessWrapper(module=NF2D_3Rect.__module__, klass=NF2D_3Rect.__name__, results_dir='results_artificial'), 2)
+    # Global.set_global('tf_gpu', 1)
+    # test_pool.launch()
+    # sys.exit(9)
+    pw.execute()
 
     run(examples_artificial, results_dir=Path('results_artificial'))
     run(examples_dry, results_dir=Path('results_dry'))
