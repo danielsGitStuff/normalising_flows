@@ -8,3 +8,4 @@ numpy
 seaborn
 plotly==5.4.0
 tabulate
+setproctitle

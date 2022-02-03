@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import setproctitle as setproctitle
+
 from pathlib import Path
 from typing import Dict, List, Union
 
@@ -50,6 +52,7 @@ class GPUProcessWrapperPool(Ser):
                 pw.execute()
 
     def run_on_current_gpu(self):
+        setproctitle.setproctitle(f"Pool for gpu {self.current_gpu}")
         Global.set_global('tf_gpu', self.current_gpu)
         # enable_memory_growth()
         for pw in self.d[self.current_gpu]:
@@ -81,6 +84,7 @@ class GPUProcessWrapper(Ser):
         return klass()
 
     def run(self):
+        setproctitle.setproctitle(f"PW {self.module}.{self.klass}")
         cache = StaticMethods.cache_dir()
         Global.set_global('results_dir', Path(self.results_dir))
         check_file: Path = Path(cache, f"done_{self.module}.{self.klass}")
