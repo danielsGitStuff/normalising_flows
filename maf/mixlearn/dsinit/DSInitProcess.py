@@ -6,6 +6,7 @@ from common import jsonloader
 from common.NotProvided import NotProvided
 from common.globals import Global
 from common.jsonloader import Ser
+from distributions.base import enable_memory_growth
 from maf.DL import DL2
 
 
@@ -20,6 +21,7 @@ class DSInitProcess(Ser):
     @staticmethod
     def execute_static(js: str):
         p: DSInitProcess = jsonloader.from_json(js)
+        enable_memory_growth()
         p.run()
 
     def __init__(self, dl_cache_dir: Path = NotProvided(), experiment_cache_dir: Path = NotProvided(), test_split: float = 0.1):

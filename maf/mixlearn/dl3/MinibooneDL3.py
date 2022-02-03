@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 
 from common import jsonloader
 from common.NotProvided import NotProvided
+from distributions.base import enable_memory_growth
 from maf.DS import DatasetProps, DS
 from maf.DL import DL3, DL2, DataSource
 from maf.stuff.StaticMethods import StaticMethods
@@ -89,8 +90,7 @@ class MinibooneDL3(DL3):
         self.props.no_of_columns = data.shape[1]
         jsonloader.to_json(self.props, file=self.props_file, pretty_print=True)
 
-
-
+        enable_memory_growth()
         if self.paper_load:
             """ from: https://github.com/gpapamak/maf/blob/master/datasets/miniboone.py
                 # NOTE: To remember how the pre-processing was done.
