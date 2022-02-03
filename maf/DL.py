@@ -2,6 +2,8 @@ from __future__ import annotations
 import math
 import shutil
 from pathlib import Path
+
+from setproctitle import setproctitle
 from typing import Optional, Tuple, Collection, Union, List
 
 import numpy as np
@@ -288,6 +290,7 @@ class DL3(Ser):
     @staticmethod
     def execute_static(js: str) -> str:
         dl3: DL3 = jsonloader.from_json(js)
+        setproctitle(f"F {type(dl3).__name__}")
         dl2 = dl3.fetch()
         dl2_js = jsonloader.to_json(dl2, pretty_print=True)
         return dl2_js
