@@ -204,7 +204,7 @@ class ClassifierTrainingProcess(Ser):
     def execute(self) -> Dict[str, float]:
         # return self.run()
         js = jsonloader.to_json(self, pretty_print=True)
-        print('debug skip pool')
-        return ClassifierTrainingProcess.static_execute(js)
+        # print('debug skip pool')
+        # return ClassifierTrainingProcess.static_execute(js)
         res = Global.POOL().run_blocking(ClassifierTrainingProcess.static_execute, args=(js,))
         return res
