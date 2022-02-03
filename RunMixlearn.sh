@@ -8,4 +8,4 @@ export PYTHONPATH=$(pwd)
 mkdir -p "logs"
 
 python "bashlauncher.py" "maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner" "MixLearnExperimentMiniBooneClfVarRunner" 1 > "logs/MixLearnExperimentMiniBooneClfVarRunner.log" &
-#python "bashlauncher.py" "maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced" "MixLearnExperimentMiniBooneClfVarRunnerBalanced" 2 > "logs/MixLearnExperimentMiniBooneClfVarRunnerBalanced.log"
+python "bashlauncher.py" "maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced" "MixLearnExperimentMiniBooneClfVarRunnerBalanced" 2 > "logs/MixLearnExperimentMiniBooneClfVarRunnerBalanced.log"
