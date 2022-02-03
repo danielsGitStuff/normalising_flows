@@ -15,5 +15,5 @@ klasses="EvalExample1 EvalExample2 EvalExample3 EvalExample4"
 
 for klass in $klasses; do
 #  echo "launching python bashlauncher.py \"$module\" \"$gpu\""
-  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" > "logs/$klass.log"
+  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &> "logs/$klass.log"
 done
