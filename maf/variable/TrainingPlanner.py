@@ -141,7 +141,7 @@ class TrainingPlanner:
         plt.rc('figure', titlesize=big)
         plt.rc('lines', linewidth=3)
 
-        def format_2_str(number:Any) -> str:
+        def format_2_str(number: Any) -> str:
             if isinstance(number, float):
                 return "{:.2f}".format(number)
             return str(number)
@@ -159,7 +159,8 @@ class TrainingPlanner:
             # fig, ax = StaticMethods.default_fig(no_rows=1, no_columns=1, w=10, h=8)
             ax.set_title(f"{group_by_operation_name} of '{metric}'")
             pivoted = df.pivot(index=group_by[0], columns=group_by[1], values='metric').T[::-1]
-
+            if 0.0 in pivoted.index and 0.0 in pivoted[pivoted.columns[0]]: # and group_by_operation_name == 'Mean':
+                pivoted.at[0, 0] = None
             sns.heatmap(data=pivoted, annot=True, fmt='.2f', ax=ax, square=True, )
             ax.xaxis.set_major_formatter(ticker.EngFormatter(places=3))
             # ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{}".format(x)))
