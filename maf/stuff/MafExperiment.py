@@ -8,6 +8,7 @@ from common.globals import Global
 from common.util import Runtime
 from common.NotProvided import NotProvided
 from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
+from distributions.base import enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.StaticMethods import StaticMethods
 import matplotlib.pyplot as plt
@@ -28,7 +29,7 @@ class MafExperiment:
         self.print_3d_for_denses: bool = False
         self.log_scale: bool = False
         self.h_offset: int = 0
-        self.use_early_stop:bool = True
+        self.use_early_stop: bool = True
         plt.clf()
 
     def default_fig(self, no_rows: int, no_columns: int):
@@ -112,6 +113,7 @@ class MafExperiment:
 
     def run(self):
         self.result_folder.mkdir(exist_ok=True)
+        enable_memory_growth()
         self._run()
         self.print_divergences()
         self.print_denses()
