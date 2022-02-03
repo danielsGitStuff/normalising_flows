@@ -159,7 +159,7 @@ class Distribution(Ser):
         xs, cond = self.extract_xs_cond(xs, cond)
         xs = self.cast_2_input(xs, event_dim=self.input_dim)
         cond = self.cast_2_input(cond, event_dim=self.conditional_dims)
-        return self.batch_call(self._log_likelihoods, xs, cond, batch_size)
+        return self.cast_2_likelihood(xs, self.batch_call(self._log_likelihoods, xs, cond, batch_size))
 
     def sample(self, size: int = 1, cond: TTensorOpt = None, batch_size: Optional[int] = None, **kwargs) -> np.ndarray:
         if self.tfd_distribution is None:
