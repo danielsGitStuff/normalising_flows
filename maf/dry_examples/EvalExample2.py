@@ -18,17 +18,10 @@ class EvalExample2(DivergenceExperiment):
     def __init__(self):
         super().__init__('Eval2')
         self.mesh_count = 500
-        self.divergence_half_width = 4.0
-        self.divergence_step_size = 0.8
-        self.no_samples = 24000
-        self.no_val_samples = 1500
         self.xmin = -7
         self.xmax = 7
         self.ymin = -7
         self.ymax = 7
-        self.epochs = 2000
-        self.use_early_stop = True
-        self.patiences = [50, 50, 50]
 
     def create_data_distribution(self) -> Distribution:
         d = MultimodalDistribution(input_dim=2, distributions=[
@@ -66,14 +59,10 @@ class EvalExample2(DivergenceExperiment):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True, batch_norm=False) for
-                layers in [5, 10, 15]]
+                layers in [1, 5, 10]]
 
     def create_data_title(self) -> str:
-        return 'testi!!!'
-
-    def _run(self):
-        self._print_datadistribution()
-        super(EvalExample2, self)._run()
+        return '7 Uniforms'
 
 
 if __name__ == '__main__':

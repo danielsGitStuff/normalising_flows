@@ -24,24 +24,14 @@ class EvalExample3(DivergenceExperiment):
         self.input_dimensions: int = 2
         super().__init__('Eval3')
         self.mesh_count = 500
-        self.divergence_sample_size = 10000
-        self.no_samples = 24000
-        self.no_val_samples = 1500
         self.xmin = -10
         self.xmax = 10
         self.ymin = -10
         self.ymax = 10
         self.epochs = 5000
-        self.use_early_stop = True
         self.patiences = [100, 100, 100]
 
     def create_data_distribution(self) -> Distribution:
-        sample_f = lambda: np.random.normal(scale=2.0)
-        cov = BaseMethods.random_covariance_matrix(n=self.input_dimensions, sample_f=sample_f)
-        # cov = [[1.0, 0.5], [0.5, 2.0]]
-        # cov = np.array(cov, dtype=np.float32)
-        loc = np.array([0] * self.input_dimensions, dtype=np.float32)
-        d = GaussianMultivariateFullCov(loc=loc, cov=cov)
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
 
         no_of_distributions = 7
@@ -67,22 +57,10 @@ class EvalExample3(DivergenceExperiment):
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True,
                                          batch_norm=False) for layers
-                in [10]]
+                in [1, 5, 10]]
 
     def create_data_title(self) -> str:
         return f"7 Gaussians"
-
-    def _run(self):
-        self._print_datadistribution()
-        super(EvalExample3, self)._run()
-
-    # def _print_datadistribution(self):
-    #     if self.data_distribution.input_dim == 2:
-    #         print('printing dataset')
-    #         self.hm(self.data_distribution)
-    #
-    #         self.print_denses(name=f"{self.name}_data")
-    #         # sys.exit(7)
 
 
 if __name__ == '__main__':

@@ -21,11 +21,11 @@ class EvalExample4(DivergenceExperiment):
     def __init__(self):
         self.input_dimensions: int = 5
         super().__init__('Eval4')
-        self.mesh_count = 100
-        self.divergence_half_width = 4.0
-        self.divergence_step_size = 0.5
-        self.no_samples = 40000
-        self.no_val_samples = 2000
+        # self.mesh_count = 100
+        # self.divergence_half_width = 4.0
+        # self.divergence_step_size = 0.5
+        # self.no_samples = 40000
+        # self.no_val_samples = 2000
 
     def create_data_distribution(self) -> Distribution:
         sample_f = lambda: np.random.normal(scale=2.0)
@@ -44,22 +44,15 @@ class EvalExample4(DivergenceExperiment):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [1, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in
+                [1, 2, 3, 4, 5, 6, 7]]
 
     def create_data_title(self) -> str:
-        return 'testi!!!'
+        return '5D offset Gaussian'
 
-    def _run(self):
-        self._print_datadistribution()
-        super(EvalExample4, self)._run()
-
-    def _print_datadistribution(self):
-        if self.data_distribution.input_dim == 2:
-            print('printing dataset')
-            self.hm(self.data_distribution)
-
-            self.print_denses(name=f"{self.name}_data")
-            # sys.exit(7)
+    # def _run(self):
+    #     self._print_datadistribution()
+    #     super(EvalExample4, self)._run()
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ class NF2D_10Bumps(Foursome2DMafExperiment):
         return Defaults.create_gauss_no()
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_noise_variance=0.0, input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in
+        return [MaskedAutoregressiveFlow(input_noise_variance=0.0, input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in
                 [1, 3, 4]]
 
     def create_data_title(self) -> str:

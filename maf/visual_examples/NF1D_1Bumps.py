@@ -20,7 +20,7 @@ class NF1D_1Bumps(Foursome2DMafExperiment):
         return "X ~ N(-2.5; 0.5^2)"
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
 
 
 if __name__ == '__main__':

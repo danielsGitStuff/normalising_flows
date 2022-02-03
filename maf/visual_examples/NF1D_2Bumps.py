@@ -15,14 +15,13 @@ class NF1D_2Bumps(Foursome2DMafExperiment):
         super().__init__("NF1D_2Bumps")
         self.vmax = 0.5
         self.print_3d_for_denses = False
-        self.epochs = 5
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=1, distributions=[GaussianMultivariate(input_dim=1, mus=[-2.5], cov=[0.5 ** 2]),
                                                                   GaussianMultivariate(input_dim=1, mus=[2.5], cov=[0.5 ** 2])])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[10, 10], norm_layer=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[10, 10], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
 
     def create_data_title(self) -> str:
         return "X ~ N(-2.5; 0.5^2) & N(2.5; 0.5^2)"

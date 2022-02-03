@@ -20,10 +20,6 @@ class NF2D_2Bumps(Foursome2DMafExperiment):
     def __init__(self):
         super().__init__("NF2D_2Bumps")
         self.vmax = self.data_distribution.prob(xs=[[2.5, 2.5]])
-        self.no_samples: int = 8000
-        self.no_val_samples: int = 1000
-        self.epochs = 50
-        self.vmax = 'auto'
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[1, 1]),
@@ -33,7 +29,7 @@ class NF2D_2Bumps(Foursome2DMafExperiment):
         return "X ~ N(-2.5, -2.5; 1, 1) & N(2.5, 2.5; 1, 1)"
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ import seaborn as sns
 
 
 class Foursome2DMafExperiment(DivergenceExperiment):
-
+    # todo remove, obsolete
     def __init__(self, name: str):
         super().__init__(name)
         self.h_offset = -2
@@ -46,8 +46,8 @@ class Foursome2DMafExperiment(DivergenceExperiment):
         # self.mesh_count = 200
         # self.meh_count_cut = 200
 
-    def run(self):
-        super(Foursome2DMafExperiment, self).run()
+    # def run(self):
+    #     super(Foursome2DMafExperiment, self).run()
         # self.print_samples()
 
     def print_samples(self):
