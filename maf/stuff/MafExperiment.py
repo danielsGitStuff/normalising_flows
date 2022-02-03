@@ -113,7 +113,7 @@ class MafExperiment:
 
     def run(self):
         self.result_folder.mkdir(exist_ok=True)
-        enable_memory_growth()
+        # enable_memory_growth()
         self._run()
         self.print_divergences()
         self.print_denses()
