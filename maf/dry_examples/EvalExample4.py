@@ -20,21 +20,12 @@ class EvalExample4(DivergenceExperiment):
 
     def __init__(self):
         self.input_dimensions: int = 5
-        super().__init__('Eval4')
-        # self.mesh_count = 100
-        # self.divergence_half_width = 4.0
-        # self.divergence_step_size = 0.5
-        # self.no_samples = 40000
-        # self.no_val_samples = 2000
+        super().__init__('EvalExample4')
 
     def create_data_distribution(self) -> Distribution:
         sample_f = lambda: np.random.normal(scale=2.0)
         cov = BaseMethods.random_covariance_matrix(n=self.input_dimensions, sample_f=sample_f)
-        # cov = [[1.0, 0.5], [0.5, 2.0]]
-        # cov = np.array(cov, dtype=np.float32)
-        # loc = np.random.random(self.input_dimensions).astype(np.float32)
         loc = np.random.uniform(-3.0, 3.0, self.input_dimensions).astype(np.float32)
-        # loc = np.array([0] * self.input_dimensions, dtype=np.float32)
         print('data distribution')
         print('loc')
         print(loc)
@@ -49,10 +40,6 @@ class EvalExample4(DivergenceExperiment):
 
     def create_data_title(self) -> str:
         return '5D offset Gaussian'
-
-    # def _run(self):
-    #     self._print_datadistribution()
-    #     super(EvalExample4, self)._run()
 
 
 if __name__ == '__main__':

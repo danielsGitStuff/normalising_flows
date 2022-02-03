@@ -22,7 +22,7 @@ class EvalExample3(DivergenceExperiment):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('Eval3')
+        super().__init__('EvalExample3')
         self.mesh_count = 500
         self.xmin = -10
         self.xmax = 10

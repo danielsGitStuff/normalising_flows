@@ -16,7 +16,7 @@ from typing import List
 class EvalExample2(DivergenceExperiment):
 
     def __init__(self):
-        super().__init__('Eval2')
+        super().__init__('EvalExample2')
         self.mesh_count = 500
         self.xmin = -7
         self.xmax = 7
