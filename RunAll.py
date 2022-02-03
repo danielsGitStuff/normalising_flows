@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import sys
+
+from maf.DL import DL3
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
+from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 from maf.visual_examples.NF1D_1Bumps import NF1D_1Bumps
 from maf.visual_examples.NF1D_2Bumps import NF1D_2Bumps
 from maf.visual_examples.NF2D_10Bumps import NF2D_10Bumps
@@ -80,6 +84,9 @@ if __name__ == '__main__':
 
     mixlearn_dir = Path('results_mix_learn')
     if args['big_machine']:
+        # make sure the dataset is already in place before starting processes relying on it. Might cause race conditions otherwise
+        pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
+        pw.execute()
         run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
         run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
     else:

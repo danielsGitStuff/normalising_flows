@@ -306,6 +306,9 @@ class DL3(Ser):
     def fetch_impl(self):
         raise NotImplementedError(f"download your dataset from '{self.url}' and create a DL2 in '{self.dl_folder}' here. set no_of_signals etc as well")
 
+    def run(self):
+        self.execute()
+
     def execute(self) -> DL2:
         if DL2.can_load(self.dl_folder):
             dl2 = DL2.load(self.dl_folder)

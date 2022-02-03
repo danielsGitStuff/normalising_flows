@@ -15,7 +15,7 @@ from maf.mixlearn.MixLearnExperiment import DatasetFetcher
 
 
 class MinibooneDL3(DL3):
-    def __init__(self, dataset_name: str = NotProvided()):
+    def __init__(self, dataset_name: str = 'miniboone'):
         super().__init__(url='https://archive.ics.uci.edu/ml/machine-learning-databases/00199/MiniBooNE_PID.txt',
                          dl_folder=Path(StaticMethods.cache_dir(), NotProvided.value_if_not_provided(dataset_name, 'miniboone')))
         self.cache_txt_file: Path = Path(StaticMethods.cache_dir(), 'miniboone.txt')
