@@ -1,19 +1,14 @@
-import sys
 from pathlib import Path
 
 import numpy as np
+from typing import List
 
 from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.base import BaseMethods
-from distributions.kl.JS import JensenShannonDivergence
-from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.DivergenceExperiment import DivergenceExperiment
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
-from maf.stuff.MafExperiment import MafExperiment
-from typing import List
 
 
 class EvalExample4(DivergenceExperiment):

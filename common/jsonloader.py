@@ -217,6 +217,7 @@ def to_json(instance, file: [str, Path] = None, complete=True, pretty_print=Fals
         """ Special json encoder for numpy types """
 
         def default(self, o):
+            # print(f"debug '{o}: {type(o)}'")
             if isinstance(o, np.integer):
                 return int(o)
             elif isinstance(o, type):

@@ -16,45 +16,50 @@ from maf.visual_examples.SS2DExample import SS2DMafExperiment
 from maf.visual_examples.ShowCase1D1 import ShowCase1D1
 from pathlib import Path
 
-from RunAllProcessWrapper import ProcessWrapper
+from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from keta.argparseer import ArgParser
 from maf.dry_examples.EvalExample3 import EvalExample3
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
 from common.globals import Global
-from typing import List, Type
+from typing import List, Type, Dict, Any
 
 from maf.visual_examples.NF2D_Row4 import NF2D_Row4
 
 if __name__ == '__main__':
-    ArgParser.parse()
+    # ArgParser.parse()
+    ap = ArgParser()
+    ap.ap.add_argument('--big_machine', help='use more GPUs', action='store_true')
+    args: Dict[str, Any] = ap.parse_args()
     description: str = f"""
     This script runs all MAF experiments inlcuding learning artificial distributions like multivariate/multimodal Gaussians, Miniboone, MNIST and experiments to show divergence.
 
     """
     print(description)
+    gpu_pool = GPUProcessWrapperPool()
 
 
-    def run(examples: List[Type]):
+    def run(examples: List[Type], results_dir: Path, gpu: int = 0):
         for t in examples:
-            pw = ProcessWrapper(module=t.__module__, klass=t.__name__)
-            pw.execute()
+            pw = GPUProcessWrapper(module=t.__module__, klass=t.__name__, results_dir=results_dir)
+            gpu_pool.add_to_pool(pw, gpu)
 
 
     examples_artificial: List[Type] = [NF1D_1Bumps,
-                                       NF1D_2Bumps,
-                                       NF2D_1Bumps,
-                                       NF2D_2Bumps,
-                                       NF2D_10Bumps,
-                                       NF2D_1Rect,
-                                       NF2D_3Rect,
-                                       NF2D_4Rect,
-                                       SS1DMafExperiment,
-                                       SS2DMafExperiment,
-                                       ShowCase1D1,
-                                       NF2D_Diag4,
-                                       NF2D_Row3,
-                                       NF2D_Row4]
+                                       # NF1D_2Bumps,
+                                       # NF2D_1Bumps,
+                                       # NF2D_2Bumps,
+                                       # NF2D_10Bumps,
+                                       # NF2D_1Rect,
+                                       # NF2D_3Rect,
+                                       # NF2D_4Rect,
+                                       # SS1DMafExperiment,
+                                       # SS2DMafExperiment,
+                                       # ShowCase1D1,
+                                       # NF2D_Diag4,
+                                       # NF2D_Row3,
+                                       # NF2D_Row4
+                                       ]
 
     examples_dry: List[Type] = [  # EvalExample,
         # EvalExample2,
@@ -62,6 +67,7 @@ if __name__ == '__main__':
         # EvalExample4
     ]
 
+    # this speeds up training!
     Global.Testing.set('testing_epochs', 1)
     Global.Testing.set('testing_nf_layers', 1)
     Global.Testing.set('testing_nf_norm_layer', False)
@@ -69,9 +75,18 @@ if __name__ == '__main__':
     examples_mix_learn: List[Type] = [MixLearnExperimentMiniBooneClfVarRunner,
                                       MixLearnExperimentMiniBooneClfVarRunnerBalanced]
 
-    Global.set_global('results_dir', Path('results_artificial'))
-    run(examples_artificial)
-    Global.set_global('results_dir', Path('results_dry'))
-    run(examples_dry)
+    # Global.set_global('results_dir', Path('results_artificial'))
+    run(examples_artificial, results_dir=Path('results_artificial'))
+    # Global.set_global('results_dir', Path('results_dry'))
+    # run(examples_dry, results_dir=Path('results_dry'))
+
     # Global.set_global('results_dir', Path('results_mix_learn'))
-    # run(examples_mix_learn)
+    mixlearn_dir = Path('results_mix_learn')
+    if args['big_machine']:
+        run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
+        run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
+    else:
+        run(examples_mix_learn, results_dir=mixlearn_dir)
+
+    gpu_pool.launch()
+    print('the end')

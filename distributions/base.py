@@ -91,6 +91,7 @@ class BaseMethods:
 def set_gpu():
     gpus = tf.config.list_physical_devices('GPU')
     gpu_index = Global.get_default('tf_gpu', 0)
+    print(f"   setting current gpu to: {gpu_index}")
     tf.config.set_visible_devices([gpus[gpu_index]], 'GPU')
     # tf.config.set_visible_devices()
     # if gpus:

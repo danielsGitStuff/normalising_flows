@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Type, Optional
+from typing import Type, Optional, Dict, Any
 from unittest import TestCase
 
 from keras import Input, Model
@@ -77,3 +77,15 @@ class JSTest(TestCase):
         js = jsonloader.to_json(obj, pretty_print=True)
         des: WithClass = jsonloader.from_json(js)
         self.assertEqual(des.klass, obj.klass)
+
+    def test_dict(self):
+        # todo this fails decoding cause ints are serialised as strings
+        d: Dict[int, Any] = {1: 'a', 2: 'b'}
+        # todo this fails encoding since keys have mixed types
+        d: Dict[Any, Any] = {1: 'a', '2': 'b'}
+        js = jsonloader.to_json(d)
+        print(js)
+        dd: Dict[Any, Any] = jsonloader.from_json(js)
+        for k in d.keys():
+            self.assertTrue(k in dd)
+            self.assertEqual(d[k], dd[k])
