@@ -1,3 +1,4 @@
+import sys
 from time import sleep
 
 import argparse
@@ -9,7 +10,8 @@ if __name__ == '__main__':
     p.add_argument('gpu', type=int)
     args = vars(p.parse_args())
     print(args)
-    # sleep(2)
+    # sleep(10)
+    # sys.exit(0)
     from importlib import import_module
     from common.globals import Global
     from maf.stuff.MafExperiment import MafExperiment
