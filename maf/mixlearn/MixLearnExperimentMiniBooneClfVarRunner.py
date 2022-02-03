@@ -39,7 +39,7 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
         #                                                classifiers_per_nf=1,
         #                                                just_signal_plan=False)
         #
-        creator = MAFCreator(batch_norm=True,
+        creator = MAFCreator(batch_norm=False,
                              conditional_one_hot=False,
                              # epochs=epochs,
                              hidden_shape=[200, 200],
@@ -59,7 +59,7 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        nf_epochs=2000,
                                                        nf_patience=20,
                                                        batch_size=1024,
-                                                       classifiers_per_nf=1,
+                                                       classifiers_per_nf=3,
                                                        just_signal_plan=False)
 
         experiment.create_training_plan().run()
