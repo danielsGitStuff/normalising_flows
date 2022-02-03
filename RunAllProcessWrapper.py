@@ -54,7 +54,7 @@ class GPUProcessWrapperPool(Ser):
     def run_on_current_gpu(self):
         setproctitle.setproctitle(f"Pool {self.current_gpu}")
         Global.set_global('tf_gpu', self.current_gpu)
-        # enable_memory_growth()
+        enable_memory_growth()
         for pw in self.d[self.current_gpu]:
             pw.execute()
 
