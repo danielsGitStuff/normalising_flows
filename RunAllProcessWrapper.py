@@ -9,7 +9,7 @@ from common.globals import Global
 from common.jsonloader import Ser
 from importlib import import_module
 
-from distributions.base import set_gpu
+from distributions.base import set_gpu, enable_memory_growth
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.StaticMethods import StaticMethods
 
@@ -50,7 +50,7 @@ class GPUProcessWrapperPool(Ser):
 
     def run_on_current_gpu(self):
         Global.set_global('tf_gpu', self.current_gpu)
-        set_gpu()
+        # enable_memory_growth()
         for pw in self.d[self.current_gpu]:
             pw.execute()
 
