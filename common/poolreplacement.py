@@ -68,10 +68,9 @@ class RestartingPoolReplacement:
         self.functionsList.append(f)
 
     def run_blocking(self, f, args: List[any]):
-        self.pool = PoolReplacement(self.processes)
-        result = self.pool.run_blocking(f, args)
-        self.pool.close()
-        self.pool = None
+        pool = PoolReplacement(1)
+        result = pool.run_blocking(f, args)
+        pool.close()
         return result
 
     def join(self):
