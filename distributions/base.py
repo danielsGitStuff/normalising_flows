@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 
 import math
+import setproctitle
 
 from common.globals import Global
 from typing import Union, Optional, Tuple, Dict, List, Callable
@@ -91,7 +92,8 @@ class BaseMethods:
 def set_gpu():
     gpus = tf.config.list_physical_devices('GPU')
     gpu_index = Global.get_default('tf_gpu', 0)
-    print(f"   setting current gpu to: {gpu_index}")
+    # print(f"   setting current gpu to: {gpu_index}")
+    print(f"   '{setproctitle.getproctitle()}' setting current gpu to: {gpu_index}")
     tf.config.set_visible_devices([gpus[gpu_index]], 'GPU')
     # tf.config.set_visible_devices()
     # if gpus:
