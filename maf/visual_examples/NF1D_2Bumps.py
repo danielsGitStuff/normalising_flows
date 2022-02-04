@@ -15,6 +15,7 @@ class NF1D_2Bumps(Foursome2DMafExperiment):
         super().__init__("NF1D_2Bumps")
         self.vmax = 0.5
         self.print_3d_for_denses = False
+        self.epochs = 30
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=1, distributions=[GaussianMultivariate(input_dim=1, mus=[-2.5], cov=[0.5 ** 2]),
