@@ -30,8 +30,8 @@ class DivergenceExperiment(MafExperiment):
         self.ymin: float = -4.0
         self.ymax: float = 4.0
         self.vmax: Optional[float, str] = 'auto'
-        self.no_samples: int = 24000
-        self.no_val_samples: int = 2000
+        self.no_samples: int = 1024 * 30
+        self.no_val_samples: int = 1024 * 2
         self.mesh_count: int = 1000
         self.meh_count_cut: int = 200
         self.batch_size: int = 1024

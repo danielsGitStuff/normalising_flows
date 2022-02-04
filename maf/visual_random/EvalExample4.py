@@ -31,7 +31,7 @@ class EvalExample4(VisualRandomExample):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in
-                [1, 2, 3, 4, 5, 6, 7]]
+                [1, 3, 5]]
 
     def create_data_title(self) -> str:
         return '5D offset Gaussian'
