@@ -18,9 +18,10 @@ class EvalExample4(VisualRandomExample):
         super().__init__('EvalExample4')
 
     def create_data_distribution(self) -> Distribution:
-        sample_f = lambda: np.random.normal(scale=2.0)
+        rng = np.random.default_rng(45)
+        sample_f = lambda: rng.normal(scale=2.0)
         cov = BaseMethods.random_covariance_matrix(n=self.input_dimensions, sample_f=sample_f)
-        loc = np.random.uniform(-3.0, 3.0, self.input_dimensions).astype(np.float32)
+        loc = rng.uniform(-3.0, 3.0, self.input_dimensions).astype(np.float32)
         print('data distribution')
         print('loc')
         print(loc)

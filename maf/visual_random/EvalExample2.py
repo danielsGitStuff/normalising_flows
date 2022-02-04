@@ -27,17 +27,18 @@ class EvalExample2(VisualRandomExample):
         O = 3
         R = 3
         H_MIN = 0.6
+        rng = np.random.default_rng(67)
         d = WeightedMultimodalMultivariate(input_dim=DIM)
         for i in range(7):
-            weight = np.random.random() + 3
-            src_offsets = np.random.uniform(-O, O, DIM)
-            src_lows = np.random.uniform(-R, R, DIM)
+            weight = rng.random() + 3
+            src_offsets = rng.uniform(-O, O, DIM)
+            src_lows = rng.uniform(-R, R, DIM)
 
             lows: List[float] = []
             highs: List[float] = []
             for o, low in zip(src_offsets, src_lows):
                 low += o
-                high = low + np.random.uniform(H_MIN, R)
+                high = low + rng.uniform(H_MIN, R)
                 lows.append(low)
                 highs.append(high)
             print(f"lows {lows}, highs {highs}, weight {weight}")
