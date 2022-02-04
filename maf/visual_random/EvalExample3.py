@@ -10,10 +10,10 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.DivergenceExperiment import DivergenceExperiment
+from maf.visual_random.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample3(DivergenceExperiment):
+class EvalExample3(VisualRandomExample):
 
     def __init__(self):
         self.input_dimensions: int = 2
@@ -25,6 +25,8 @@ class EvalExample3(DivergenceExperiment):
         self.ymax = 10
         self.epochs = 5000
         self.patiences = [100, 100, 100]
+        self.no_samples = 30000
+        self.no_val_samples = 3000
 
     def create_data_distribution(self) -> Distribution:
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)

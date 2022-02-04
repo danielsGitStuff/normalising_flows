@@ -7,14 +7,13 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.visual_random.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample1(Foursome2DMafExperiment):
+class EvalExample1(VisualRandomExample):
 
     def __init__(self):
         super().__init__('EvalExample1')
-        self.mesh_count = 100
 
     def create_data_distribution(self) -> Distribution:
         cov = [[1.0, 0.5], [0.5, 2.0]]

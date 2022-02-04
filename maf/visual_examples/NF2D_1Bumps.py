@@ -14,10 +14,10 @@ from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import cast_to_ndarray
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.MafExperiment import MafExperiment
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.visual_examples.VisualExample import VisualExample
 
 
-class NF2D_1Bumps(Foursome2DMafExperiment):
+class NF2D_1Bumps(VisualExample):
     def __init__(self):
         super().__init__("NF2D_1Bumps")
         self.vmax = self.data_distribution.prob(np.array([[-2.5, -2.5]], dtype=np.float32))[0][0]

@@ -11,6 +11,9 @@ class SS1DMafExperiment(MafExperiment):
     def print_divergences(self):
         pass
 
+    def results_dir_name(self) -> str:
+        return 'results_artificial'
+
     def _run(self):
         fig, axs = self.default_fig(1, 2)
         columns_x = ['x', 'p(x)']

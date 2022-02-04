@@ -8,10 +8,10 @@ from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.base import BaseMethods
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.DivergenceExperiment import DivergenceExperiment
+from maf.visual_random.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample4(DivergenceExperiment):
+class EvalExample4(VisualRandomExample):
 
     def __init__(self):
         self.input_dimensions: int = 5

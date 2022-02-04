@@ -62,13 +62,7 @@ class Foursome2DMafExperiment(DivergenceExperiment):
             ax.set_ylim(self.ymin, self.ymax)
             self.save_fig(name=f"z_testing_{i}.png")
 
-    def set_minmax_square(self, minimax: [float, int]):
-        maxi = abs(float(minimax))
-        mini = -maxi
-        self.xmin = mini
-        self.ymin = mini
-        self.xmax = maxi
-        self.ymax = maxi
+
 
     # def _run(self):
     #     xs: np.ndarray = self.data_distribution.sample(self.no_samples)

@@ -42,6 +42,9 @@ class KLExperiment(MafExperiment):
         self.plan: Optional[Plan] = self.create_plan()
         self.csv_file: Optional[Path] = csv_file
 
+    def results_dir_name(self) -> str:
+        return 'results_artificial'
+
     def create_data_distribution(self, dim: int) -> Distribution:
         raise NotImplementedError()
 

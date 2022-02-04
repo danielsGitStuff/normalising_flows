@@ -1,24 +1,16 @@
-from distributions.UniformMultivariate import UniformMultivariate
 from pathlib import Path
 
 from typing import List
 
-import numpy as np
-import tensorflow as tf
-
 from common.globals import Global
 from distributions.Distribution import Distribution
-from distributions.GaussianMultivariate import GaussianMultivariate
-from distributions.LearnedDistribution import EarlyStop
-from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.MultimodalDistribution import MultimodalDistribution
-from distributions.base import cast_to_ndarray
+from distributions.UniformMultivariate import UniformMultivariate
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.MafExperiment import MafExperiment
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.visual_examples.VisualExample import VisualExample
 
 
-class NF2D_4Rect(Foursome2DMafExperiment):
+class NF2D_4Rect(VisualExample):
     def __init__(self):
         super().__init__("NF2D_4Rect")
 

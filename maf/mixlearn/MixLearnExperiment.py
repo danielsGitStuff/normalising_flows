@@ -62,6 +62,9 @@ class DatasetFetcher:
 
 class MixLearnExperiment(MafExperiment):
 
+    def results_dir_name(self) -> str:
+        return 'results_mixlearn'
+
     def _run(self):
         print('MixLearnExperiment.run() is not implemented', file=sys.stderr)
         pass

@@ -9,10 +9,10 @@ from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.DivergenceExperiment import DivergenceExperiment
+from maf.visual_random.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample2(DivergenceExperiment):
+class EvalExample2(VisualRandomExample):
 
     def __init__(self):
         super().__init__('EvalExample2')

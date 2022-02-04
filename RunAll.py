@@ -3,9 +3,9 @@ from __future__ import annotations
 import sys
 
 from maf.DL import DL3
-from maf.dry_examples.EvalExample1 import EvalExample1
-from maf.dry_examples.EvalExample2 import EvalExample2
-from maf.dry_examples.EvalExample4 import EvalExample4
+from maf.visual_random.EvalExample1 import EvalExample1
+from maf.visual_random.EvalExample2 import EvalExample2
+from maf.visual_random.EvalExample4 import EvalExample4
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 from maf.visual_examples.NF1D_1Bumps import NF1D_1Bumps
@@ -25,7 +25,7 @@ from pathlib import Path
 
 from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from keta.argparseer import ArgParser
-from maf.dry_examples.EvalExample3 import EvalExample3
+from maf.visual_random.EvalExample3 import EvalExample3
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
 from common.globals import Global

@@ -1,15 +1,15 @@
-from common.globals import Global
-from distributions.Distribution import Distribution
-from distributions.GaussianMultivariate import GaussianMultivariate
-from distributions.MultimodalDistribution import MultimodalDistribution
-from distributions.UniformMultivariate import UniformMultivariate
-from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
 from pathlib import Path
+
 from typing import List
 
+from common.globals import Global
+from distributions.Distribution import Distribution
+from distributions.UniformMultivariate import UniformMultivariate
+from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
+from maf.visual_examples.VisualExample import VisualExample
 
-class NF2D_1Rect(Foursome2DMafExperiment):
+
+class NF2D_1Rect(VisualExample):
     def __init__(self):
         super().__init__("NF2D_1Rect")
 

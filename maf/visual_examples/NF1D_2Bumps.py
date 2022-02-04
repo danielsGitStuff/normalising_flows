@@ -7,10 +7,10 @@ from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.visual_examples.VisualExample import VisualExample
 
 
-class NF1D_2Bumps(Foursome2DMafExperiment):
+class NF1D_2Bumps(VisualExample):
     def __init__(self):
         super().__init__("NF1D_2Bumps")
         self.vmax = 0.5

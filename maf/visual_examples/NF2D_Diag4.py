@@ -4,12 +4,12 @@ from typing import List
 
 from common.globals import Global
 from distributions.Distribution import Distribution
-from maf.VaryingParametersExperiment import Defaults
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.VaryingParametersExperiment import Defaults
+from maf.visual_examples.VisualExample import VisualExample
 
 
-class NF2D_Diag4(Foursome2DMafExperiment):
+class NF2D_Diag4(VisualExample):
     def __init__(self):
         super().__init__("NF2D_Diagonal4")
         self.set_minmax_square(10.0)

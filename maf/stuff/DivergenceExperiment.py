@@ -30,12 +30,12 @@ class DivergenceExperiment(MafExperiment):
         self.ymin: float = -4.0
         self.ymax: float = 4.0
         self.vmax: Optional[float, str] = 'auto'
-        self.no_samples: int = 80000
+        self.no_samples: int = 24000
         self.no_val_samples: int = 2000
         self.mesh_count: int = 1000
         self.meh_count_cut: int = 200
         self.batch_size: int = 1024
-        self.epochs: int = 200
+        self.epochs: int = 2000
         r = Runtime("creating MAFs").start()
         enable_memory_growth()
         self.mafs: List[MaskedAutoregressiveFlow] = self.create_mafs()
@@ -50,6 +50,14 @@ class DivergenceExperiment(MafExperiment):
 
         self.ds_samples: Optional[DS] = None
         self.log_ps_samples: Optional[DS] = None
+
+    def set_minmax_square(self, minimax: [float, int]):
+        maxi = abs(float(minimax))
+        mini = -maxi
+        self.xmin = mini
+        self.ymin = mini
+        self.xmax = maxi
+        self.ymax = maxi
 
     def _print_datadistribution(self):
         plt.clf()

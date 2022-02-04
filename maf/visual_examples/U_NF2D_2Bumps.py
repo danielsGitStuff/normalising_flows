@@ -1,20 +1,13 @@
 from typing import List
 
-import numpy as np
-import tensorflow as tf
-
 from distributions.Distribution import Distribution
-from distributions.GaussianMultivariate import GaussianMultivariate
-from distributions.LearnedDistribution import EarlyStop
-from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.MafExperiment import MafExperiment
-from maf.stuff.Foursome2DExample import Foursome2DMafExperiment
+from maf.visual_examples.VisualExample import VisualExample
 
 
-class U_NF2D_2Bumps(Foursome2DMafExperiment):
+class U_NF2D_2Bumps(VisualExample):
     def __init__(self):
         super().__init__("U_NF2D_2Bumps")
         self.batch_size = 512

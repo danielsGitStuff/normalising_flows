@@ -19,7 +19,7 @@ class MafExperiment:
     def __init__(self, name: str):
         self.cache_dir: Path = StaticMethods.cache_dir()
         self.name: str = name
-        self.result_folder: Path = Global.get_default('results_dir', Path("results"))
+        self.result_folder: Path = Global.get_default('results_dir', self.results_dir_name())
         self.heat_map_cmap: Colormap = sns.color_palette("Blues", as_cmap=True)
         self.heat_map_cmap = None
         self.fig = None
@@ -31,6 +31,9 @@ class MafExperiment:
         self.h_offset: int = 0
         self.use_early_stop: bool = True
         plt.clf()
+
+    def results_dir_name(self) -> str:
+        return 'results'
 
     def default_fig(self, no_rows: int, no_columns: int):
         plt.clf()

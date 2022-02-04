@@ -10,7 +10,7 @@ gpu=0
 if [ -n "$1" ]; then
   gpu=$1
 fi
-module="maf.dry_examples"
+module="maf.visual_random"
 klasses="EvalExample1 EvalExample2 EvalExample3 EvalExample4"
 
 for klass in $klasses; do
