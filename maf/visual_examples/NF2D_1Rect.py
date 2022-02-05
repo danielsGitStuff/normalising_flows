@@ -17,7 +17,7 @@ class NF2D_1Rect(VisualExample):
         return UniformMultivariate(input_dim=2, lows=[-1, -2], highs=[1, 2])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3, 5, 10]]
 
     def create_data_title(self) -> str:
         return "X ~ N(-2.5, -2.5; 2^2, 1)"

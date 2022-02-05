@@ -20,7 +20,7 @@ class NF2D_3Rect(VisualExample):
                                                                   UniformMultivariate(input_dim=2, lows=[1, 1], highs=[2, 3])])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [3]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 3, 5, 10]]
 
     def create_data_title(self) -> str:
         return '3 Uniforms'

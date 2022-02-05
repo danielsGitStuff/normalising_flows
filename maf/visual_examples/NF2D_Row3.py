@@ -18,7 +18,7 @@ class NF2D_Row3(VisualExample):
         return Defaults.create_gauss_3_y(0.0)
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 3, 5, 10]]
 
     def create_data_title(self) -> str:
         return "X ~ 3xN(0; 0.3^2, 0.3^2)"

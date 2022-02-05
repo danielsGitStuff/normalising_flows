@@ -22,7 +22,7 @@ class NF1D_2Bumps(VisualExample):
                                                                   GaussianMultivariate(input_dim=1, mus=[2.5], cov=[0.5 ** 2])])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[10, 10], norm_layer=True, use_tanh_made=True) for layers in [1, 2, 3]]
+        return [MaskedAutoregressiveFlow(input_dim=1, layers=layers, activation="relu", hidden_shape=[10, 10], norm_layer=True, use_tanh_made=True) for layers in [1, 3, 5, 10]]
 
     def create_data_title(self) -> str:
         return "X ~ N(-2.5; 0.5^2) & N(2.5; 0.5^2)"
