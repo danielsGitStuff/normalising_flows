@@ -3,6 +3,7 @@ from typing import List
 from distributions.Distribution import Distribution
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.visual_examples.VisualExample import VisualExample
 
@@ -32,4 +33,5 @@ class U_NF2D_2Bumps(VisualExample):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     U_NF2D_2Bumps().run()

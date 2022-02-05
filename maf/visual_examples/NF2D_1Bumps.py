@@ -12,6 +12,7 @@ from distributions.LearnedDistribution import EarlyStop
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import cast_to_ndarray
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.MafExperiment import MafExperiment
 from maf.visual_examples.VisualExample import VisualExample
@@ -64,6 +65,7 @@ class NF2D_1BumpsOlde(MafExperiment):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     Global.set_global('results_dir', Path('results_artificial'))
     NF2D_1Bumps().run()
 

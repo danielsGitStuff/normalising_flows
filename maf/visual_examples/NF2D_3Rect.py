@@ -6,6 +6,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.visual_examples.VisualExample import VisualExample
 
@@ -27,5 +28,6 @@ class NF2D_3Rect(VisualExample):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     Global.set_global('results_dir', Path('results_artificial'))
     NF2D_3Rect().run()

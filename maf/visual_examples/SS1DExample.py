@@ -1,5 +1,6 @@
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
+from keta.argparseer import ArgParser
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
 
@@ -80,4 +81,5 @@ class SS1DMafExperiment(MafExperiment):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     SS1DMafExperiment().run()

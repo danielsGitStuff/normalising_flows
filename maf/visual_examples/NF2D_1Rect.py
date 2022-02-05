@@ -5,6 +5,7 @@ from typing import List
 from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.UniformMultivariate import UniformMultivariate
+from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.visual_examples.VisualExample import VisualExample
 
@@ -24,5 +25,6 @@ class NF2D_1Rect(VisualExample):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     Global.set_global('results_dir', Path('results_artificial'))
     NF2D_1Rect().run()

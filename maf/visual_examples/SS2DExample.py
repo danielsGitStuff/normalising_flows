@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from distributions.Distribution import DensityPlotData
 from distributions.GaussianMultivariate import GaussianMultivariate
+from keta.argparseer import ArgParser
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
 
@@ -45,4 +46,5 @@ class SS2DMafExperiment(MafExperiment):
 
 
 if __name__ == '__main__':
+    ArgParser.parse()
     SS2DMafExperiment().run()
