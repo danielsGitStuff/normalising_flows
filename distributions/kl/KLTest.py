@@ -3,8 +3,6 @@ from keras.keras_parameterized import TestCase
 
 from common.util import Runtime
 from distributions.GaussianMultivariate import GaussianMultivariate
-from distributions.Uniform import Uniform
-from distributions.UniformMultivariate import UniformMultivariate
 from distributions.kl.KL import KullbackLeiblerDivergence
 
 
@@ -65,10 +63,32 @@ class KLTest(TestCase):
         kld_tf = float(p.tfd_distribution.kl_divergence(q.tfd_distribution))
         kld = KullbackLeiblerDivergence(p=p, q=q, half_width=6, step_size=.1)
         r = Runtime('kl').start()
-        kl = kld.calculate_by_sampling_p(1000)
+        kl = kld.calculate_by_sampling_p(100000)
         # kl = kld.calculate_sample_space()
         r.stop().print()
         print(f"kl is {kl}. tf_kl is {kld_tf}")
         self.assertNotEqual(kl, 0.0)
         self.assertLessEqual(np.absolute(kl - kld_tf), 0.006)
+        # self.assertAlmostEqual(kl, kld_tf, places=2)
+
+    def test_different_gaussians_tfp_3(self):
+        print('different')
+        dims: int = 1
+        p = GaussianMultivariate(input_dim=dims, mus=[-10] * dims, cov=[0.01] * dims)
+        q = GaussianMultivariate(input_dim=dims, mus=[30] * dims, cov=[0.01] * dims)
+
+        p.create_base_distribution()
+        q.create_base_distribution()
+
+        kld_tf = float(p.tfd_distribution.kl_divergence(q.tfd_distribution))
+        kld = KullbackLeiblerDivergence(p=p, q=q, half_width=6, step_size=.1)
+        r = Runtime('kl').start()
+        kl = kld.calculate_by_sampling_p(10000)
+        # kl = kld.calculate_sample_space()
+        r.stop().print()
+        print(f"kl is {kl}. tf_kl is {kld_tf}")
+        self.assertGreater(kl, 79997.0)
+        self.assertLessEqual(kl, 80000.0)
+        # self.assertNotEqual(kl, 0.0)
+        # self.assertLessEqual(np.absolute(kl - kld_tf), 0.006)
         # self.assertAlmostEqual(kl, kld_tf, places=2)

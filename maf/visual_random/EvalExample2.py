@@ -27,7 +27,7 @@ class EvalExample2(VisualRandomExample):
         O = 3
         R = 3
         H_MIN = 0.6
-        rng = np.random.default_rng(67)
+        rng = np.random.default_rng(65)
         d = WeightedMultimodalMultivariate(input_dim=DIM)
         for i in range(7):
             weight = rng.random() + 3

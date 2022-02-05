@@ -45,7 +45,7 @@ class DivergenceExperiment(MafExperiment):
         self.divergence_step_size: Optional[float] = None
         self.divergence_sample_size: Optional[int] = 10000
         self.data_distribution: Distribution = self.create_data_distribution()
-        self.divergence_metric_every_epoch: int = 50
+        self.divergence_metric_every_epoch: int = 25
         self.patiences: List[int] = [50, 50, 50]
 
         self.ds_samples: Optional[DS] = None
