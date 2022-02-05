@@ -6,5 +6,5 @@ cd "$DIR" || exit
 
 ./RunMixlearn.sh&
 ./RunArtificial.sh 0
-./RunDry.sh 0
+./RunVisualRandom.sh 0
 #,/RunMixlearn.sh 2

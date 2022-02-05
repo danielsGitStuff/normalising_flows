@@ -19,11 +19,11 @@ class KullbackLeiblerDivergence(Divergence):
 
             log_p, log_q = BaseMethods.filter_log_space_neg_inf(log_p, log_q)
 
-            # kl = tf.reduce_sum(p * (log_p - log_q))  # vanilla KL, does not work
+            # kl = tf.reduce_sum(tf.exp(log_p) * (log_p - log_q))  # vanilla KL, does not work
 
             # ALTERNATIVE URL: https://web.archive.org/web/20220128194513/https://joschu.net/blog/kl-approx.html
             # kl = tf.reduce_sum(log_p - log_q)  # naive version k1, high variance, unbiased, src=http://joschu.net/blog/kl-approx.html
-            # kl = tf.reduce_sum(1 / 2 * (log_p - log_q) ** 2) # k2, low variance, biased
+            # kl = tf.reduce_sum(1 / 2 * (log_q - log_p) ** 2) # k2, low variance, biased
 
             log_r = log_q - log_p  # k3, low variance, unbiased
             r = tf.exp(log_r)
