@@ -6,7 +6,7 @@ from typing import List
 from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
-from distributions.base import BaseMethods
+from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.visual_random.VisualRandomExample import VisualRandomExample
 
@@ -21,6 +21,7 @@ class EvalExample4(VisualRandomExample):
         rng = np.random.default_rng(45)
         sample_f = lambda: rng.normal(scale=2.0)
         cov = None
+        enable_memory_growth()
         for seed in range(1905, 10000):
             Global.set_seed(seed)
             # sample_f = lambda: np.random.normal(scale=2.0)
@@ -52,7 +53,7 @@ class EvalExample4(VisualRandomExample):
 if __name__ == '__main__':
 
     import tensorflow as tf
-
+    enable_memory_growth()
     for seed in range(1905, 10000):
         Global.set_seed(seed)
         sample_f = lambda: np.random.normal(scale=2.0)

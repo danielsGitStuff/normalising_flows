@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -33,31 +35,34 @@ class CachePrinter:
         #     print('debug 4gerg')
 
         def printi(df: pd.DataFrame, ax, ax_log, print_log=False):
-            index = 0
-            if len(df) > 1:
-                index = 1
-            t: pd.DataFrame = df.iloc[index:]
-            max_y = t.values.max()
-            min_y = df.values.min()
-            print(f"limits {min_y} {max_y}")
-            ax.set_ylim(min_y, max_y)
-            ax.set_title(f"{', '.join(df.columns)}")
-            sns.lineplot(data=df, ax=ax)
-            if print_log:
-                df = df.copy()
-                for c in df.columns:
-                    df[c] = np.log(df[c])
-                # df['kl'] = np.log(df_kl['kl'])
-                # df['js'] = np.log(df_kl['js'])
-                # t: pd.DataFrame = df.loc[df.index >= 10]  # df.iloc[10:]
+            try:
+                index = 0
+                if len(df) > 1:
+                    index = 1
                 t: pd.DataFrame = df.iloc[index:]
                 max_y = t.values.max()
                 min_y = df.values.min()
-                ax_log.set_ylim(min_y, max_y)
-                ax_log.set_title(f"log {', '.join(df.columns)}")
-                sns.lineplot(data=df, ax=ax_log)
-            else:
-                ax_log.set_axis_off()
+                print(f"limits {min_y} {max_y}")
+                ax.set_ylim(min_y, max_y)
+                ax.set_title(f"{', '.join(df.columns)}")
+                sns.lineplot(data=df, ax=ax)
+                if print_log:
+                    df = df.copy()
+                    for c in df.columns:
+                        df[c] = np.log(df[c])
+                    # df['kl'] = np.log(df_kl['kl'])
+                    # df['js'] = np.log(df_kl['js'])
+                    # t: pd.DataFrame = df.loc[df.index >= 10]  # df.iloc[10:]
+                    t: pd.DataFrame = df.iloc[index:]
+                    max_y = t.values.max()
+                    min_y = df.values.min()
+                    ax_log.set_ylim(min_y, max_y)
+                    ax_log.set_title(f"log {', '.join(df.columns)}")
+                    sns.lineplot(data=df, ax=ax_log)
+                else:
+                    ax_log.set_axis_off()
+            except BaseException as e:
+                print(f"{e} in '{f}'", file=sys.stderr)
 
         print(f"printing '{f}'")
 
@@ -81,5 +86,5 @@ class CachePrinter:
 
 
 if __name__ == '__main__':
-    c = CachePrinter(Path('.cache'))
+    c = CachePrinter(Path('pull/.cache'))
     c.run()

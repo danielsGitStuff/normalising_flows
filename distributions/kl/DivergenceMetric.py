@@ -28,5 +28,6 @@ class DivergenceMetric(Ser):
                 fit_history.add(d.name, None)
             return
         for d in self.divergences:
-            result = d.calculate_from_samples_vs_p(ds_q_samples=self.ds_samples, log_q_samples=self.log_ps_samples)
+            result = d.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
+            print(f"Divergence '{d.name}' at epoch {epoch} ={result}")
             fit_history.add(d.name, result)

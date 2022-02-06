@@ -30,7 +30,7 @@ class Divergence(Ser):
         self.log_epsilon = tf.cast(tf.math.log(K.epsilon()), dtype=tf.float32)
         self.epsilon = tf.cast(K.epsilon(), dtype=tf.float32)
 
-    def calculate_from_samples_vs_p(self, ds_q_samples: DS, log_q_samples: DS) -> float:
+    def calculate_from_samples_vs_q(self, ds_p_samples: DS, log_p_samples: DS) -> float:
         raise NotImplementedError()
 
     def calculate_by_sampling_space(self) -> float:

@@ -71,11 +71,11 @@ class KullbackLeiblerDivergence(Divergence):
         kl = kl_sum / samples_sum
         return kl
 
-    def calculate_from_samples_vs_p(self, ds_q_samples: DS, log_q_samples: DS) -> float:
+    def calculate_from_samples_vs_q(self, ds_p_samples: DS, log_p_samples: DS) -> float:
         kl_sum: float = 0.0
         samples_sum: int = 0
-        for samples, log_q in zip(ds_q_samples, log_q_samples):
-            log_p = self.p.log_prob(samples, batch_size=self.batch_size)
+        for samples, log_p in zip(ds_p_samples, log_p_samples):
+            log_q = self.q.log_prob(samples, batch_size=self.batch_size)
             kl, no_of_samples = KullbackLeiblerDivergence.Methods.kl_tensors(log_p, log_q)
             kl_sum += kl
             samples_sum += no_of_samples

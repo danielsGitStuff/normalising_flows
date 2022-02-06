@@ -142,14 +142,16 @@ class DivergenceExperiment(MafExperiment):
             return
         values = []
         for maf in self.mafs:
-            j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
-            k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
+            # j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
+            # k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
+            j = JensenShannonDivergence(q=maf, p=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
+            k = KullbackLeiblerDivergence(q=maf, p=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             if self.ds_samples is None:
                 jsd = j.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else j.calculate_by_sampling_space()
                 kld = k.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else k.calculate_by_sampling_space()
             else:
-                jsd = j.calculate_from_samples_vs_p(ds_q_samples=self.ds_samples,log_q_samples=self.log_ps_samples)
-                kld = k.calculate_from_samples_vs_p(ds_q_samples=self.ds_samples,log_q_samples=self.log_ps_samples)
+                jsd = j.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
+                kld = k.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
             row = [maf.layers, kld, jsd]
             values.append(row)
         values = np.array(values, dtype=np.float32)

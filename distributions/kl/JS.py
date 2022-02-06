@@ -32,7 +32,7 @@ class JensenShannonDivergence(KullbackLeiblerDivergence):
 
     def __init__(self, p: Distribution, q: Distribution, half_width: float, step_size: float, batch_size: int = 100000):
         super().__init__(p, q, half_width, step_size, batch_size)
-        self.name='js'
+        self.name = 'js'
 
     def calculate_by_sampling_space(self) -> float:
         raise NotImplementedError("not adapted to the new stuff yet")
@@ -65,18 +65,18 @@ class JensenShannonDivergence(KullbackLeiblerDivergence):
         js_sum = (kl_sum_p_m + kl_sum_q_m) / 2
         return js_sum
 
-    def calculate_from_samples_vs_p(self, ds_q_samples: DS, log_q_samples: DS) -> float:
+    def calculate_from_samples_vs_q(self, ds_p_samples: DS, log_p_samples: DS) -> float:
         kl_sum_p_m: float = 0.0
         kl_sum_q_m: float = 0.0
         samples_sum: int = 0
-        for samples, log_q in zip(ds_q_samples, log_q_samples):
-            log_p = self.p.log_prob(samples, batch_size=self.batch_size)
+        for samples, log_p in zip(ds_p_samples, log_p_samples):
+            log_q = self.q.log_prob(samples, batch_size=self.batch_size)
             log_p, log_q = BaseMethods.filter_log_space_neg_inf(log_p, log_q)
             kl_p_m, kl_q_m = JensenShannonDivergence.Methods.js_tensor_parts(log_p=log_p, log_q=log_q)
-            kl_sum_p_m += kl_p_m
-            kl_sum_q_m += kl_q_m
-            samples_sum += len(log_p)
-        kl_sum_p_m = kl_sum_p_m / samples_sum
-        kl_sum_q_m = kl_sum_q_m / samples_sum
+            kl_sum_p_m += kl_p_m / len(log_p)
+            kl_sum_q_m += kl_q_m / len(log_p)
+            # samples_sum += len(log_p)
+        # kl_sum_p_m = kl_sum_p_m / samples_sum
+        # kl_sum_q_m = kl_sum_q_m / samples_sum
         js_sum = (kl_sum_p_m + kl_sum_q_m) / 2
         return js_sum
