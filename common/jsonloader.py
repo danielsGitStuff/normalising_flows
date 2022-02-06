@@ -14,8 +14,9 @@ import numpy as np
 
 from common import util
 
-
 # from GPy.models import GPRegression
+SerSettings = object()
+SerSettings.__testing_mode = False
 
 
 class Ser(ABC):
@@ -54,14 +55,12 @@ class Ser(ABC):
     def unwrap(self):
         """in case your instance just wraps another one you can replace the wrapper here by returning its wrapped content"""
         return self
+
     @staticmethod
     def enable_testing():
         for _ in range(10):
             print('SERIALISATION TESTING MODE ENABLED. You can create Ser objects in the __main__ module but deserialisation will break!', file=sys.stderr)
-        Ser.__testing_mode = True
-Ser.class_module_map = {}
-Ser.__testing_mode = False
-
+        SerSettings.__testing_mode = True
 
 
 def write_text_file(path, text):
@@ -253,7 +252,6 @@ def to_json(instance, file: [str, Path] = None, complete=True, pretty_print=Fals
     if file is not None:
         write_text_file(file, js)
     return js
-
 
 # if __name__ == '__main__':
 #     f = "/mnt/sd1/Develop/priv/bepy88/config/zoo/t_bundesliga/run.0/state.json"
