@@ -14,9 +14,23 @@ import numpy as np
 
 from common import util
 
+
 # from GPy.models import GPRegression
-SerSettings = object()
-SerSettings.__testing_mode = False
+
+class __SerSettings:
+    def __init__(self):
+        self.__testing_mode: bool = False
+
+    def testing_mode(self) -> bool:
+        return self.__testing_mode
+
+    def enable_testing_mode(self):
+        for _ in range(10):
+            print('SERIALISATION TESTING MODE ENABLED. You can create Ser objects in the __main__ module but deserialisation will break!', file=sys.stderr)
+        self.__testing_mode = True
+
+
+SerSettings = __SerSettings()
 
 
 class Ser(ABC):
@@ -24,7 +38,7 @@ class Ser(ABC):
     def __init__(self):
         self.k__ = self.__class__.__qualname__
         self.m__ = self.__class__.__module__
-        if not Ser.__testing_mode and self.m__ == '__main__':
+        if not SerSettings.testing_mode() and self.m__ == '__main__':
             raise RuntimeError(
                 f"class '{self.k__}' was instantiated in your '__main__' module. This way it can only be deserialised in this very module (whatever '__main__' refers to right now) again. It is impossible to find the correct absolute module name for now.")
         self.dates: Set[str] = set()
@@ -58,9 +72,7 @@ class Ser(ABC):
 
     @staticmethod
     def enable_testing():
-        for _ in range(10):
-            print('SERIALISATION TESTING MODE ENABLED. You can create Ser objects in the __main__ module but deserialisation will break!', file=sys.stderr)
-        SerSettings.__testing_mode = True
+        SerSettings.enable_testing_mode()
 
 
 def write_text_file(path, text):
