@@ -69,9 +69,12 @@ class CachePrinter:
         df = pd.read_csv(f, index_col='epoch')
         if 'Unnamed: 0' in df.columns:
             df = df.drop('Unnamed: 0', axis=1)
+        if 'js' in df.columns:
+            df = df.drop('js', axis=1)
         has_kl = 'kl' in df.columns
         filtered = df[df['kl'].notnull()] if has_kl else df
-        df_loss = df.drop(['kl', 'js'], axis=1) if has_kl else df
+        # df_loss = df.drop(['kl', 'js'], axis=1) if has_kl else df
+        df_loss = df.drop(['kl'], axis=1) if has_kl else df
 
         no_columns = 2 if has_kl else 1
         fig, axs = StaticMethods.default_fig(2, no_columns=no_columns, w=10, h=7)

@@ -58,7 +58,7 @@ class WithClass(Ser):
         self.klass: Optional[Type[Ser]] = None
 
 
-class JSTest(TestCase):
+class JSDTest(TestCase):
     def test_path(self):
         obj = WithPath(path=Path('/mnt'))
         js = jsonloader.to_json(obj, pretty_print=True)

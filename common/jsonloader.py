@@ -23,7 +23,7 @@ class Ser(ABC):
     def __init__(self):
         self.k__ = self.__class__.__qualname__
         self.m__ = self.__class__.__module__
-        if self.m__ == '__main__':
+        if not Ser.__testing_mode and self.m__ == '__main__':
             raise RuntimeError(
                 f"class '{self.k__}' was instantiated in your '__main__' module. This way it can only be deserialised in this very module (whatever '__main__' refers to right now) again. It is impossible to find the correct absolute module name for now.")
         self.dates: Set[str] = set()
@@ -54,9 +54,14 @@ class Ser(ABC):
     def unwrap(self):
         """in case your instance just wraps another one you can replace the wrapper here by returning its wrapped content"""
         return self
-
-
+    @staticmethod
+    def enable_testing():
+        for _ in range(10):
+            print('SERIALISATION TESTING MODE ENABLED. You can create Ser objects in the __main__ module but deserialisation will break!', file=sys.stderr)
+        Ser.__testing_mode = True
 Ser.class_module_map = {}
+Ser.__testing_mode = False
+
 
 
 def write_text_file(path, text):
