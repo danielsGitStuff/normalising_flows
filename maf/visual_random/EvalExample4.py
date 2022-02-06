@@ -20,7 +20,18 @@ class EvalExample4(VisualRandomExample):
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
         sample_f = lambda: rng.normal(scale=2.0)
-        cov = BaseMethods.random_covariance_matrix(n=self.input_dimensions, sample_f=sample_f)
+        cov = None
+        for seed in range(1905, 10000):
+            Global.set_seed(seed)
+            # sample_f = lambda: np.random.normal(scale=2.0)
+            cov = BaseMethods.random_covariance_matrix(self.input_dimensions, sample_f=sample_f)
+            m = tf.linalg.cholesky(cov)
+            if not tf.reduce_any(tf.math.is_nan(m)):
+                break
+        print(f"seed {seed} works!")
+
+
+        # cov = BaseMethods.random_covariance_matrix(n=self.input_dimensions, sample_f=sample_f)
         loc = rng.uniform(-3.0, 3.0, self.input_dimensions).astype(np.float32)
         print('data distribution')
         print('loc')
