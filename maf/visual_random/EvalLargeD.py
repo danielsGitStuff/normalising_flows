@@ -21,7 +21,7 @@ class EvalLargeD(VisualRandomExample):
         # self.divergence_sample_size = 1024 * 400
         # self.no_val_samples = 1024 * 10
         # self.no_samples = 1024 * 100
-        self.divergence_sample_size = 1024 * 400
+        self.divergence_sample_size = 1024 * 100
         self.no_val_samples = 1024 * 4
         self.no_samples = 1024 * 40
 
