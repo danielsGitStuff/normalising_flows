@@ -19,8 +19,8 @@ class DivergenceMetric(Ser):
         self.batch_size: int = batch_size
         self.divergences: List[Divergence] = [KullbackLeiblerDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)] \
             # , JensenShannonDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)]
-        self.ds_samples: DS = ds_samples.batch(self.batch_size)
-        self.log_ps_samples: DS = log_ps_samples.batch(self.batch_size)
+        self.ds_samples: DS = ds_samples
+        self.log_ps_samples: DS = log_ps_samples
 
     def calculate(self, fit_history: FitHistory, epoch: int):
         if epoch % self.run_every_epoch != 0 and epoch > 1:

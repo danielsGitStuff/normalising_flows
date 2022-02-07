@@ -44,7 +44,7 @@ class EvalLargeD(VisualRandomExample):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in
+        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in
                 [10, 10, 10, 10, 20, 20, 20, 20, 30, 30, 30, 30]]
 
     def create_data_title(self) -> str:
