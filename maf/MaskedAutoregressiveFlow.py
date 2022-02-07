@@ -171,7 +171,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.transformed_distribution: Optional[tfd.TransformedDistribution] = None
         self.use_tanh_made: bool = NotProvided.value_if_not_provided(use_tanh_made, False)
         self.activation: str = NotProvided.value_if_not_provided(activation, "relu")
-        self.noise_norm_builder = NoiseNormBijectorBuilder(normalise=self.norm_layer, noise_stddev=input_noise_variance)
+        self.noise_norm_builder = NoiseNormBijectorBuilder(normalise=self.norm_layer, noise_stddev=input_noise_variance, batch_size=None)
         self.maf_layer_names: List[str] = []
         if not self.norm_layer and NotProvided.is_provided(input_dim):
             self.build_transformation()

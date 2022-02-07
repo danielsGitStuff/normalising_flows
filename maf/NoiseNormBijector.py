@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import keras.layers
 import math
 from typing import Optional
 
@@ -9,7 +10,7 @@ from tensorflow import Tensor
 from tensorflow_probability.python.bijectors import Bijector
 import tensorflow as tf
 from common.jsonloader import Ser
-from distributions.base import cast_to_ndarray
+from distributions.base import cast_to_ndarray, cast_dataset_to_tensor
 import keras.backend as K
 
 from maf.DS import DS
@@ -21,13 +22,14 @@ class NoiseNormBijectorBuilder(Ser):
         def add_noise(xs: Tensor, stddev: float):
             return xs + tf.random.normal(xs.shape, mean=0.0, stddev=stddev)
 
-    def __init__(self, normalise: bool = False, noise_stddev: float = 0.0):
+    def __init__(self, normalise: bool = False, noise_stddev: float = 0.0, batch_size: Optional[int] = 10000):
         super().__init__()
         self.normalise: bool = normalise
         self.noise_stddev: float = noise_stddev
         self.norm_shift: Optional[np.ndarray] = None
         self.norm_log_scale: Optional[np.ndarray] = None
         self.norm_scale: Optional[np.ndarray] = None
+        self.batch_size: Optional[int] = batch_size
         # if self.normalise and self.noise_stddev <= 0.0:
         #     raise RuntimeError()
 
@@ -37,14 +39,19 @@ class NoiseNormBijectorBuilder(Ser):
 
     def adapt(self, ds: DS):
         if self.normalise:
-            n: Normalization = Normalization()
-            batch_size = None
-            if len(ds) > 10000:
-                batch_size = math.floor(len(ds) / 10000)
-                batch_size = min(batch_size, 10000)
-            n.adapt(ds, batch_size=batch_size)
-            self.norm_shift = cast_to_ndarray(n.mean)
-            stddev = tf.sqrt(n.variance)
+            if self.batch_size is None:
+                t, _ = cast_dataset_to_tensor(ds)
+                t: Tensor = t
+                mean = tf.reduce_mean(t, axis=0)
+                variance = tf.math.reduce_variance(t, axis=0)
+            else:
+                batch_size = min(len(ds), self.batch_size)
+                n: Normalization = Normalization()
+                n.adapt(ds, batch_size=batch_size)
+                mean = n.mean
+                variance = n.variance
+            self.norm_shift = cast_to_ndarray(mean)
+            stddev = tf.sqrt(variance)
             # self.scale = tf.maximum(self.scale, K.epsilon())
             min_stddev = self.noise_stddev if self.noise_stddev > 0.0 else K.epsilon()
             min_stddev = max(min_stddev, K.epsilon())
@@ -132,5 +139,3 @@ class NoiseNormBijector(Bijector):
     #         r = tf.zeros(shape=(x.shape[0], 1))
     #         r = tf.constant(0.0, dtype=tf.float32)
     #     return r
-
-
