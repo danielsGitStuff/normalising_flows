@@ -24,7 +24,7 @@ class NF2D_2Bumps(VisualExample):
         return "X ~ N(-2.5, -2.5; 1, 1) & N(2.5, 2.5; 1, 1)"
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 3, 5, 10]]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in [1, 3, 10]]
 
 
 if __name__ == '__main__':
