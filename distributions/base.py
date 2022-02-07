@@ -83,6 +83,12 @@ class BaseMethods:
         return m
 
     @staticmethod
+    def random_positive_semidefinite_matrix(n: int, sample_f: Callable[[], float], dtype=np.float32) -> np.ndarray:
+        m = BaseMethods.random_covariance_matrix(n=n, sample_f=sample_f, dtype=dtype)
+        c = np.dot(m, m.T)
+        return c
+
+    @staticmethod
     def un_nan(t: Tensor, replacement=0.0) -> Tensor:
         nans = tf.math.is_nan(t)
         t = tf.where(tf.logical_not(nans), t, replacement)

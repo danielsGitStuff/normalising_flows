@@ -36,7 +36,6 @@ class GaussianMultivariateFullCov(Distribution):
             print(self.cov, file=sys.stderr)
             raise ValueError('stupid matrix. see log.')
         return MultivariateNormalTriL(scale_tril=m, loc=self.loc)
-        # return MultivariateNormalTriL(scale_tril=self.cov, loc=self.loc)
 
     def _log_likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
         return self.tfd_distribution.log_prob(xs)
