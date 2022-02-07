@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 
+from common import util
 from common.jsonloader import Ser
 from distributions.Distribution import Distribution
 from distributions.LearnedDistribution import FitHistory
@@ -29,5 +30,5 @@ class DivergenceMetric(Ser):
             return
         for d in self.divergences:
             result = d.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
-            print(f"Divergence '{d.name}' at epoch {epoch} ={result}")
+            util.p(f"Divergence '{d.name}' at epoch {epoch} ={result}")
             fit_history.add(d.name, result)

@@ -23,7 +23,7 @@ from tensorflow_probability.python.distributions import Distribution as TD
 from tensorflow_probability.python.bijectors import Bijector, AutoregressiveNetwork
 from tensorflow_probability.python.bijectors import MaskedAutoregressiveFlow as TFMAF
 
-from common import jsonloader
+from common import jsonloader, util
 from common.util import Runtime
 from common.NotProvided import NotProvided
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
@@ -338,7 +338,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         ds_val_cond = DSMethods.batch(ds_val_cond, batch_size)
         ds_val_truth_exp = DSMethods.batch(ds_val_truth_exp, batch_size)
 
-        print("stating fit...")
+        util.p("stating fit...")
         epoch = 0
         # while not worked:
         if early_stop:
