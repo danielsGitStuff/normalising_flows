@@ -171,6 +171,9 @@ class FitHistory:
     def get(self, key: str) -> List[float]:
         return self._d[key]
 
+    def truncate(self, last_epoch: int):
+        self._d = {k: vs[:last_epoch] for k, vs in self._d.items()}
+
 
 class EarlyStop:
     def __init__(self, monitor: str, comparison_op: Callable, patience: int, restore_best_model: bool = False):
@@ -190,11 +193,14 @@ class EarlyStop:
         # cp.save()
         # co = CheckpointOptions()
 
-    def after_training_ends(self):
-        if not self.__has_restored and self.restore_best_model and self.best_learned_distribution_config is not None:
+    def after_training_ends(self, history: FitHistory):
+        if self.__has_restored:
+            return
+        if self.restore_best_model and self.best_learned_distribution_config is not None:
             print(f"restoring model from epoch {self.last_epoch}")
             self.learned_distribution.transformed_distribution = self.best_learned_distribution_config.create().transformed_distribution
             self.__has_restored = True
+            history.truncate(self.last_epoch)
 
     def before_training_starts(self, learned_distribution: LearnedDistribution):
         self.learned_distribution = learned_distribution
@@ -226,7 +232,7 @@ class EarlyStop:
             if epoch - self.last_epoch > self.patience:
                 self.stopped = True
                 if self.restore_best_model:
-                    self.after_training_ends()
+                    self.after_training_ends(history=history)
                 return True
         return False
 

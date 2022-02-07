@@ -420,7 +420,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                 raise e
 
         if early_stop:
-            early_stop.after_training_ends()
+            early_stop.after_training_ends(self.history)
 
             # except NanError:
             #     print("got NaN. restarting...", file=sys.stderr)
