@@ -30,5 +30,4 @@ class EvalExample1(VisualRandomExample):
 
 if __name__ == '__main__':
     Global.set_seed(42)
-    Global.set_global('results_dir', Path('results_artificial'))
     EvalExample1().run()

@@ -17,17 +17,17 @@ class EvalExample2(VisualRandomExample):
     def __init__(self):
         super().__init__('EvalExample2')
         self.mesh_count = 500
-        self.xmin = -7
-        self.xmax = 7
-        self.ymin = -7
-        self.ymax = 7
+        self.xmin = -10
+        self.xmax = 10
+        self.ymin = -10
+        self.ymax = 10
 
     def create_data_distribution(self) -> Distribution:
         DIM: int = 2
         O = 3
         R = 3
         H_MIN = 0.6
-        rng = np.random.default_rng(65)
+        rng = np.random.default_rng()
         d = WeightedMultimodalMultivariate(input_dim=DIM)
         for i in range(7):
             weight = rng.random() + 3
@@ -56,6 +56,5 @@ class EvalExample2(VisualRandomExample):
 
 if __name__ == '__main__':
     ArgParser.parse()
-    Global.set_seed(67)
-    Global.set_global('results_dir', Path('results_artificial'))
+    Global.set_seed(50)
     EvalExample2().run()

@@ -64,5 +64,4 @@ if __name__ == '__main__':
     print(f"seed {seed} works!")
 
     Global.set_seed(seed)
-    Global.set_global('results_dir', Path('results_artificial'))
     EvalExample4().run()

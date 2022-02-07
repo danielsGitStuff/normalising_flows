@@ -23,7 +23,7 @@ class EvalExample3(VisualRandomExample):
         self.xmax = 10
         self.ymin = -10
         self.ymax = 10
-        self.epochs = 5000
+        self.epochs = 2000
         self.patiences = [100, 100, 100]
         self.no_samples = 30000
         self.no_val_samples = 3000
@@ -32,21 +32,23 @@ class EvalExample3(VisualRandomExample):
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
 
         no_of_distributions = 7
-        covs: List[np.ndarray] = []
-        seed = -1
-        while len(covs) < no_of_distributions:
-            seed += 1
-            Global.set_seed(seed)
-            sample_f = lambda: np.random.normal(scale=2.0)
-            cov = BaseMethods.random_covariance_matrix(self.input_dimensions, sample_f=sample_f)
-            m = tf.linalg.cholesky(cov)
-            if not tf.reduce_any(tf.math.is_nan(m)):
-                covs.append(cov)
-                print(f"seed {seed} works!")
+        rng = np.random.default_rng(42)
 
-        for cov in covs:
-            weight = np.random.random() + 3
-            loc = np.random.uniform(-7.0, 7.0, self.input_dimensions)
+        def sample_f() -> float:
+            s = np.abs(rng.normal(scale=.2)) + .2
+            s = s * rng.choice([1, -1])
+            return s
+
+        # sample_f = lambda: rng.normal(scale=0.2)+ .8
+
+        for i in range(no_of_distributions):
+            weight = rng.random() + 3
+            loc = rng.uniform(-7.0, 7.0, self.input_dimensions)
+            cov = BaseMethods.random_positive_semidefinite_matrix(n=self.input_dimensions, sample_f=sample_f)
+            cov = cov / cov.max()
+            # cov[0][0] = 1.0
+            # cov[1][1] = 1.0
+            print(cov)
             g = GaussianMultivariateFullCov(loc=loc, cov=cov)
             d.add_d(g, weight=weight)
         return d
@@ -54,13 +56,12 @@ class EvalExample3(VisualRandomExample):
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True,
                                          batch_norm=False) for layers
-                in [1, 5, 10]]
+                in [5]]
 
     def create_data_title(self) -> str:
         return f"7 Gaussians"
 
 
 if __name__ == '__main__':
-    Global.set_global('results_dir', Path('results_artificial'))
     enable_memory_growth()
     EvalExample3().run()
