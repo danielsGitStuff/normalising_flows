@@ -11,11 +11,14 @@ if [ -n "$1" ]; then
   gpu=$1
 fi
 module="maf.visual_random"
-klasses="EvalExample5 EvalExample6"
+#klasses="EvalExample5 EvalExample6"
 
-for klass in $klasses; do
-  #  echo "launching python bashlauncher.py \"$module\" \"$gpu\""
-  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &>"logs/$klass.log" &
-done
+#for klass in $klasses; do
+#  #  echo "launching python bashlauncher.py \"$module\" \"$gpu\""
+#  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &>"logs/$klass.log" &
+#done
 
-python visualise/CachePrinter.py ".cache"
+python "bashlauncher.py" "$module.EvalExample5" "EvalExample5" "1" &>"logs/EvalExample5.log" &
+python "bashlauncher.py" "$module.EvalExample6" "EvalExample6" "2" &>"logs/EvalExample6.log" &
+
+#python visualise/CachePrinter.py ".cache"

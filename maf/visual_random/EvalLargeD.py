@@ -16,14 +16,14 @@ class EvalLargeD(VisualRandomExample):
         self.loc_range: float = 10.0
         self.no_of_gaussians: int = 7
         super().__init__(name)
-        self.epochs = 100
+        self.epochs = 2000
         self.divergence_metric_every_epoch = 10
         # self.divergence_sample_size = 1024 * 400
         # self.no_val_samples = 1024 * 10
         # self.no_samples = 1024 * 100
-        self.divergence_sample_size = 1024 * 100
-        self.no_val_samples = 1024 * 4
-        self.no_samples = 1024 * 40
+        self.divergence_sample_size = 1024 * 400
+        self.no_val_samples = 1024 * 8
+        self.no_samples = 1024 * 200
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
@@ -45,7 +45,7 @@ class EvalLargeD(VisualRandomExample):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in
-                [5, 5, 10, 10]]
+                [10, 10, 10, 10, 20, 20, 20, 20, 30, 30, 30, 30]]
 
     def create_data_title(self) -> str:
         return f'{self.no_of_gaussians}x{self.input_dimensions}D offset Gaussians, loc=[-{self.loc_range},{self.loc_range}]'
