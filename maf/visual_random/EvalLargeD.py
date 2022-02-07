@@ -16,11 +16,14 @@ class EvalLargeD(VisualRandomExample):
         self.loc_range: float = 10.0
         self.no_of_gaussians: int = 7
         super().__init__(name)
-        self.epochs = 250
+        self.epochs = 100
         self.divergence_metric_every_epoch = 10
+        # self.divergence_sample_size = 1024 * 400
+        # self.no_val_samples = 1024 * 10
+        # self.no_samples = 1024 * 100
         self.divergence_sample_size = 1024 * 400
-        self.no_val_samples = 1024 * 10
-        self.no_samples = 1024 * 100
+        self.no_val_samples = 1024 * 4
+        self.no_samples = 1024 * 40
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
