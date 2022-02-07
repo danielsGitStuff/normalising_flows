@@ -367,7 +367,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                         for xs, cond in vs:
                             if not self.conditional:
                                 cond = None
-                            val_ps = self.log_prob(xs, cond=cond)
+                            val_ps = self.log_prob(xs, cond=cond, batch_size=batch_size)
                             val_loss = -tf.reduce_mean(val_ps)
                             batch_val_losses.append(val_loss)
                     else:
