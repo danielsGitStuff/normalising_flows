@@ -16,7 +16,7 @@ class EvalLargeD(VisualRandomExample):
         self.loc_range: float = 10.0
         self.no_of_gaussians: int = 7
         super().__init__(name)
-        self.epochs = 2000
+        self.epochs = 250
         self.divergence_metric_every_epoch = 10
         self.divergence_sample_size = 1024 * 400
         self.no_val_samples = 1024 * 10
