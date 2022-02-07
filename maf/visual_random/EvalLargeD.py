@@ -24,6 +24,7 @@ class EvalLargeD(VisualRandomExample):
         self.divergence_sample_size = 1024 * 400
         self.no_val_samples = 1024 * 8
         self.no_samples = 1024 * 200
+        self.batch_size = 1024 * 2
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
@@ -44,7 +45,8 @@ class EvalLargeD(VisualRandomExample):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in
+        return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers
+                in
                 [10, 10, 10, 10, 20, 20, 20, 20, 30, 30, 30, 30]]
 
     def create_data_title(self) -> str:
