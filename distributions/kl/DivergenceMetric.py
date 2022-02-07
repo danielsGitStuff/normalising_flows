@@ -12,15 +12,15 @@ from maf.DS import DS
 
 
 class DivergenceMetric(Ser):
-    def __init__(self, maf: Distribution, ds_samples: DS, log_ps_samples: DS, run_every_epoch: int = 2, batch_size: int = 100000):
+    def __init__(self, maf: Distribution, ds_samples: DS, log_ps_samples: DS, run_every_epoch: int = 2, batch_size: int = 1024 * 100):
         super().__init__()
         self.maf: Distribution = maf
         self.run_every_epoch: int = run_every_epoch
         self.batch_size: int = batch_size
         self.divergences: List[Divergence] = [KullbackLeiblerDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)] \
             # , JensenShannonDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)]
-        self.ds_samples: DS = ds_samples
-        self.log_ps_samples: DS = log_ps_samples
+        self.ds_samples: DS = ds_samples.batch(self.batch_size)
+        self.log_ps_samples: DS = log_ps_samples.batch(self.batch_size)
 
     def calculate(self, fit_history: FitHistory, epoch: int):
         if epoch % self.run_every_epoch != 0 and epoch > 1:

@@ -100,8 +100,8 @@ class DivergenceExperiment(MafExperiment):
                     mesh_count=self.mesh_count)
         mafs = []
         if self.divergence_metric_every_epoch > 0:
-            self.ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size)).batch(self.batch_size)
-            self.log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(self.ds_samples)).batch(self.batch_size)
+            self.ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size))
+            self.log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(self.ds_samples))
         for i, maf in enumerate(self.mafs):
             prefix = self.maf_prefix(f"l{maf.layers}.{i}")
             if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=prefix):
