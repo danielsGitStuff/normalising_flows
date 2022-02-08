@@ -1,11 +1,9 @@
 from keta.argparseer import ArgParser
-from maf.visual_random.EvalLargeD import EvalLargeD
+from maf.visual_random.EvalExample6 import EvalExample6
 
 
-class EvalExample8(EvalLargeD):
-
+class EvalExample8(EvalExample6):
     def __init__(self):
-        self.loc_range = 4.0
         super().__init__('EvalExample8', layers=[3, 3, 3, 5, 5, 5, 7, 7, 7])
 
 
