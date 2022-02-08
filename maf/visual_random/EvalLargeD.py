@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -11,10 +11,11 @@ from maf.visual_random.VisualRandomExample import VisualRandomExample
 
 
 class EvalLargeD(VisualRandomExample):
-    def __init__(self, name: str):
+    def __init__(self, name: str, layers: Optional[List[int]] = None):
         self.input_dimensions: int = 10
         self.loc_range: float = 10.0
         self.no_of_gaussians: int = 7
+        self.layers: List[int] = layers or [10, 10, 10, 20, 20, 20, 30, 30, 30]
         super().__init__(name)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10
@@ -46,8 +47,7 @@ class EvalLargeD(VisualRandomExample):
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers
-                in
-                [10, 10, 10,  20, 20,  20, 30, 30, 30]]
+                in self.layers]
 
     def create_data_title(self) -> str:
         return f'{self.no_of_gaussians}x{self.input_dimensions}D offset Gaussians, loc=[-{self.loc_range},{self.loc_range}]'
