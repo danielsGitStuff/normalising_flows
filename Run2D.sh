@@ -14,6 +14,6 @@ echo ${#klasses[@]}
 for i in "${!klasses[@]}"; do
   klass=${klasses[$i]}
   gpu=$(($i % 3))
-  echo "launching python bashlauncher.py \"$module\" \"$klass\" \"$gpu\"&> \"logs/$klass.log\""
-  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &> "logs/$klass.log"
+  echo "launching python bashlauncher.py \"$module.$klass\" \"$klass\" \"$gpu\"&> \"logs/$klass.log\""
+  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &> "logs/$klass.log" &
 done
