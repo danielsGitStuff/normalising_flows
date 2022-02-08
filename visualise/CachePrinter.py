@@ -171,7 +171,7 @@ class CachePrinter:
 
 if __name__ == '__main__':
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull/.cache', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='pull.olde2/.cache', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     c = CachePrinter(Path(args['dir']))
     c.run()

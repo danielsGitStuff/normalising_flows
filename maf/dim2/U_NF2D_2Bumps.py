@@ -5,10 +5,10 @@ from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_examples.VisualExample import VisualExample
+from maf.dim2.VisualExample2D import VisualExample2D
 
 
-class U_NF2D_2Bumps(VisualExample):
+class U_NF2D_2Bumps(VisualExample2D):
     def __init__(self):
         super().__init__("U_NF2D_2Bumps")
         self.batch_size = 512

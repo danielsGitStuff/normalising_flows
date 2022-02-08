@@ -6,7 +6,7 @@ import tensorflow as tf
 import pandas as pd
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.base import enable_memory_growth
-from maf.visual_examples.MNIST import Mist
+from maf.dim2.MNIST import Mist
 from maf.stuff.StaticMethods import StaticMethods
 
 if __name__ == '__main__':

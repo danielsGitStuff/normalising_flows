@@ -7,7 +7,7 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import enable_memory_growth, BaseMethods
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_random.VisualRandomExample import VisualRandomExample
+from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalLargeD(VisualRandomExample):
@@ -15,7 +15,6 @@ class EvalLargeD(VisualRandomExample):
         self.input_dimensions: int = 10
         self.loc_range: float = 10.0
         self.no_of_gaussians: int = 7
-        self.layers: List[int] = layers or [10, 10, 10, 20, 20, 20, 30, 30, 30]
         super().__init__(name)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10

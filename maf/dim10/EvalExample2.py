@@ -9,7 +9,7 @@ from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_random.VisualRandomExample import VisualRandomExample
+from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalExample2(VisualRandomExample):

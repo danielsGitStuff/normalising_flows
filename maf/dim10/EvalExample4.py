@@ -8,7 +8,7 @@ from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_random.VisualRandomExample import VisualRandomExample
+from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalExample4(VisualRandomExample):

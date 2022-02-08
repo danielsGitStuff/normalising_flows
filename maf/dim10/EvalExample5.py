@@ -1,7 +1,7 @@
 from typing import Optional, List, Tuple
 
 from keta.argparseer import ArgParser
-from maf.visual_random.EvalLargeD import EvalLargeD
+from maf.dim10.EvalLargeD import EvalLargeD
 
 
 class EvalExample5(EvalLargeD):

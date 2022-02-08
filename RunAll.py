@@ -3,35 +3,37 @@ from __future__ import annotations
 import sys
 
 from maf.DL import DL3
-from maf.visual_random.EvalExample1 import EvalExample1
-from maf.visual_random.EvalExample2 import EvalExample2
-from maf.visual_random.EvalExample4 import EvalExample4
+from maf.dim10.EvalExample1 import EvalExample1
+from maf.dim10.EvalExample2 import EvalExample2
+from maf.dim10.EvalExample4 import EvalExample4
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
-from maf.visual_examples.NF1D_1Bumps import NF1D_1Bumps
-from maf.visual_examples.NF1D_2Bumps import NF1D_2Bumps
-from maf.visual_examples.NF2D_10Bumps import NF2D_10Bumps
-from maf.visual_examples.NF2D_1Bumps import NF2D_1Bumps
-from maf.visual_examples.NF2D_1Rect import NF2D_1Rect
-from maf.visual_examples.NF2D_2Bumps import NF2D_2Bumps
-from maf.visual_examples.NF2D_3Rect import NF2D_3Rect
-from maf.visual_examples.NF2D_4Rect import NF2D_4Rect
-from maf.visual_examples.NF2D_Diag4 import NF2D_Diag4
-from maf.visual_examples.NF2D_Row3 import NF2D_Row3
-from maf.visual_examples.SS1DExample import SS1DMafExperiment
-from maf.visual_examples.SS2DExample import SS2DMafExperiment
-from maf.visual_examples.ShowCase1D1 import ShowCase1D1
+from maf.dim2.NF1D_1Bumps import NF1D_1Bumps
+from maf.dim2.NF1D_2Bumps import NF1D_2Bumps
+from maf.dim2.NF2D_10Bumps import NF2D_10Bumps
+from maf.dim2.NF2D_1Bumps import NF2D_1Bumps
+from maf.dim2.NF2D_1Rect import NF2D_1Rect
+from maf.dim2.NF2D_2Bumps import NF2D_2Bumps
+from maf.dim2.NF2D_3Rect import NF2D_3Rect
+from maf.dim2.NF2D_4Rect import NF2D_4Rect
+from maf.dim2.NF2D_Diag4 import NF2D_Diag4
+from maf.dim2.NF2D_Row3 import NF2D_Row3
+from maf.dim2.SS1DExample import SS1DMafExperiment
+from maf.dim2.SS2DExample import SS2DMafExperiment
+from maf.dim2.ShowCase1D1 import ShowCase1D1
 from pathlib import Path
 
 from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from keta.argparseer import ArgParser
-from maf.visual_random.EvalExample3 import EvalExample3
+from maf.dim10.EvalExample3 import EvalExample3
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
 from common.globals import Global
 from typing import List, Type, Dict, Any
 
-from maf.visual_examples.NF2D_Row4 import NF2D_Row4
+from maf.dim2.NF2D_Row4 import NF2D_Row4
+from maf.dim10.EvalExample5 import EvalExample5
+from maf.dim10.EvalExample6 import EvalExample6
 
 if __name__ == '__main__':
     # ArgParser.parse()
@@ -74,6 +76,10 @@ if __name__ == '__main__':
                                 EvalExample4
                                 ]
 
+    examples_dry: List[Type] = [EvalExample5,
+                                EvalExample6
+                                ]
+
     # this speeds up training!
     # Global.Testing.set('testing_epochs', 1)
     # Global.Testing.set('testing_nf_layers', 1)
@@ -93,15 +99,18 @@ if __name__ == '__main__':
     # sys.exit(9)
     pw.execute()
 
-    run(examples_artificial, results_dir=Path('results_artificial'))
-    run(examples_dry, results_dir=Path('results_dry'))
+    run([EvalExample5], results_dir=Path('results_artificial_random'))
+    run([EvalExample6], results_dir=Path('results_artificial_random'))
 
-    mixlearn_dir = Path('results_mix_learn')
-    if args['big_machine']:
-        run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
-        run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
-    else:
-        run(examples_mix_learn, results_dir=mixlearn_dir)
+    # run(examples_artificial, results_dir=Path('results_artificial'))
+    # run(examples_dry, results_dir=Path('results_dry'))
+
+    # mixlearn_dir = Path('results_mix_learn')
+    # if args['big_machine']:
+    #     run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
+    #     run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
+    # else:
+    #     run(examples_mix_learn, results_dir=mixlearn_dir)
 
     gpu_pool.launch()
     print('the end')

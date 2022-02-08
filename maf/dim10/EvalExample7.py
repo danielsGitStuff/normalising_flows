@@ -1,6 +1,6 @@
 from keta.argparseer import ArgParser
-from maf.visual_random.EvalExample5 import EvalExample5
-from maf.visual_random.EvalLargeD import EvalLargeD
+from maf.dim10.EvalExample5 import EvalExample5
+from maf.dim10.EvalLargeD import EvalLargeD
 
 
 class EvalExample7(EvalExample5):

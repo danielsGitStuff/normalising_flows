@@ -10,7 +10,7 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_random.VisualRandomExample import VisualRandomExample
+from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalExample3(VisualRandomExample):

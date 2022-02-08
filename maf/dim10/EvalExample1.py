@@ -7,7 +7,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.visual_random.VisualRandomExample import VisualRandomExample
+from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalExample1(VisualRandomExample):

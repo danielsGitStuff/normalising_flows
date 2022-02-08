@@ -23,8 +23,10 @@ import seaborn as sns
 
 
 class DivergenceExperiment(MafExperiment):
-    def __init__(self, name: str):
+    def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 1):
         super().__init__(name)
+        self.layers: List[int] = layers or [10, 10, 10, 20, 20, 20, 30, 30, 30]
+        self.layers_repeat: int = layers_repeat
         self.xmin: float = -4.0
         self.xmax: float = 4.0
         self.ymin: float = -4.0
@@ -50,6 +52,9 @@ class DivergenceExperiment(MafExperiment):
 
         self.ds_samples: Optional[DS] = None
         self.log_ps_samples: Optional[DS] = None
+
+    def get_layers(self) -> List[int]:
+        return list(sorted(self.layers * self.layers_repeat))
 
     def set_minmax_square(self, minimax: [float, int]):
         maxi = abs(float(minimax))
@@ -112,7 +117,8 @@ class DivergenceExperiment(MafExperiment):
                     es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patiences[i], restore_best_model=True)
                 divergence_metric = None
                 if self.ds_samples is not None:
-                    divergence_metric = DivergenceMetric(maf=maf, ds_samples=self.ds_samples, log_ps_samples=self.log_ps_samples, run_every_epoch=self.divergence_metric_every_epoch)
+                    divergence_metric = DivergenceMetric(maf=maf, ds_samples=self.ds_samples, log_ps_samples=self.log_ps_samples,
+                                                         run_every_epoch=self.divergence_metric_every_epoch)
                 maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
                 maf.save(self.cache_dir, prefix=prefix)
             mafs.append(maf)
