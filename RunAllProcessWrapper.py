@@ -48,14 +48,28 @@ class GPUProcessWrapperPool(Ser):
             pool.join()
         else:
             gpu = list(self.d.keys())[0]
-            for pw in self.d[gpu]:
-                pw.execute()
+            # for pw in self.d[gpu]:
+            #     pw.execute()
+            p = Global.NEW_POOL()
+            for pw in self.d[self.current_gpu]:
+                js = jsonloader.to_json(pw)
+                print('addddding')
+                p.apply_async(GPUProcessWrapper.Methods.static_execute, args=(js,))
+                # GPUProcessWrapper.Methods.static_execute(js)
+            p.join()
 
     def run_on_current_gpu(self):
         setproctitle.setproctitle(f"Pool {self.current_gpu}")
         Global.set_global('tf_gpu', self.current_gpu)
+        p = Global.NEW_POOL()
         for pw in self.d[self.current_gpu]:
-            pw.execute()
+            js = jsonloader.to_json(pw)
+            print('addddding')
+            p.apply_async(GPUProcessWrapper.Methods.static_execute,args=(js,))
+            # GPUProcessWrapper.Methods.static_execute(js)
+        p.join()
+        # for pw in self.d[self.current_gpu]:
+        #     pw.execute()
 
 
 class GPUProcessWrapper(Ser):

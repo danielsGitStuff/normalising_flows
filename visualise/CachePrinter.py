@@ -148,7 +148,7 @@ class CachePrinter:
         for csv in csvs:
             df: pd.DataFrame = pd.read_csv(csv)
             df = df.drop(['loss', 'val_loss'], axis=1)
-            m_layer = re.search('\d+(?=\.\d\.maf\.history\.csv$)', csv.name)
+            m_layer = re.search('\d+(?=\.\d+\.maf\.history\.csv$)', csv.name)
             layer = int(csv.name[m_layer.start(): m_layer.end()])
             df['layer'] = np.repeat(float(layer), len(df))
             dfs.append(df)
@@ -171,7 +171,7 @@ class CachePrinter:
 
 if __name__ == '__main__':
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull.olde2/.cache', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='pull/.cache', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     c = CachePrinter(Path(args['dir']))
     c.run()

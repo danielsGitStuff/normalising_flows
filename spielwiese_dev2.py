@@ -12,7 +12,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution, DensityPlotData, HeatmapCreator, TfpD
 from distributions.LearnedDistribution import LearnedDistribution
 from distributions.UniformMultivariate import UniformMultivariate
-from distributions.base import TTensor, TTensorOpt
+from distributions.base import TTensor, TTensorOpt, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.StaticMethods import StaticMethods
 import seaborn as sns
@@ -126,10 +126,10 @@ class Spielwiese2:
         ymax = self.src_distr.highs[1]
         mesh_count = 20
 
-        # xmin = self.src_distr.lows[0] - 2.0
-        # ymin = self.src_distr.lows[1] - 1.0
-        # xmax = self.src_distr.highs[0] + 2.0
-        # ymax = self.src_distr.highs[1] + 1.0
+        xmin = self.src_distr.lows[0] - 2.0
+        ymin = self.src_distr.lows[1] - 1.0
+        xmax = self.src_distr.highs[0] + 2.0
+        ymax = self.src_distr.highs[1] + 1.0
         # mesh_count = 50
 
         x = tf.linspace(xmin, xmax, mesh_count)
@@ -141,9 +141,9 @@ class Spielwiese2:
         return ar
 
     def run(self):
-        if LearnedDistribution.can_load_from('pull/.cache', 'NF2D_1Rect_l2.1.maf'):
+        if LearnedDistribution.can_load_from('.cache', 'NF2D_1Rect_l2.0.maf'):
             print('can load')
-            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('pull/.cache', 'NF2D_1Rect_l2.1.maf')
+            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('.cache', 'NF2D_1Rect_l2.0.maf')
 
             self.hm(maf, mesh_count=100)
 
@@ -158,7 +158,7 @@ class Spielwiese2:
             fig, axs = StaticMethods.default_fig(3, 2, w=10, h=8)
             axs = axs.reshape((3, 2))
 
-            def printi(ax, vs: np.ndarray, L: float = 5.0, c=None, cmap='viridis', determinant: bool = False):
+            def printi(ax, vs: np.ndarray, L: float = 10.0, c=None, cmap='viridis', determinant: bool = False):
                 ax.set_box_aspect(1)
                 # im = ax.scatter(vs[:, 0], vs[:, 1], c=c, cmap=cmap)
                 hue = None
@@ -212,4 +212,5 @@ class Spielwiese2:
 
 
 if __name__ == '__main__':
+    enable_memory_growth()
     Spielwiese2().run()
