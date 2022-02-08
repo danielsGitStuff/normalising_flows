@@ -4,13 +4,12 @@ import sys
 
 import numpy as np
 import tensorflow as tf
-from tensorflow_probability.python.distributions import MultivariateNormalFullCovariance, MultivariateNormalTriL
+from tensorflow_probability.python.distributions import MultivariateNormalTriL
 
 from common.NotProvided import NotProvided
 from distributions.Distribution import Distribution, TfpD
 from distributions.base import TTensor, TTensorOpt
 from typing import Optional
-from tensorflow_probability.python.distributions.distribution import Distribution as DD
 
 
 class GaussianMultivariateFullCov(Distribution):
@@ -43,7 +42,6 @@ class GaussianMultivariateFullCov(Distribution):
     def _sample(self, size: int = 1, cond: TTensorOpt = None, **kwargs) -> np.ndarray:
         samples = self.tfd_distribution.sample(sample_shape=(size,))
         return samples
-        return self.cast_2_float_ndarray(samples)
 
     def _likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
         return self.tfd_distribution.prob(xs)

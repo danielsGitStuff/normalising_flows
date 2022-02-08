@@ -4,6 +4,7 @@ import sys
 
 import math
 import setproctitle
+from sklearn.datasets import make_spd_matrix
 
 from common.globals import Global
 from typing import Union, Optional, Tuple, Dict, List, Callable
@@ -83,10 +84,8 @@ class BaseMethods:
         return m
 
     @staticmethod
-    def random_positive_semidefinite_matrix(n: int, sample_f: Callable[[], float], dtype=np.float32) -> np.ndarray:
-        m = BaseMethods.random_covariance_matrix(n=n, sample_f=sample_f, dtype=dtype)
-        c = np.dot(m, m.T)
-        return c
+    def random_positive_semidefinite_matrix(n: int, seed: int = 42) -> np.ndarray:
+        return make_spd_matrix(n_dim=n, random_state=seed)
 
     @staticmethod
     def un_nan(t: Tensor, replacement=0.0) -> Tensor:
