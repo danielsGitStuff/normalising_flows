@@ -6,7 +6,7 @@ from maf.stuff.DivergenceExperiment import DivergenceExperiment
 
 
 class VisualRandomExample(DivergenceExperiment, ABC):
-    def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 1):
+    def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 4):
         super().__init__(name, layers=layers, layers_repeat=layers_repeat)
 
     def results_dir_name(self) -> str:
