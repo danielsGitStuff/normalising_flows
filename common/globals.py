@@ -1,7 +1,7 @@
 import sys
 
 from common.jsonloader import Ser
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -114,8 +114,9 @@ class Global:
         return pool
 
     @staticmethod
-    def NEW_POOL() -> RestartingPoolReplacement:
-        pool = RestartingPoolReplacement(Global.d["computation_pool_size"])
+    def NEW_POOL(size: Optional[int] = None) -> RestartingPoolReplacement:
+        size = size or Global.d['computation_pool_size']
+        pool = RestartingPoolReplacement(size)
         return pool
 
     @staticmethod

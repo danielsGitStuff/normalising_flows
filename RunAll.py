@@ -2,10 +2,14 @@ from __future__ import annotations
 
 import sys
 
+import numpy as np
+
 from maf.DL import DL3
 from maf.dim10.Dim10aCenteredMVG import Dim10aCenteredMVG
 from maf.dim10.EvalExample2 import EvalExample2
 from maf.dim10.EvalExample4 import EvalExample4
+from maf.dim2.NF2D_RandomA import NF2D_RandomA
+from maf.dim2.NF2D_RandomB import NF2D_RandomB
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 from maf.dim2.NF1D_1Bumps import NF1D_1Bumps
@@ -25,10 +29,10 @@ from pathlib import Path
 
 from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from keta.argparseer import ArgParser
-from maf.dim10.EvalExample3 import EvalExample3
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
 from common.globals import Global
+import random
 from typing import List, Type, Dict, Any
 
 from maf.dim2.NF2D_Row4 import NF2D_Row4
@@ -67,16 +71,13 @@ if __name__ == '__main__':
                                        ShowCase1D1,
                                        NF2D_Diag4,
                                        NF2D_Row3,
-                                       NF2D_Row4
+                                       NF2D_Row4,
+                                       NF2D_RandomA,
+                                       NF2D_RandomB
                                        ]
 
     examples_dry: List[Type] = [Dim10aCenteredMVG,
-                                EvalExample2,
-                                EvalExample3,
-                                EvalExample4
-                                ]
-
-    examples_dry: List[Type] = [Dim10bLargeGaps,
+                                Dim10bLargeGaps,
                                 Dim10cSmallGaps
                                 ]
 
@@ -90,27 +91,20 @@ if __name__ == '__main__':
 
     # make sure the dataset is already in place before starting processes relying on it. Might cause race conditions otherwise
     # test_pool = GPUProcessWrapperPool()
-    pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
-    # test_pool.add_to_pool(pw, 2)
-    # Global.set_global('tf_gpu', 1)
-    # test_pool.add_to_pool(GPUProcessWrapper(module=NF2D_3Rect.__module__, klass=NF2D_3Rect.__name__, results_dir='results_artificial'), 2)
-    # Global.set_global('tf_gpu', 1)
-    # test_pool.launch()
-    # sys.exit(9)
-    pw.execute()
+    # pw = GPUProcessWrapper(module=MinibooneDL3.__module__, klass=MinibooneDL3.__name__, results_dir='nanana useless')
+    # pw.execute()
 
-    run([Dim10bLargeGaps], results_dir=Path('results_artificial_random'))
-    run([Dim10cSmallGaps], results_dir=Path('results_artificial_random'))
+    to_run = examples_artificial + examples_dry + examples_mix_learn
+    random.shuffle(to_run)
+    import tensorflow as tf
 
-    # run(examples_artificial, results_dir=Path('results_artificial'))
-    # run(examples_dry, results_dir=Path('results_dry'))
+    gpus = tf.config.list_physical_devices('GPU')
+    to_runs = np.array_split(to_run, len(gpus))
+    for i, to_run in enumerate(to_runs):
+        run(to_run, results_dir=None, gpu=i)
 
-    # mixlearn_dir = Path('results_mix_learn')
-    # if args['big_machine']:
-    #     run([examples_mix_learn[0]], results_dir=mixlearn_dir, gpu=1)
-    #     run([examples_mix_learn[1]], results_dir=mixlearn_dir, gpu=2)
-    # else:
-    #     run(examples_mix_learn, results_dir=mixlearn_dir)
+    run([Dim10bLargeGaps], results_dir=Path('results_artificial_dim10'))
+    run([Dim10cSmallGaps], results_dir=Path('results_artificial_dim10'))
 
     gpu_pool.launch()
     print('the end')

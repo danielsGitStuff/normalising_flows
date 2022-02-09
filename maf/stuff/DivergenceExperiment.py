@@ -191,6 +191,7 @@ class DivergenceExperiment(MafExperiment):
         results: List[Tuple[Path, str]] = self.pool.join()
         mafs = [MaskedAutoregressiveFlow.load(cache, prefix) for cache, prefix in results]
         if self.data_distribution.input_dim < 3:
+            enable_memory_growth()
             self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax,
                     mesh_count=self.mesh_count)
         for maf in mafs:

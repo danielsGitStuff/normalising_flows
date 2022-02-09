@@ -39,7 +39,7 @@ class GPUProcessWrapperPool(Ser):
 
     def launch(self):
         if len(self.d.keys()) > 1:
-            pool = Global.NEW_POOL()
+            pool = Global.NEW_POOL(3)
             for gpu in self.d.keys():
                 self.current_gpu = gpu
                 js = jsonloader.to_json(self, pretty_print=True)
@@ -61,13 +61,14 @@ class GPUProcessWrapperPool(Ser):
     def run_on_current_gpu(self):
         setproctitle.setproctitle(f"Pool {self.current_gpu}")
         Global.set_global('tf_gpu', self.current_gpu)
-        p = Global.NEW_POOL()
+        # p = Global.NEW_POOL()
         for pw in self.d[self.current_gpu]:
             js = jsonloader.to_json(pw)
             print('addddding')
-            p.apply_async(GPUProcessWrapper.Methods.static_execute,args=(js,))
+            Global.POOL().run_blocking(GPUProcessWrapper.Methods.static_execute, args=(js,))
+            # p.apply_async(GPUProcessWrapper.Methods.static_execute,args=(js,))
             # GPUProcessWrapper.Methods.static_execute(js)
-        p.join()
+        # p.join()
         # for pw in self.d[self.current_gpu]:
         #     pw.execute()
 
@@ -99,7 +100,8 @@ class GPUProcessWrapper(Ser):
     def run(self):
         setproctitle.setproctitle(f"W {Global.get_default('tf_gpu', -1)} {self.klass} {Global.get_default('tf_gpu', -1)}")
         cache = StaticMethods.cache_dir()
-        Global.set_global('results_dir', Path(self.results_dir))
+        if NotProvided.is_provided(self.results_dir) and self.results_dir is not None:
+            Global.set_global('results_dir', Path(self.results_dir))
         check_file: Path = Path(cache, f"done_{self.module}.{self.klass}")
         if check_file.exists():
             print(f"experiment '{self.module}.{self.klass}' already done. skipping...")
