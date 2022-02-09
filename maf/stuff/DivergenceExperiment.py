@@ -29,8 +29,12 @@ from typing import Optional, List, Tuple
 
 class DivergenceProcess(Ser):
     @staticmethod
-    def static_run(js: str, task: str) -> Tuple[Path, str]:
+    def static_run(js: str, task: str, xs, val_xs: np.ndarray, xs_samples: np.ndarray, log_ps_samples: np.ndarray) -> Tuple[Path, str]:
         dp: DivergenceProcess = jsonloader.from_json(js)
+        dp.xs = xs
+        dp.xs_samples = xs_samples
+        dp.val_xs = val_xs
+        dp.log_ps_samples = log_ps_samples
         setproctitle.setproctitle(f"{task}, MAF.fit L{dp.maf.layers}")
         return dp.run()
 
@@ -42,23 +46,23 @@ class DivergenceProcess(Ser):
                  patience: int = NotProvided(),
                  divergence_metric_every_epoch: int = NotProvided(),
                  maf: MaskedAutoregressiveFlow = NotProvided(),
-                 xs: np.ndarray = NotProvided(),
-                 val_xs: np.ndarray = NotProvided(),
-                 xs_samples: np.ndarray = NotProvided(),
-                 log_ps_samples: np.ndarray = NotProvided()):
+                 xs: Optional[np.ndarray] = NotProvided(),
+                 val_xs: Optional[np.ndarray] = NotProvided(),
+                 xs_samples: Optional[np.ndarray] = NotProvided(),
+                 log_ps_samples: Optional[np.ndarray] = NotProvided()):
         super().__init__()
         self.cache_dir: Path = cache_dir
         self.maf: MaskedAutoregressiveFlow = maf
-        self.xs: np.ndarray = xs
-        self.val_xs: np.ndarray = val_xs
+        self.xs: Optional[np.ndarray] = xs
+        self.val_xs: Optional[np.ndarray] = val_xs
         self.prefix: str = prefix
         self.use_early_stop: bool = use_early_stop
-        self.xs_samples: np.ndarray = xs_samples
+        self.xs_samples: Optional[np.ndarray] = xs_samples
         self.patience: int = patience
         self.divergence_metric_every_epoch: int = divergence_metric_every_epoch
         self.epochs: int = epochs
         self.batch_size: int = batch_size
-        self.log_ps_samples: np.ndarray = log_ps_samples
+        self.log_ps_samples: Optional[np.ndarray] = log_ps_samples
 
     def run(self) -> Tuple[Path, str]:
         if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=self.prefix):
@@ -117,11 +121,12 @@ class DivergenceExperiment(MafExperiment):
 
         self.xs_samples: Optional[np.ndarray] = None
         self.log_ps_samples: Optional[np.ndarray] = None
-        self.pool_size = 6
+        self.pool_size = 2
         self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
 
     def set_pool_size(self, size: int):
         self.pool_size = size
+        self.pool.close()
         self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
 
     def get_layers(self) -> List[int]:
@@ -184,15 +189,15 @@ class DivergenceExperiment(MafExperiment):
                                                       patience=self.patiences[i],
                                                       divergence_metric_every_epoch=self.divergence_metric_every_epoch,
                                                       maf=maf,
-                                                      xs=xs,
-                                                      val_xs=val_xs,
-                                                      xs_samples=self.xs_samples,
-                                                      log_ps_samples=self.log_ps_samples)
+                                                      xs=None,
+                                                      val_xs=None,
+                                                      xs_samples=None,
+                                                      log_ps_samples=None)
             js = dp.to_json()
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
-            self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name))
+            self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
         results: List[Tuple[Path, str]] = self.pool.join()
         mafs = [MaskedAutoregressiveFlow.load(cache, prefix) for cache, prefix in results]
         if self.data_distribution.input_dim < 3:

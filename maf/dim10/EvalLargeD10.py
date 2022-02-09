@@ -29,7 +29,7 @@ class EvalLargeD10(VisualRandomExample10D):
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
-        enable_memory_growth()
+        # enable_memory_growth()
 
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
         for _ in range(self.no_of_gaussians):

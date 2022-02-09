@@ -64,8 +64,6 @@ class RestartingPoolReplacement:
         self.executor: ProcessPoolExecutor = ProcessPoolExecutor(max_workers=processes)
         self.joined = False
 
-
-
     def apply_async(self, f, args: Tuple[any, ...]):
 
         self.argsList.append(args)
@@ -90,6 +88,9 @@ class RestartingPoolReplacement:
             for f in futures:
                 results.append(f.result())
             return results
+
+    def close(self):
+        self.executor.shutdown(wait=False, cancel_futures=True)
     # def join(self):
     #     combinedResults = []
     #     while len(self.argsList) > 0:
