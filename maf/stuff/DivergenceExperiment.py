@@ -3,25 +3,86 @@ from __future__ import annotations
 import sys
 
 import numpy as np
+import pandas as pd
+import seaborn as sns
+import setproctitle
+import tensorflow as tf
 from matplotlib import pyplot as plt
 
-from common import util
-from typing import Optional, List
-
+from common import util, jsonloader
+from common.NotProvided import NotProvided
+from common.jsonloader import Ser
+from common.poolreplacement import RestartingPoolReplacement
 from common.util import Runtime
 from distributions.Distribution import Distribution
 from distributions.LearnedDistribution import EarlyStop
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
-from distributions.base import enable_memory_growth
+from distributions.base import enable_memory_growth, BaseMethods
 from distributions.kl.DivergenceMetric import DivergenceMetric
-from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.MafExperiment import MafExperiment
-import tensorflow as tf
-import pandas as pd
-import seaborn as sns
+from pathlib import Path
+from typing import Optional, List, Tuple
+
+
+class DivergenceProcess(Ser):
+    @staticmethod
+    def static_run(js: str, task: str) -> Tuple[Path, str]:
+        dp: DivergenceProcess = jsonloader.from_json(js)
+        setproctitle.setproctitle(f"{task}, MAF.fit L{dp.maf.layers}")
+        return dp.run()
+
+    def __init__(self, cache_dir: Path = NotProvided(),
+                 prefix: str = NotProvided(),
+                 use_early_stop: bool = NotProvided(),
+                 epochs: int = NotProvided(),
+                 batch_size: int = NotProvided(),
+                 patience: int = NotProvided(),
+                 divergence_metric_every_epoch: int = NotProvided(),
+                 maf: MaskedAutoregressiveFlow = NotProvided(),
+                 xs: np.ndarray = NotProvided(),
+                 val_xs: np.ndarray = NotProvided(),
+                 xs_samples: np.ndarray = NotProvided(),
+                 log_ps_samples: np.ndarray = NotProvided()):
+        super().__init__()
+        self.cache_dir: Path = cache_dir
+        self.maf: MaskedAutoregressiveFlow = maf
+        self.xs: np.ndarray = xs
+        self.val_xs: np.ndarray = val_xs
+        self.prefix: str = prefix
+        self.use_early_stop: bool = use_early_stop
+        self.xs_samples: np.ndarray = xs_samples
+        self.patience: int = patience
+        self.divergence_metric_every_epoch: int = divergence_metric_every_epoch
+        self.epochs: int = epochs
+        self.batch_size: int = batch_size
+        self.log_ps_samples: np.ndarray = log_ps_samples
+
+    def run(self) -> Tuple[Path, str]:
+        if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=self.prefix):
+            # pass
+            self.maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.cache_dir, prefix=self.prefix)
+        else:
+            enable_memory_growth()
+            ds: DS = DS.from_tensor_slices(self.xs)
+            val_ds: DS = DS.from_tensor_slices(self.val_xs)
+            ds_samples: Optional[DS] = None
+            log_ps_samples = None
+            if self.xs_samples is not None:
+                ds_samples = DS.from_tensor_slices(self.xs_samples)
+                log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
+            es = None
+            if self.use_early_stop:
+                es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patience, restore_best_model=True)
+            divergence_metric = None
+            if ds_samples is not None:
+                divergence_metric = DivergenceMetric(maf=self.maf, ds_samples=ds_samples, log_ps_samples=log_ps_samples,
+                                                     run_every_epoch=self.divergence_metric_every_epoch)
+            self.maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
+            self.maf.save(self.cache_dir, prefix=self.prefix)
+        return self.cache_dir, self.prefix
 
 
 class DivergenceExperiment(MafExperiment):
@@ -41,7 +102,6 @@ class DivergenceExperiment(MafExperiment):
         self.batch_size: int = 1024
         self.epochs: int = 2000
         r = Runtime("creating MAFs").start()
-        enable_memory_growth()
         self.mafs: List[MaskedAutoregressiveFlow] = self.create_mafs()
         util.p(f"created {len(self.mafs)} NFs")
         for i, maf in enumerate(self.mafs):
@@ -55,11 +115,12 @@ class DivergenceExperiment(MafExperiment):
         self.divergence_metric_every_epoch: int = 25
         self.patiences: List[int] = [50] * len(self.mafs)
 
-        self.ds_samples: Optional[DS] = None
-        self.log_ps_samples: Optional[DS] = None
+        self.xs_samples: Optional[np.ndarray] = None
+        self.log_ps_samples: Optional[np.ndarray] = None
+        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(6)
 
     def get_layers(self) -> List[int]:
-        return list(sorted(self.layers * self.layers_repeat))
+        return list(reversed(self.layers * self.layers_repeat))
 
     def set_minmax_square(self, minimax: [float, int]):
         maxi = abs(float(minimax))
@@ -99,34 +160,40 @@ class DivergenceExperiment(MafExperiment):
         raise NotImplementedError()
 
     def _run(self):
-        xs: np.ndarray = self.data_distribution.sample(self.no_samples)
-        val_xs: np.ndarray = self.data_distribution.sample(self.no_val_samples)
+        xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples)
+        val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples)
         self._print_dataset(xs=xs, suffix="xs")
         self._print_dataset(xs=val_xs, suffix="xs_val")
-        ds: DS = DS.from_tensor_slices(xs)
-        val_ds: DS = DS.from_tensor_slices(val_xs)
+
+        mafs = []
+        if self.divergence_metric_every_epoch > 0:
+            self.xs_samples = self.data_distribution.sample_in_process(self.divergence_sample_size)
+            self.log_ps_samples = BaseMethods.call_func_in_process(self.data_distribution, self.data_distribution.log_prob, arguments=[self.xs_samples])
+        for i, maf in enumerate(self.mafs):
+            prefix = self.maf_prefix(f"l{maf.layers}.{i}")
+            dp: DivergenceProcess = DivergenceProcess(cache_dir=self.cache_dir,
+                                                      prefix=prefix,
+                                                      use_early_stop=self.use_early_stop,
+                                                      epochs=self.epochs,
+                                                      batch_size=self.batch_size,
+                                                      patience=self.patiences[i],
+                                                      divergence_metric_every_epoch=self.divergence_metric_every_epoch,
+                                                      maf=maf,
+                                                      xs=xs,
+                                                      val_xs=val_xs,
+                                                      xs_samples=self.xs_samples,
+                                                      log_ps_samples=self.log_ps_samples)
+            js = dp.to_json()
+            # cache_d, pre = DivergenceProcess.static_run(js)
+            # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
+            # mafs.append(m)
+            self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name))
+        results: List[Tuple[Path, str]] = self.pool.join()
+        mafs = [MaskedAutoregressiveFlow.load(cache, prefix) for cache, prefix in results]
         if self.data_distribution.input_dim < 3:
             self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax,
                     mesh_count=self.mesh_count)
-        mafs = []
-        if self.divergence_metric_every_epoch > 0:
-            self.ds_samples: DS = DS.from_tensor_slices(self.data_distribution.sample(self.divergence_sample_size))
-            self.log_ps_samples: DS = DS.from_tensor_slices(self.data_distribution.log_prob(self.ds_samples))
-        for i, maf in enumerate(self.mafs):
-            prefix = self.maf_prefix(f"l{maf.layers}.{i}")
-            if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=prefix):
-                maf: MaskedAutoregressiveFlow = LearnedTransformedDistribution.load(self.cache_dir, prefix=prefix)
-            else:
-                es = None
-                if self.use_early_stop:
-                    es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patiences[i], restore_best_model=True)
-                divergence_metric = None
-                if self.ds_samples is not None:
-                    divergence_metric = DivergenceMetric(maf=maf, ds_samples=self.ds_samples, log_ps_samples=self.log_ps_samples,
-                                                         run_every_epoch=self.divergence_metric_every_epoch)
-                maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
-                maf.save(self.cache_dir, prefix=prefix)
-            mafs.append(maf)
+        for maf in mafs:
             if self.data_distribution.input_dim < 3:
                 title = f"MAF {maf.layers}L"
                 print(f"heatmap for '{title}'")
@@ -135,13 +202,6 @@ class DivergenceExperiment(MafExperiment):
                 print(f"cut for '{title}'")
                 self.cut(maf, x_start=self.xmin, x_end=self.xmax, y_start=self.ymin, y_end=self.ymax, mesh_count=self.meh_count_cut, pre_title=title)
         self.mafs = mafs
-        # add 3d
-        # dp, _ = self.denses[-1]
-        # dp: DensityPlotData = dp
-        # dp.print_yourself_3d(title, show=self.show_3d, image_base_path=self.get_base_path())
-        # maf.heatmap_creator.heatmap_2d_data(xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, mesh_count=self.mesh_count,
-        #                                     true_distribution=self.data_distribution).print_yourself_3d(
-        #     f"MAF {maf.layers}L", show=True, image_base_path=self.get_base_path())
 
     def print_divergences(self):
         if (self.divergence_half_width is None or self.divergence_step_size is None) and self.divergence_sample_size is None:
@@ -152,17 +212,19 @@ class DivergenceExperiment(MafExperiment):
                   file=sys.stderr)
             return
         values = []
+        ds_samples = DS.from_tensor_slices(self.xs_samples)
+        log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
         for maf in self.mafs:
             # j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             # k = KullbackLeiblerDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             # j = JensenShannonDivergence(q=maf, p=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
             k = KullbackLeiblerDivergence(q=maf, p=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)
-            if self.ds_samples is None:
+            if self.xs_samples is None:
                 # jsd = j.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else j.calculate_by_sampling_space()
                 kld = k.calculate_by_sampling_p(self.divergence_sample_size) if self.divergence_sample_size is not None else k.calculate_by_sampling_space()
             else:
                 # jsd = j.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
-                kld = k.calculate_from_samples_vs_q(ds_p_samples=self.ds_samples, log_p_samples=self.log_ps_samples)
+                kld = k.calculate_from_samples_vs_q(ds_p_samples=ds_samples, log_p_samples=log_ps_samples)
             # row = [maf.layers, kld, jsd]
             row = [maf.layers, kld]
             values.append(row)

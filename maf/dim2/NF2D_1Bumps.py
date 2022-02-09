@@ -4,6 +4,7 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
+from distributions.base import BaseMethods
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.dim2.VisualExample2D import VisualExample2D
@@ -14,7 +15,7 @@ from typing import List
 class NF2D_1Bumps(VisualExample2D):
     def __init__(self):
         super().__init__("NF2D_1Bumps")
-        self.vmax = self.data_distribution.prob(np.array([[-2.5, -2.5]], dtype=np.float32))[0][0]
+        self.vmax = BaseMethods.call_func_in_process(self.data_distribution,self.data_distribution.prob,arguments=(np.array([[-2.5, -2.5]], dtype=np.float32),))[0][0]
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[1, 1])])

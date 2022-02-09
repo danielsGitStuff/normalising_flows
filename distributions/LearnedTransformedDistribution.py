@@ -28,6 +28,7 @@ class LearnedTransformedDistribution(LearnedDistribution):
         json_file = f"{complete_prefix}.model.json"
         print(f"loading learned distribution from '{json_file}'")
         dis: LearnedTransformedDistribution = jsonloader.load_json(json_file)
+        dis.checkpoint_complete_prefix = complete_prefix
         checkpoint = tf.train.Checkpoint(model=dis.transformed_distribution)
         checkpoint.restore(complete_prefix)
         dis.set_training(False)
@@ -43,6 +44,7 @@ class LearnedTransformedDistribution(LearnedDistribution):
         super().__init__(input_dim, conditional_dims=conditional_dims)
         self.transformed_distribution: Optional[tfd.TransformedDistribution] = None
         self.ignored.add("transformed_distribution")
+        self.checkpoint_complete_prefix: Optional[str] = None
 
     def save(self, folder: Union[Path, str], prefix: str):
         os.makedirs(folder, exist_ok=True)

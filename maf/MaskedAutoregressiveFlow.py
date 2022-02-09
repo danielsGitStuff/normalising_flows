@@ -156,7 +156,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.layers: int = NotProvided.value_if_not_provided(layers, -1)
         self.class_one_hot: ClassOneHot = NotProvided.value_if_not_provided(class_one_hot, ClassOneHot(enabled=False))
         self.hidden_shape: List[int] = hidden_shape
-        self.base_dist: tfd.Distribution = tfd.Normal(loc=0.0, scale=1.0)
+        self.base_dist: Optional[tfd.Distribution] = None
         self.base_lr = base_lr
         self.end_lr = end_lr
         self.input_noise_variance: float = input_noise_variance
@@ -181,7 +181,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         return "placeholder, use transformed_distribution instead"
 
     def after_deserialize(self):
-        self.build_transformation()
+        # self.build_transformation()
         self.class_one_hot.init()
 
     def set_training(self, training: bool):
@@ -204,6 +204,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
     def build_transformation(self):
         if self.transformed_distribution is not None:
             return
+        self.base_dist: Optional[tfd.Distribution] = tfd.Normal(loc=0.0, scale=1.0)
         self.layers = Global.Testing.get('testing_nf_layers', self.layers)
         self.norm_layer = Global.Testing.get('testing_nf_norm_layer', self.norm_layer)
         print(
@@ -245,6 +246,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                                                                     bijector=bijector)
 
         self.set_training(False)
+        if self.checkpoint_complete_prefix is not None:
+            checkpoint = tf.train.Checkpoint(model=self.transformed_distribution)
+            checkpoint.restore(self.checkpoint_complete_prefix)
 
     def adapt(self, dataset: Dataset):
         if self.norm_layer and not self.norm_adapted:
@@ -533,9 +537,10 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         json_file = f"{complete_prefix}.model.json"
         print(f"loading learned distribution from '{json_file}'")
         dis: MaskedAutoregressiveFlow = jsonloader.load_json(json_file)
-        checkpoint = tf.train.Checkpoint(model=dis.transformed_distribution)
-        checkpoint.restore(complete_prefix)
-        dis.set_training(False)
+        dis.checkpoint_complete_prefix = complete_prefix
+        # checkpoint = tf.train.Checkpoint(model=dis.transformed_distribution)
+        # checkpoint.restore(complete_prefix)
+        # dis.set_training(False)
         return dis
 
 

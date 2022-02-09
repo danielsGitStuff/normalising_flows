@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import pathlib
+from common.globals import Global
 from pathlib import Path
 from typing import List, Union, Optional, Tuple, Callable
 
@@ -166,6 +167,16 @@ class Distribution(Ser):
             self.create_base_distribution()
         cond = self.cast_2_input(cond, event_dim=self.conditional_dims)
         return self.batch_call_sample(size=size, cond=cond, batch_size=batch_size, **kwargs)
+
+    @staticmethod
+    def static_sample(js:str, size:int):
+        d: Distribution = jsonloader.from_json(js)
+        return d.sample(size)
+
+    def sample_in_process(self, size: int = 1) -> np.ndarray:
+        return BaseMethods.call_func_in_process(self,self.sample,arguments={"size":size})
+        js = self.to_json()
+        return Global.POOL().run_blocking(Distribution.static_sample, args=(js,size))
 
     def likelihoods(self, xs: TTensor, cond: TTensorOpt = None, batch_size: Optional[int] = None) -> np.ndarray:
         if self.tfd_distribution is None:

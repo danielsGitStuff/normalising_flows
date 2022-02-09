@@ -1,3 +1,4 @@
+from distributions.base import BaseMethods
 from pathlib import Path
 
 from typing import List
@@ -14,7 +15,7 @@ from maf.dim2.VisualExample2D import VisualExample2D
 class NF2D_2Bumps(VisualExample2D):
     def __init__(self):
         super().__init__("NF2D_2Bumps")
-        self.vmax = self.data_distribution.prob(xs=[[2.5, 2.5]])
+        self.vmax = BaseMethods.call_func_in_process(self.data_distribution, self.data_distribution.prob, arguments={'xs': [[2.5, 2.5]]})
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[1, 1]),

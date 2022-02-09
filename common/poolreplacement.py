@@ -61,6 +61,10 @@ class RestartingPoolReplacement:
         self.pool: PoolReplacement = None
         self.argsList: List[List[any]] = []
         self.functionsList: List[any] = []
+        self.executor: ProcessPoolExecutor = ProcessPoolExecutor(max_workers=processes)
+        self.joined = False
+
+
 
     def apply_async(self, f, args: Tuple[any, ...]):
 
@@ -74,23 +78,36 @@ class RestartingPoolReplacement:
         return result
 
     def join(self):
-        combinedResults = []
-        while len(self.argsList) > 0:
-            amount_to_pop = self.processes
-            if len(self.argsList) < amount_to_pop:
-                amount_to_pop = len(self.argsList)
-            self.pool = PoolReplacement(amount_to_pop)
-            argsList = self.argsList[:amount_to_pop]
-            functionsList = self.functionsList[:amount_to_pop]
-            self.argsList = self.argsList[amount_to_pop:]
-            self.functionsList = self.functionsList[amount_to_pop:]
-            for f, args in zip(functionsList, argsList):
-                self.pool.apply_async(f, args)
-            results = self.pool.join()
-            self.pool.close()
-            self.pool = None
-            combinedResults.extend(results)
-        return combinedResults
+        futures = []
+        if not self.joined:
+            self.joined = True
+            futures = []
+            results = []
+            for function, args in zip(self.functionsList, self.argsList):
+                f = self.executor.submit(function, *args)
+                futures.append(f)
+            self.executor.shutdown(wait=True)
+            for f in futures:
+                results.append(f.result())
+            return results
+    # def join(self):
+    #     combinedResults = []
+    #     while len(self.argsList) > 0:
+    #         amount_to_pop = self.processes
+    #         if len(self.argsList) < amount_to_pop:
+    #             amount_to_pop = len(self.argsList)
+    #         self.pool = PoolReplacement(amount_to_pop)
+    #         argsList = self.argsList[:amount_to_pop]
+    #         functionsList = self.functionsList[:amount_to_pop]
+    #         self.argsList = self.argsList[amount_to_pop:]
+    #         self.functionsList = self.functionsList[amount_to_pop:]
+    #         for f, args in zip(functionsList, argsList):
+    #             self.pool.apply_async(f, args)
+    #         results = self.pool.join()
+    #         self.pool.close()
+    #         self.pool = None
+    #         combinedResults.extend(results)
+    #     return combinedResults
 
 
 if __name__ == '__main__':

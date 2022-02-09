@@ -15,7 +15,8 @@ from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 class Dim10aCenteredMVG(VisualRandomExample10D):
 
     def __init__(self):
-        super().__init__('Dim10aCenteredMVG', layers=[1, 3], layers_repeat=3)
+        super().__init__('Dim10aCenteredMVG', layers=[1, 2], layers_repeat=2)
+        self.epochs = 10
 
     def create_data_distribution(self) -> Distribution:
         cov = BaseMethods.random_positive_semidefinite_matrix(10, seed=77)
@@ -24,7 +25,8 @@ class Dim10aCenteredMVG(VisualRandomExample10D):
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=10, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in self.get_layers()]
+        return [MaskedAutoregressiveFlow(input_dim=10, layers=layers, activation="relu", use_tanh_made=True, hidden_shape=[200, 200], norm_layer=True) for layers in
+                self.get_layers()]
 
     def create_data_title(self) -> str:
         return 'X ~ N([0], [10xRandom])'

@@ -6,8 +6,10 @@ import math
 import setproctitle
 from sklearn.datasets import make_spd_matrix
 
+from common import jsonloader
 from common.globals import Global
-from typing import Union, Optional, Tuple, Dict, List, Callable
+from common.jsonloader import Ser
+from typing import Union, Optional, Tuple, Dict, List, Callable, Any
 import numpy as np
 from tensorflow import Tensor
 from tensorflow.python.data import Dataset
@@ -92,6 +94,26 @@ class BaseMethods:
         nans = tf.math.is_nan(t)
         t = tf.where(tf.logical_not(nans), t, replacement)
         return t
+
+    @staticmethod
+    def call_func_helper(js: str, f_name: str, tf_enabled: bool, arguments: Union[Dict, List]) -> Any:
+        ser = jsonloader.from_json(js)
+        f = getattr(ser, f_name)
+        if tf_enabled:
+            enable_memory_growth()
+        print(f"calling (tf:{tf_enabled}) '{f_name}' with args: {arguments}")
+        if isinstance(arguments, Dict):
+            r = f(**arguments)
+        else:
+            r = f(*arguments)
+        return r
+
+    @staticmethod
+    def call_func_in_process(ser: Ser, f: Callable, arguments: Union[Dict[str, Any], List], tf_enabled: bool = True) -> Any:
+        js = ser.to_json()
+        f_name = f.__name__
+        # return BaseMethods.call_func_helper(js, f_name, arguments)
+        return Global.POOL().run_blocking(BaseMethods.call_func_helper, args=(js, f_name, tf_enabled, arguments))
 
 
 def set_gpu():
