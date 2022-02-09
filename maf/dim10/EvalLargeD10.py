@@ -22,10 +22,10 @@ class EvalLargeD10(VisualRandomExample10D):
         # self.divergence_sample_size = 1024 * 400
         # self.no_val_samples = 1024 * 10
         # self.no_samples = 1024 * 100
-        self.divergence_sample_size = 1024 * 200
-        self.no_val_samples = 1024 * 4
-        self.no_samples = 1024 * 100
-        self.batch_size = 1024 * 2
+        self.divergence_sample_size = 1024 * 300
+        self.no_val_samples = 1024 * 12
+        self.no_samples = 1024 * 800
+        self.batch_size = 1024 * 4
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
