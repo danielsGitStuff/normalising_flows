@@ -18,6 +18,7 @@ module="maf.dim30"
 #  python "bashlauncher.py" "$module.$klass" "$klass" "$gpu" &>"logs/$klass.log" &
 #done
 
-
+gpu=0
 python "bashlauncher.py" "$module.Dim30aLargeGaps" "Dim30aLargeGaps" "$gpu" &>"logs/Dim30aLargeGaps.log" &
+gpu=1
 python "bashlauncher.py" "$module.Dim30bSmallGaps" "Dim30bSmallGaps" "$gpu" &>"logs/Dim30bSmallGaps.log" &
