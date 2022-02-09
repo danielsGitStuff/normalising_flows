@@ -216,6 +216,7 @@ class DivergenceExperiment(MafExperiment):
                   file=sys.stderr)
             return
         values = []
+        enable_memory_growth()
         ds_samples = DS.from_tensor_slices(self.xs_samples)
         log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
         for maf in self.mafs:
