@@ -120,7 +120,7 @@ class DivergenceExperiment(MafExperiment):
         self.pool: RestartingPoolReplacement = RestartingPoolReplacement(6)
 
     def get_layers(self) -> List[int]:
-        return list(reversed(sorted(self.layers * self.layers_repeat)))
+        return list(sorted(self.layers * self.layers_repeat))
 
     def set_minmax_square(self, minimax: [float, int]):
         maxi = abs(float(minimax))
