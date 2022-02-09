@@ -17,7 +17,7 @@ class WeightedMultimodalMultivariate(Distribution):
         self._distribution_weights: List[float] = []
         self.weight_sum: float = 0.0
         self._normalised_distribution_weights: Optional[List[float]] = None
-        self.ignored.add('_distribution_weights')
+        self.ignored.add('_normalised_distribution_weights')
 
     def normalised_distribution_weights(self) -> List[float]:
         if self._normalised_distribution_weights is None:

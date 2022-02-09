@@ -117,7 +117,12 @@ class DivergenceExperiment(MafExperiment):
 
         self.xs_samples: Optional[np.ndarray] = None
         self.log_ps_samples: Optional[np.ndarray] = None
-        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(6)
+        self.pool_size = 6
+        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+
+    def set_pool_size(self, size: int):
+        self.pool_size = size
+        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
 
     def get_layers(self) -> List[int]:
         return list(sorted(self.layers * self.layers_repeat))
