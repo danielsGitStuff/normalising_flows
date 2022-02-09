@@ -1,11 +1,11 @@
 from keta.argparseer import ArgParser
-from maf.dim10.EvalExample5 import EvalExample5
-from maf.dim10.EvalLargeD import EvalLargeD
+from maf.dim10.Dim10bLargeGaps import Dim10bLargeGaps
+from maf.dim10.EvalLargeD10 import EvalLargeD10
 
 
-class EvalExample7(EvalExample5):
+class EvalExample7(Dim10bLargeGaps):
     def __init__(self):
-        super().__init__('EvalExample7', layers=[3, 5, 7])
+        super().__init__('EvalExample7', layers=[3, 5, 7, 10, 20, 30])
 
 
 if __name__ == '__main__':

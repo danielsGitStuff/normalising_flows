@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 
 from maf.DL import DL3
-from maf.dim10.EvalExample1 import EvalExample1
+from maf.dim10.Dim10aCenteredMVG import Dim10aCenteredMVG
 from maf.dim10.EvalExample2 import EvalExample2
 from maf.dim10.EvalExample4 import EvalExample4
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
@@ -32,8 +32,8 @@ from common.globals import Global
 from typing import List, Type, Dict, Any
 
 from maf.dim2.NF2D_Row4 import NF2D_Row4
-from maf.dim10.EvalExample5 import EvalExample5
-from maf.dim10.EvalExample6 import EvalExample6
+from maf.dim10.Dim10bLargeGaps import Dim10bLargeGaps
+from maf.dim10.Dim10cSmallGaps import Dim10cSmallGaps
 
 if __name__ == '__main__':
     # ArgParser.parse()
@@ -70,14 +70,14 @@ if __name__ == '__main__':
                                        NF2D_Row4
                                        ]
 
-    examples_dry: List[Type] = [EvalExample1,
+    examples_dry: List[Type] = [Dim10aCenteredMVG,
                                 EvalExample2,
                                 EvalExample3,
                                 EvalExample4
                                 ]
 
-    examples_dry: List[Type] = [EvalExample5,
-                                EvalExample6
+    examples_dry: List[Type] = [Dim10bLargeGaps,
+                                Dim10cSmallGaps
                                 ]
 
     # this speeds up training!
@@ -99,8 +99,8 @@ if __name__ == '__main__':
     # sys.exit(9)
     pw.execute()
 
-    run([EvalExample5], results_dir=Path('results_artificial_random'))
-    run([EvalExample6], results_dir=Path('results_artificial_random'))
+    run([Dim10bLargeGaps], results_dir=Path('results_artificial_random'))
+    run([Dim10cSmallGaps], results_dir=Path('results_artificial_random'))
 
     # run(examples_artificial, results_dir=Path('results_artificial'))
     # run(examples_dry, results_dir=Path('results_dry'))

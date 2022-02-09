@@ -1,3 +1,4 @@
+from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
 import numpy as np
@@ -9,10 +10,9 @@ from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from keta.argparseer import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample2(VisualRandomExample):
+class EvalExample2(VisualRandomExample2D):
 
     def __init__(self):
         super().__init__('EvalExample2')

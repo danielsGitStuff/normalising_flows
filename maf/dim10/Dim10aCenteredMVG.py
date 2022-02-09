@@ -1,4 +1,6 @@
 from distributions.base import BaseMethods
+from maf.dim10.VisualRandomExample10D import VisualRandomExample10D
+from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
 import numpy as np
@@ -8,13 +10,12 @@ from common.globals import Global
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample1(VisualRandomExample):
+class Dim10aCenteredMVG(VisualRandomExample10D):
 
     def __init__(self):
-        super().__init__('EvalExample1', layers=[1, 3], layers_repeat=3)
+        super().__init__('Dim10aCenteredMVG', layers=[1, 3], layers_repeat=3)
 
     def create_data_distribution(self) -> Distribution:
         cov = BaseMethods.random_positive_semidefinite_matrix(10, seed=77)
@@ -31,4 +32,4 @@ class EvalExample1(VisualRandomExample):
 
 if __name__ == '__main__':
     Global.set_seed(42)
-    EvalExample1().run()
+    Dim10aCenteredMVG().run()

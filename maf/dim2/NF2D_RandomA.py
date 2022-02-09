@@ -1,3 +1,4 @@
+from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
 import numpy as np
@@ -10,14 +11,13 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample3(VisualRandomExample):
+class NF2D_RandomA(VisualRandomExample2D):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('EvalExample3',layers=[1,5,10])
+        super().__init__('NF2D_RandomA', layers=[1, 5, 10])
         self.mesh_count = 500
         self.set_minmax_square(10.0)
         self.patiences = [100, 100, 100]
@@ -56,4 +56,4 @@ class EvalExample3(VisualRandomExample):
 
 if __name__ == '__main__':
     enable_memory_growth()
-    EvalExample3().run()
+    NF2D_RandomA().run()

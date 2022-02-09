@@ -1,5 +1,6 @@
 from sklearn.datasets import make_spd_matrix
 
+from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
 import numpy as np
@@ -12,14 +13,13 @@ from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCo
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample3A(VisualRandomExample):
+class NF2D_RandomB(VisualRandomExample2D):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('EvalExample3A', layers=[1, 5, 10])
+        super().__init__('NF2D_RandomB', layers=[1, 5, 10])
         self.mesh_count = 500
         self.set_minmax_square(15.0)
         self.layers_repeat = 1
@@ -52,4 +52,4 @@ class EvalExample3A(VisualRandomExample):
 
 if __name__ == '__main__':
     enable_memory_growth()
-    EvalExample3A().run()
+    NF2D_RandomB().run()

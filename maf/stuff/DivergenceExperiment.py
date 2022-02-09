@@ -4,6 +4,8 @@ import sys
 
 import numpy as np
 from matplotlib import pyplot as plt
+
+from common import util
 from typing import Optional, List
 
 from common.util import Runtime
@@ -41,6 +43,9 @@ class DivergenceExperiment(MafExperiment):
         r = Runtime("creating MAFs").start()
         enable_memory_growth()
         self.mafs: List[MaskedAutoregressiveFlow] = self.create_mafs()
+        util.p(f"created {len(self.mafs)} NFs")
+        for i, maf in enumerate(self.mafs):
+            util.p(f"{i}: {maf.layers} layers")
         r.stop().print()
         # todo deprecate sampling space
         self.divergence_half_width: Optional[float] = None

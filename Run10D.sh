@@ -19,12 +19,12 @@ module="maf.dim10"
 #done
 
 
-python "bashlauncher.py" "$module.EvalExample3" "EvalExample3" "2" &>"logs/EvalExample3.log" &
-python "bashlauncher.py" "$module.EvalExample3A" "EvalExample3A" "2" &>"logs/EvalExample3A.log" &
-python "bashlauncher.py" "$module.EvalExample5" "EvalExample5" "2" &>"logs/EvalExample5.log" &
-python "bashlauncher.py" "$module.EvalExample6" "EvalExample6" "2" &>"logs/EvalExample6.log" &
+python "bashlauncher.py" "$module.Dim10aCenteredMVG" "Dim10aCenteredMVG" "$gpu" &>"logs/Dim10aCenteredMVG.log" &
+python "bashlauncher.py" "$module.Dim10bLargeGaps" "Dim10bLargeGaps" "$gpu" &>"logs/Dim10bLargeGaps.log" &
+python "bashlauncher.py" "$module.Dim10cSmallGaps" "Dim10cSmallGaps" "$gpu" &>"logs/Dim10cSmallGaps.log" &
+#python "bashlauncher.py" "$module.EvalExample6" "EvalExample6" "2" &>"logs/EvalExample6.log" &
 
-python "bashlauncher.py" "$module.EvalExample7" "EvalExample7" "2" &>"logs/EvalExample7.log" &
-python "bashlauncher.py" "$module.EvalExample8" "EvalExample8" "2" &>"logs/EvalExample8.log" &
+#nohup python "bashlauncher.py" "$module.EvalExample7" "EvalExample7" "1" &>"logs/EvalExample7.log" &
+#nohup python "bashlauncher.py" "$module.EvalExample8" "EvalExample8" "1" &>"logs/EvalExample8.log" &
 
 #python visualise/CachePrinter.py ".cache"

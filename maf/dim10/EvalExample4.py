@@ -1,3 +1,4 @@
+from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
 import numpy as np
@@ -8,10 +9,9 @@ from distributions.Distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.base import BaseMethods, enable_memory_growth
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
-class EvalExample4(VisualRandomExample):
+class EvalExample4(VisualRandomExample2D):
 
     def __init__(self):
         self.input_dimensions: int = 5
