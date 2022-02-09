@@ -21,9 +21,8 @@ class EvalExample3A(VisualRandomExample):
         self.input_dimensions: int = 2
         super().__init__('EvalExample3A', layers=[1])
         self.mesh_count = 500
-        self.set_minmax_square(20.0)
+        self.set_minmax_square(15.0)
         self.layers_repeat = 1
-        self.epochs = 2
         self.patiences = [100, 100, 100]
         self.vmax = None
 
