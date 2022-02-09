@@ -12,7 +12,7 @@ from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 
 
 class EvalLargeD10(VisualRandomExample10D):
-    def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 3, loc_range: float = 15.0):
+    def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 3, loc_range: float = 10.0):
         self.input_dimensions: int = 10
         self.no_of_gaussians: int = 7
         layers = layers or [3, 5, 7, 10, 20]
