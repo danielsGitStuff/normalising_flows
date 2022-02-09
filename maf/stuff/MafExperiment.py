@@ -1,4 +1,6 @@
 import math
+
+from common.poolreplacement import RestartingPoolReplacement
 from pathlib import Path
 from typing import List, Tuple, Optional, Union
 
@@ -16,7 +18,7 @@ import seaborn as sns
 
 
 class MafExperiment:
-    def __init__(self, name: str):
+    def __init__(self, name: str, pool_size:int =6):
         self.cache_dir: Path = StaticMethods.cache_dir()
         self.name: str = name
         self.result_folder: Path = Global.get_default('results_dir', Path(self.results_dir_name()))
@@ -31,6 +33,13 @@ class MafExperiment:
         self.h_offset: int = 0
         self.use_early_stop: bool = True
         plt.clf()
+        self.pool_size = pool_size
+        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+
+    def set_pool_size(self, size: int):
+        self.pool_size = size
+        self.pool.close()
+        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
 
     def results_dir_name(self) -> str:
         return 'results'

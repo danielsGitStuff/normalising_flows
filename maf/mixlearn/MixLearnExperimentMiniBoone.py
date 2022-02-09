@@ -23,7 +23,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                  paper_load: bool = False,
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
                  test_split: float = 0.1,
-                 classifiers_per_nf: int = 3):
+                 classifiers_per_nf: int = 3,
+                 pool_size: int = 6):
         self.paper_load: bool = paper_load
         self.dataset_name: str = dataset_name
 
@@ -44,7 +45,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          result_folder=result_folder,
                          experiment_init_ds_class=experiment_init_ds_class,
                          learned_distribution_creator=learned_distr_creator,
-                         classifier_creator=MiniBooneBinaryClassifierCreator())
+                         classifier_creator=MiniBooneBinaryClassifierCreator(),
+                         pool_size=pool_size)
 
     def print_divergences(self):
         pass
@@ -59,7 +61,6 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
 
     def _run(self):
         self.start()
-
 
     @staticmethod
     def main_static(dataset_name: str, experiment_name: str, learned_distr_creator: LearnedDistributionCreator,

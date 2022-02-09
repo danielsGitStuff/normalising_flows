@@ -29,6 +29,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
                  test_split: float = 0.1,
                  classifiers_per_nf: int = 3,
+                 pool_size: int = 6,
                  just_signal_plan: bool = False):
         super().__init__(
             classifiers_per_nf=classifiers_per_nf,
@@ -43,7 +44,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
             batch_size=batch_size,
             paper_load=paper_load,
             experiment_init_ds_class=experiment_init_ds_class,
-            test_split=test_split)
+            test_split=test_split,
+            pool_size=pool_size)
         self.just_signal_plan: bool = just_signal_plan
 
     def create_checkpoint_dir(self) -> Path:

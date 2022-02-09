@@ -60,7 +60,8 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        nf_patience=20,
                                                        batch_size=1024,
                                                        classifiers_per_nf=3,
-                                                       just_signal_plan=False)
+                                                       just_signal_plan=False,
+                                                       pool_size=6)
 
         experiment.create_training_plan().run()
 

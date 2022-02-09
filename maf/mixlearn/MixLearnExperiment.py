@@ -11,7 +11,7 @@ import shutil
 from common.globals import Global
 from keta.argparseer import ArgParser
 from pathlib import Path
-from typing import Optional, List, Dict, Type
+from typing import Optional, List, Dict, Type, Tuple
 
 import pandas as pd
 import requests
@@ -96,8 +96,9 @@ class MixLearnExperiment(MafExperiment):
                  test_split: float = 0.1,
                  sample_variance_multiplier: float = 1.0,
                  classifiers_per_nf: int = 3,
-                 experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess):
-        super().__init__(name)
+                 experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
+                 pool_size: int = 6):
+        super().__init__(name, pool_size=pool_size)
         self.learned_distribution_creator: LearnedDistributionCreator = learned_distribution_creator
         self.experiment_init_ds_class: Type[DSInitProcess] = experiment_init_ds_class
         self.sample_variance_multiplier: float = sample_variance_multiplier
@@ -309,7 +310,8 @@ class MixLearnExperiment(MafExperiment):
             dl_val_genuine: DL2 = jsonloader.load_json(Path(ds_val_folder, 'dl2.json'), raise_on_404=True)
             dl_val_synth: DL2 = jsonloader.load_json(Path(ds_synth_val_folder, 'dl2.json'), raise_on_404=True)
             dl_test: DL2 = jsonloader.load_json(Path(ds_test_folder, 'dl2.json'), raise_on_404=True)
-            cp = ClassifierTrainingProcess(dl_training_genuine=dl_training_genuine,
+            cp = ClassifierTrainingProcess(id=index,
+                                           dl_training_genuine=dl_training_genuine,
                                            dl_training_synth=dl_training_synth,
                                            dl_val_genuine=dl_val_genuine,
                                            dl_val_synth=dl_val_synth,
@@ -333,14 +335,23 @@ class MixLearnExperiment(MafExperiment):
                                            # clf_v_g_size=int(row['clf_v_g_size']),
                                            # clf_v_s_size=int(row['clf_v_s_size']),
                                            model_base_file=str(model_base_file))
-            results: Dict[str, float] = cp.execute()
+            self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
+
+            # results: Dict[str, float] = cp.execute()
+            # # update plan
+            # for metric in self.training_planner.metrics:
+            #     if metric in results:
+            #         plan.at[index, metric] = results[metric]
+            # plan.at[index, 'done'] = 1.0
+            # plan.to_csv(self.cache_training_plan_file, index=False)
+        cp_results: List[Tuple[Dict[str, float], int]] = self.pool.join()
+        for results, index in cp_results:
             # update plan
             for metric in self.training_planner.metrics:
                 if metric in results:
                     plan.at[index, metric] = results[metric]
             plan.at[index, 'done'] = 1.0
-            plan.to_csv(self.cache_training_plan_file, index=False)
-
+        plan.to_csv(self.cache_training_plan_file, index=False)
         print('____ RESULTS _____')
         print(plan)
         self.training_planner.plan = plan

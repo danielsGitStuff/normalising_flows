@@ -178,15 +178,9 @@ class MAFTrainingProcess(Ser):
             if DL2.can_load(self.val_dir):
                 dl_val: DL2 = jsonloader.load_json(Path(self.val_dir, 'dl2.json'))
             else:
-                # dl_val = dl_train.split(test_dir=self.val_dir, test_amount=self.val_size)
                 dl_val = dl_train.split2(test_dir=self.val_dir, take_test_sig=self.take_v_sig, take_test_noi=self.take_v_noi)
 
             if self.conditional:
-                # signal_noise_ratio = self.dl_main.amount_of_signals / (self.dl_main.amount_of_signals + self.dl_main.amount_of_noise)
-                # take_signal = math.ceil(signal_noise_ratio * self.training_size)
-                # take_noise = self.training_size - take_signal
-                # take_val_signal = math.ceil(signal_noise_ratio * self.val_size)
-                # take_val_noise = self.val_size - take_val_signal
                 ds_train = dl_train.get_conditional(amount_signal=self.size_nf_t_sig, amount_noise=self.size_nf_t_noi)
                 ds_val = dl_val.get_conditional(amount_signal=self.size_nf_v_sig, amount_noise=self.size_nf_v_noi)
             else:
@@ -196,10 +190,6 @@ class MAFTrainingProcess(Ser):
                     print('fitting noise')
                     ds_train_noise = dl_train.get_noise(amount=self.size_nf_t_noi)
                     ds_val_noise = dl_val.get_noise(amount=self.size_nf_v_noi)
-                    # noise_maf = MaskedAutoregressiveFlow(input_dim=self.dl_main.props.dimensions, layers=self.layers, batch_norm=self.batch_norm,
-                    #                                      hidden_shape=self.hidden_shape,
-                    #                                      norm_layer=self.norm_layer, use_tanh_made=self.use_tanh_made, input_noise_variance=self.input_noise_variance,
-                    #                                      conditional_dims=conditional_dims, class_one_hot=one_hot)
                     noise_maf = self.learned_distribution_creator.create(input_dim=self.dl_init.props.dimensions,
                                                                          conditional_dims=conditional_dims,
                                                                          conditional_classes=self.conditional_classes)
@@ -208,12 +198,7 @@ class MAFTrainingProcess(Ser):
                     noise_maf.save(folder=self.checkpoint_dir_noise, prefix=self.nf_base_file_name)
                     hdf = pd.DataFrame(noise_maf.history.to_dict())
                     hdf.to_csv(Path(self.cache_dir, f"{self.nf_base_file_name}_noise_history.csv"))
-            # ds_train = ds_train.shuffle(buffer_size=len(ds_train), reshuffle_each_iteration=True)
             es = EarlyStop(monitor="val_loss", comparison_op=tf.less_equal, patience=self.patience, restore_best_model=True)
-            # maf = MaskedAutoregressiveFlow(input_dim=self.dl_main.props.dimensions, layers=self.layers, batch_norm=self.batch_norm,
-            #                                hidden_shape=self.hidden_shape,
-            #                                norm_layer=self.norm_layer, use_tanh_made=self.use_tanh_made, input_noise_variance=self.input_noise_variance,
-            #                                conditional_dims=conditional_dims, class_one_hot=one_hot)
             maf: LearnedDistribution = self.learned_distribution_creator.create(input_dim=self.dl_init.props.dimensions,
                                                                                 conditional_classes=self.conditional_classes,
                                                                                 conditional_dims=conditional_dims)
@@ -236,10 +221,6 @@ class MAFTrainingProcess(Ser):
 
     def sample(self, maf: MaskedAutoregressiveFlow, synth_folder: Path, gen_sig_samples: int, gen_noi_samples: int, noise_source: DataSource = NotProvided()):
         noise_source: DataSource = NotProvided.value_if_not_provided(noise_source, self.dl_main.noise_source.ref())
-        # p: DatasetProps = self.dl_main.props
-        # signal_noise_ratio = p.no_of_signals / (p.no_of_signals + p.no_of_noise)
-        # no_of_signals = math.ceil(no_of_samples * signal_noise_ratio)
-        # no_of_noise = no_of_samples - no_of_signals
         if self.conditional:
             ones = np.ones(shape=(gen_sig_samples, 1), dtype=np.float32)
             zeros = np.zeros(shape=(gen_noi_samples, 1), dtype=np.float32)

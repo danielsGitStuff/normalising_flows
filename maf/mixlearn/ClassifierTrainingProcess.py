@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from pathlib import Path
-from typing import Optional, Dict, List
+from typing import Optional, Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -33,6 +33,7 @@ class BinaryClassifierCreator(Ser):
 
 class ClassifierTrainingProcess(Ser):
     def __init__(self,
+                 id: int = NotProvided(),
                  dl_training_genuine: DL2 = NotProvided(),
                  dl_training_synth: DL2 = NotProvided(),
                  dl_val_genuine: DL2 = NotProvided(),
@@ -63,6 +64,7 @@ class ClassifierTrainingProcess(Ser):
                  conditional_dims: int = 0,
                  batch_size: Optional[int] = None):
         super().__init__()
+        self.id: int = id
         self.batch_size: Optional[int] = batch_size
         self.conditional_dims: int = conditional_dims
         self.dl_training_genuine: DL2 = dl_training_genuine
@@ -120,17 +122,6 @@ class ClassifierTrainingProcess(Ser):
 
         import tensorflow as tf
 
-        ds_train = prepare(genuine=self.dl_training_genuine, synth=self.dl_training_synth,
-                           clf_ge_sig=self.clf_t_ge_sig,
-                           clf_ge_no=self.clf_t_ge_noi,
-                           clf_sy_sig=self.clf_t_sy_sig,
-                           clf_sy_no=self.clf_t_sy_noi)
-        ds_val = prepare(genuine=self.dl_val_genuine, synth=self.dl_val_synth,
-                         clf_ge_sig=self.clf_v_ge_sig,
-                         clf_ge_no=self.clf_v_ge_noi,
-                         clf_sy_sig=self.clf_v_sy_sig,
-                         clf_sy_no=self.clf_v_sy_noi)
-
         epoch = None
         es = None
         loaded = False
@@ -143,14 +134,28 @@ class ClassifierTrainingProcess(Ser):
         else:
             lm = self.create_classifier()
 
+            ds_train = prepare(genuine=self.dl_training_genuine, synth=self.dl_training_synth,
+                               clf_ge_sig=self.clf_t_ge_sig,
+                               clf_ge_no=self.clf_t_ge_noi,
+                               clf_sy_sig=self.clf_t_sy_sig,
+                               clf_sy_no=self.clf_t_sy_noi)
+            ds_val = prepare(genuine=self.dl_val_genuine, synth=self.dl_val_synth,
+                             clf_ge_sig=self.clf_v_ge_sig,
+                             clf_ge_no=self.clf_v_ge_noi,
+                             clf_sy_sig=self.clf_v_sy_sig,
+                             clf_sy_no=self.clf_v_sy_noi)
+
             print(
                 f"fitting classifier with {len(ds_train)} samples (clf_t_ge_sig {self.clf_t_ge_sig} clf_t_ge_noi {self.clf_t_ge_noi} clf_t_sy_sig {self.clf_t_sy_sig} clf_t_sy_noi {self.clf_t_sy_noi}) -> '{self.history_csv_file}'")
             es = EarlyStopping(monitor='val_loss', patience=15, verbose=0, restore_best_weights=True, mode='min')
             if len(ds_train) > 0:
                 epochs = Global.Testing.get('testing_epochs', self.epochs)
                 eta = KerasETA(interval=10, epochs=epochs)
+                ds_train = ds_train.cache()
+                ds_val = ds_val.cache()
+                ds_train = ds_train.shuffle(self.batch_size * 5, reshuffle_each_iteration=True)
                 history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=epochs, callbacks=[es, eta],
-                                          shuffle=True)
+                                          shuffle=False)
                 epoch = epochs
                 if es.best_epoch is not None and es.best_epoch != epochs:
                     epoch = es.best_epoch
@@ -192,16 +197,16 @@ class ClassifierTrainingProcess(Ser):
         return d
 
     @staticmethod
-    def static_execute(js: str) -> Dict[str, float]:
+    def static_execute(js: str) -> Tuple[Dict[str, float], int]:
         """train classifier, return TEST results"""
         print('running in process')
         enable_memory_growth()
         classifier: ClassifierTrainingProcess = jsonloader.from_json(js)
         result = classifier.run()
         print('done with process')
-        return result
+        return result, classifier.id
 
-    def execute(self) -> Dict[str, float]:
+    def execute(self) -> Tuple[Dict[str, float], int]:
         # return self.run()
         js = jsonloader.to_json(self, pretty_print=True)
         # print('debug skip pool')
