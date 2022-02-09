@@ -17,11 +17,10 @@ class EvalExample3(VisualRandomExample):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('EvalExample3')
+        super().__init__('EvalExample3',layers=[1,5,10])
         self.mesh_count = 500
         self.set_minmax_square(10.0)
         self.patiences = [100, 100, 100]
-        self.layers = [1, 5, 10]
 
     def create_data_distribution(self) -> Distribution:
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
