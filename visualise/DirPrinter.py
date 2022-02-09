@@ -51,12 +51,15 @@ class DirPrinter(Ser):
         axs[0].set(ylabel='KL', xlabel='Layers')
         axs[1].set(ylabel='log(KL)', xlabel='Layer')
         plt.tight_layout()
-        plt.savefig(Path(f.parent, f"{f.name}.png"))
+        target = Path(f.parent, f"{f.name}.png")
+        print(f"merged -> '{target}'")
+        plt.savefig(target)
 
     def run_cache_printer(self, d: Path):
         c = CachePrinter(d)
         js = jsonloader.to_json(c)
         self.pool.apply_async(DirPrinter.static_run_cache_printer, args=(js,))
+        # DirPrinter.static_run_cache_printer(js)
 
     def __init__(self, directory: Path):
         super().__init__()
@@ -68,21 +71,22 @@ class DirPrinter(Ser):
             o: Path = o
             if o.is_dir():
                 if o.name == '.cache':
-                    # self.run_cache_printer(o)
-                    print('cache')
+                    self.run_cache_printer(o)
+                    # print('cache')
                 elif o.name.startswith('result'):
                     for f in o.iterdir():
                         f: Path = f
                         if f.is_file() and f.name.endswith('.divergences.csv'):
                             self.pool.apply_async(DirPrinter.static_print_divergences_csv, args=(f,))
                             # DirPrinter.static_print_divergences_csv(f)
+                            # pass
         self.pool.join()
 
 
 if __name__ == '__main__':
     SerSettings.enable_testing_mode()
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull.olde2/', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='pull/', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     d = DirPrinter(Path(args['dir']))
     d.run()

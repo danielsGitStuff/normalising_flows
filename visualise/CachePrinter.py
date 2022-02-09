@@ -1,5 +1,8 @@
 import re
 import sys
+
+from common.NotProvided import NotProvided
+from common.jsonloader import Ser, SerSettings
 from typing import Dict, Any, List, Optional
 
 import argparse
@@ -14,10 +17,12 @@ import pandas as pd
 import seaborn as sns
 
 
-class CachePrinter:
-    def __init__(self, dir: Path):
+class CachePrinter(Ser):
+    def __init__(self, dir: Path = NotProvided()):
+        super().__init__()
         self.dir: Path = dir
         self.pool: RestartingPoolReplacement = RestartingPoolReplacement(8)
+        self.ignored.add('pool')
 
     def run(self, dir: Path = None, depth: int = 0):
         dir = dir or self.dir
@@ -115,8 +120,11 @@ class CachePrinter:
                 name_start = f.name[m.start():m.end()]
                 d = f.parent
                 related_csvs: List[Path] = []
+                relative_pattern = f"{re.escape(name_start)}(?=_l\d+\.\d\.maf\.history\.csv$)"
                 for o in d.iterdir():
-                    if o.name.startswith(name_start) and o.name.endswith(str_end):
+                    found = re.search(relative_pattern, o.name)
+                    if found is not None:
+                    # if o.name.startswith(name_start) and o.name.endswith(str_end):
                         related_csvs.append(o)
                         print(f"related '{o}'")
                 if len(related_csvs) < 2:
@@ -135,9 +143,14 @@ class CachePrinter:
         cmap = sns.color_palette("flare", as_cmap=True)
         axs[0].set(ylabel='KL', title='KL-Divergence over epochs')
         axs[1].set(ylabel='log(KL)', title='log KL-Divergence over epochs')
-        sns.lineplot(data=_df_kl, x='epoch', y='value', ax=axs[0], hue='layer', ci='sd', palette=cmap, err_style='bars')
-        sns.lineplot(data=_df_log_kl, x='epoch', y='value', ax=axs[1], hue='layer', ci='sd', palette=cmap, err_style='bars')
+        # seaborn workaround: https://github.com/mwaskom/seaborn/issues/2694
+        hue = None
+        if len(_df_kl['layer'].unique()) > 1:
+            hue = 'layer'
+        sns.lineplot(data=_df_kl, x='epoch', y='value', ax=axs[0], hue=hue, ci='sd', palette=cmap, err_style='bars')
+        sns.lineplot(data=_df_log_kl, x='epoch', y='value', ax=axs[1], hue=hue, ci='sd', palette=cmap, err_style='bars')
         plt.tight_layout()
+        print(f"saving related to '{target}'")
         plt.savefig(target)
 
 
@@ -170,6 +183,7 @@ class CachePrinter:
 
 
 if __name__ == '__main__':
+    SerSettings.enable_testing_mode()
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
     ap.add_argument('--dir', help='which dir to traverse', default='pull/.cache', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
