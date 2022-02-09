@@ -11,11 +11,11 @@ from maf.dim10.VisualRandomExample import VisualRandomExample
 
 
 class EvalLargeD(VisualRandomExample):
-    def __init__(self, name: str, layers: Optional[List[int]] = None):
+    def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 4):
         self.input_dimensions: int = 10
         self.loc_range: float = 15.0
         self.no_of_gaussians: int = 7
-        super().__init__(name)
+        super().__init__(name, layers=layers, layers_repeat=layers_repeat)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10
         # self.divergence_sample_size = 1024 * 400
