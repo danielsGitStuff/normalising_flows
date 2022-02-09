@@ -61,12 +61,12 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        batch_size=1024,
                                                        classifiers_per_nf=3,
                                                        just_signal_plan=False,
-                                                       pool_size=6)
+                                                       pool_size=self.pool_size)
 
         experiment.create_training_plan().run()
 
-    def __init__(self, name='miniboone_clfvar'):
-        super().__init__(name)
+    def __init__(self, name='miniboone_clfvar', pool_size: int = 8):
+        super().__init__(name, pool_size=pool_size)
         self.experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess
 
 

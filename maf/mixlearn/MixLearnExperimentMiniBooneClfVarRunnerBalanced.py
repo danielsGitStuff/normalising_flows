@@ -5,7 +5,7 @@ from maf.mixlearn.dsinit.DSBalanceInitProcess import DSBalanceInitProcess
 
 class MixLearnExperimentMiniBooneClfVarRunnerBalanced(MixLearnExperimentMiniBooneClfVarRunner):
     def __init__(self):
-        super().__init__(name='miniboone_clf_var_balanced')
+        super().__init__(name='miniboone_clf_var_balanced',pool_size=2)
         self.experiment_init_ds_class = DSBalanceInitProcess
 
 
