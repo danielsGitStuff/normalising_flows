@@ -21,6 +21,7 @@ class EvalExample3(VisualRandomExample):
         self.mesh_count = 500
         self.set_minmax_square(10.0)
         self.patiences = [100, 100, 100]
+        self.layers = [1, 5, 10]
 
     def create_data_distribution(self) -> Distribution:
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
@@ -48,7 +49,7 @@ class EvalExample3(VisualRandomExample):
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_dim=self.input_dimensions, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True,
                                          batch_norm=False) for layers
-                in [5]]
+                in self.get_layers()]
 
     def create_data_title(self) -> str:
         return f"7 Gaussians"
