@@ -1,3 +1,4 @@
+from distributions.base import BaseMethods
 from pathlib import Path
 
 import numpy as np
@@ -13,20 +14,20 @@ from maf.dim10.VisualRandomExample import VisualRandomExample
 class EvalExample1(VisualRandomExample):
 
     def __init__(self):
-        super().__init__('EvalExample1')
+        super().__init__('EvalExample1', layers=[1, 3], layers_repeat=3)
 
     def create_data_distribution(self) -> Distribution:
-        cov = [[1.0, 0.5], [0.5, 2.0]]
-        cov = np.array(cov, dtype=np.float32)
-        loc = np.array([0, 0], dtype=np.float32)
+        cov = BaseMethods.random_positive_semidefinite_matrix(10, seed=77)
+        loc = np.zeros(10)
         d = GaussianMultivariateFullCov(loc=loc, cov=cov)
         return d
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in [1, 5,10]]
+        return [MaskedAutoregressiveFlow(input_dim=10, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True) for layers in self.get_layers()]
 
     def create_data_title(self) -> str:
-        return 'X ~ N([0, 0], [[1.0, 0.5], [0.5, 2.0]])'
+        return 'X ~ N([0], [10xRandom])'
+
 
 if __name__ == '__main__':
     Global.set_seed(42)
