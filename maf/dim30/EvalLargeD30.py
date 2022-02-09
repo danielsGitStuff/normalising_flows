@@ -13,15 +13,15 @@ from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 class EvalLargeD30(EvalLargeD10):
     def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 3, loc_range: float = 15.0):
         self.input_dimensions: int = 20
-        self.loc_range: float = 15.0
+        self.loc_range: float = 10.0
         self.no_of_gaussians: int = 9
         super().__init__(name, layers=layers, layers_repeat=layers_repeat, loc_range=loc_range)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10
         self.divergence_sample_size = 1024 * 300
-        self.no_val_samples = 1024 * 8
-        self.no_samples = 1024 * 300
-        self.batch_size = 1024 * 2
+        self.no_val_samples = 1024 * 12
+        self.no_samples = 1024 * 800
+        self.batch_size = 1024 * 4
 
     def create_data_distribution(self) -> Distribution:
         rng = np.random.default_rng(45)
