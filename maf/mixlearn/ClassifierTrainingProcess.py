@@ -151,11 +151,8 @@ class ClassifierTrainingProcess(Ser):
             if len(ds_train) > 0:
                 epochs = Global.Testing.get('testing_epochs', self.epochs)
                 eta = KerasETA(interval=10, epochs=epochs)
-                ds_train = ds_train.cache()
-                ds_val = ds_val.cache()
-                ds_train = ds_train.shuffle(self.batch_size * 5, reshuffle_each_iteration=True)
                 history = lm.fit_data_set(ds_train, conditional_dims=self.conditional_dims, ds_val=ds_val, batch_size=self.batch_size, epochs=epochs, callbacks=[es, eta],
-                                          shuffle=False)
+                                          shuffle=True)
                 epoch = epochs
                 if es.best_epoch is not None and es.best_epoch != epochs:
                     epoch = es.best_epoch
