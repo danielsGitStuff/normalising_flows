@@ -121,7 +121,7 @@ class DivergenceExperiment(MafExperiment):
 
         self.xs_samples: Optional[np.ndarray] = None
         self.log_ps_samples: Optional[np.ndarray] = None
-        self.pool_size = 2
+        self.pool_size = 7
         self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
 
     def set_pool_size(self, size: int):
