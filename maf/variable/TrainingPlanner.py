@@ -171,7 +171,6 @@ class TrainingPlanner:
                 ax.set_ylabel(self.label_map[group_by[1]])
             plt.tight_layout()
         plt.savefig(target_file)
-        sys.exit(6)
 
     def print_confusion_matrices(self, target_file: Path):
         df: pd.DataFrame = self.plan
