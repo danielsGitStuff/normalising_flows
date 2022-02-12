@@ -97,5 +97,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           LambdaIntParam('size_nf_t_noi', source_params=['tsize'], f=lambda tsize: round(tsize - (tsize * signal_ratio))),
                                           FixedIntParam('size_nf_v_noi', round(self.val_size - (signal_ratio * self.val_size))),
                                           FixedIntParam('test_clf_sig', test_props.no_of_signals),
-                                          FixedIntParam('test_clf_no', test_props.no_of_noise))
+                                          FixedIntParam('test_clf_no', test_props.no_of_noise))\
+            .label('size_clf_t_ge', 'Genuine samples seen by classifier') \
+            .label('size_clf_t_sy', 'Synthetic samples seen by classifier')
         return with_noise_plan

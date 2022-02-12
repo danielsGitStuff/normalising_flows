@@ -1,10 +1,9 @@
 from __future__ import annotations
-import itertools
-import math
-import sys
-from pathlib import Path
-from typing import Optional, List, Tuple, Dict, Generator, Set, Any
 
+import itertools
+import sys
+
+import math
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -13,8 +12,9 @@ from pandas import Series
 
 from maf.stuff.StaticMethods import StaticMethods
 from maf.variable.DependencyChecker import Dependency, DependencyChecker
-from maf.variable.VariableParam import LambdaParam, LambdaParams, VariableParamInt, MetricParam, CopyFromParam, VariableParam, FixedParam, Param, MetricIntParam
-import matplotlib.ticker as ticker
+from maf.variable.VariableParam import LambdaParam, MetricParam, VariableParam, FixedParam, Param, MetricIntParam, Converter
+from pathlib import Path
+from typing import Optional, List, Tuple, Dict, Set
 
 
 class TrainingPlanner:
@@ -108,7 +108,8 @@ class TrainingPlanner:
         return self
 
     def print(self, target_file: Path):
-        df: pd.DataFrame = self.plan
+        df: pd.DataFrame = self.plan.copy()
+        type_dict: Dict[str, Converter] = {k: v.converter for k, v in self._param_dict.items() if v.converter is not None}
         group_by: List[str] = [p.name for p in self._varying_params if p.name != 'model']
         if len(group_by) < 2:
             group_by.append('dsize')
@@ -116,9 +117,7 @@ class TrainingPlanner:
         means: pd.DataFrame = df.drop(['tsize'], axis=1).groupby(group_by).mean()
         stddevs: pd.DataFrame = df.drop(['tsize'], axis=1).groupby(group_by).std()
         group_by_operations: List[Tuple[str, pd.DataFrame]] = [('Mean', means), ('Std', stddevs)]
-        # metrics = list(df.columns)[6:]
         models_per_config = len(df['model'].unique())
-        # {(GROUP_BY_OP, METRIC), pd.DataFrame}
         d: Dict[Tuple[str, str], pd.DataFrame] = {}
         for group_by_operation_name, group_by_df in group_by_operations:
             for metric in self.metrics:
@@ -127,6 +126,8 @@ class TrainingPlanner:
                 metric_values: np.ndarray = group_by_df[metric].values
                 values = np.concatenate([group_by_values, metric_values.reshape(len(metric_values), 1)], axis=1)
                 processed = pd.DataFrame(data=values, columns=group_by + ['metric'])
+                current_type_dict: Dict[str, Converter] = {g: type_dict[g] for g in group_by if g in type_dict}
+                processed = processed.astype(current_type_dict)
                 d[(group_by_operation_name, metric)] = processed
         plt.clf()
         big = 24
@@ -141,11 +142,6 @@ class TrainingPlanner:
         plt.rc('figure', titlesize=big)
         plt.rc('lines', linewidth=3)
 
-        def format_2_str(number: Any) -> str:
-            if isinstance(number, float):
-                return "{:.2f}".format(number)
-            return str(number)
-
         fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=19, h=16)
         fig.suptitle(f"Results for {models_per_config} classifiers")
         if not isinstance(axs, np.ndarray):
@@ -156,28 +152,15 @@ class TrainingPlanner:
             ax.set_axis_on()
             if 'dsize' in df:
                 df['dsize'] = df['dsize'].astype(np.int32)
-            # fig, ax = StaticMethods.default_fig(no_rows=1, no_columns=1, w=10, h=8)
             ax.set_title(f"{group_by_operation_name} of '{metric}'")
             pivoted = df.pivot(index=group_by[0], columns=group_by[1], values='metric').T[::-1]
-            if 0.0 in pivoted.index and 0.0 in pivoted[pivoted.columns[0]]: # and group_by_operation_name == 'Mean':
+            if 0.0 in pivoted.index and 0.0 in pivoted[pivoted.columns[0]]:  # and group_by_operation_name == 'Mean':
                 pivoted.at[0, 0] = None
-            sns.heatmap(data=pivoted, annot=True, fmt='.2f', ax=ax, square=True, )
-            ax.xaxis.set_major_formatter(ticker.EngFormatter(places=3))
-            # ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{}".format(x)))
-            x_param: Param = self._param_dict[group_by[0]]
-            y_param: Param = self._param_dict[group_by[1]]
-            ys: List[float] = list(pivoted.index)
-            ax.set_yticks(list(range(len(ys))))
-            ax.set_yticklabels([format_2_str(y_param.cast(y)) for y in ys])
-
-            xs: List[float] = list(pivoted.columns)
-            ax.set_xticks(list(range(len(xs))))
-            ax.set_xticklabels([format_2_str(x_param.cast(x)) for x in xs])
-            # ax.set_xlabel(self.label_map.get(group_by[0], group_by[0]))
-            # ax.set_ylabel(self.label_map.get(group_by[1], group_by[1]))
-
-            # ax.set_xlabel('Synthetic Samples ratio')
-            # ax.set_ylabel('No of Training Samples')
+            sns.heatmap(data=pivoted, annot=True, fmt='.3f', ax=ax, square=True, )
+            if group_by[0] in self.label_map:
+                ax.set_xlabel(self.label_map[group_by[0]])
+            if group_by[1] in self.label_map:
+                ax.set_ylabel(self.label_map[group_by[1]])
             plt.tight_layout()
         plt.savefig(target_file)
 
@@ -190,9 +173,6 @@ class TrainingPlanner:
         means: pd.DataFrame = df.groupby(group_by).mean()
         stddevs: pd.DataFrame = df.groupby(group_by).std()
         group_by_operations: List[Tuple[str, pd.DataFrame]] = [('Mean', means), ('Std', stddevs)]
-        # metrics = list(df.columns)[6:]
-        models_per_config = len(df['model'].unique())
-        # {(GROUP_BY_OP, METRIC), pd.DataFrame}
         d: Dict[Tuple[str, str], pd.DataFrame] = {}
         metrics: Set = set(self.metrics)
         for m in ['tsig', 'fsig', 'tnoise', 'fnoise']:
