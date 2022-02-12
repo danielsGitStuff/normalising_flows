@@ -30,7 +30,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                  test_split: float = 0.1,
                  classifiers_per_nf: int = 3,
                  pool_size: int = 6,
-                 just_signal_plan: bool = False):
+                 just_signal_plan: bool = False,
+                 synth_samples_amount_multiplier: float = 1.0):
         super().__init__(
             classifiers_per_nf=classifiers_per_nf,
             name=name,
@@ -47,6 +48,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
             test_split=test_split,
             pool_size=pool_size)
         self.just_signal_plan: bool = just_signal_plan
+        self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -73,7 +75,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
 
                                           VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
                                           # FixedIntParam('size_clf_t_ge', 0, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=(props.length * self.synth_samples_amount_multiplier - 1500), range_steps=10,
+                                                           is_var=True),
                                           LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
                                           LambdaIntParam('size_clf_v_sy', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
@@ -97,7 +100,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           LambdaIntParam('size_nf_t_noi', source_params=['tsize'], f=lambda tsize: round(tsize - (tsize * signal_ratio))),
                                           FixedIntParam('size_nf_v_noi', round(self.val_size - (signal_ratio * self.val_size))),
                                           FixedIntParam('test_clf_sig', test_props.no_of_signals),
-                                          FixedIntParam('test_clf_no', test_props.no_of_noise))\
+                                          FixedIntParam('test_clf_no', test_props.no_of_noise)) \
             .label('size_clf_t_ge', 'Genuine samples seen by classifier') \
             .label('size_clf_t_sy', 'Synthetic samples seen by classifier')
         return with_noise_plan
