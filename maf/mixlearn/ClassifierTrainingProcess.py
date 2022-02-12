@@ -39,13 +39,7 @@ class ClassifierTrainingProcess(Ser):
                  dl_val_genuine: DL2 = NotProvided(),
                  dl_val_synth: DL2 = NotProvided(),
                  dl_test: DL2 = NotProvided(),
-
                  history_csv_file: Path = NotProvided(),
-                 ds_training_folder: Path = NotProvided(),
-                 ds_synth_training_folder: Path = NotProvided(),
-                 ds_synth_val_folder: Path = NotProvided(),
-                 ds_val_folder: Path = NotProvided(),
-                 ds_test_folder: Path = NotProvided(),
                  epochs: int = NotProvided(),
                  clf_t_ge_noi: int = NotProvided(),
                  clf_t_ge_sig: int = NotProvided(),
@@ -55,11 +49,6 @@ class ClassifierTrainingProcess(Ser):
                  clf_v_ge_sig: int = NotProvided(),
                  clf_v_sy_noi: int = NotProvided(),
                  clf_v_sy_sig: int = NotProvided(),
-
-                 # clf_t_g_size: int = NotProvided(),
-                 # clf_t_s_size: int = NotProvided(),
-                 # clf_v_g_size: int = NotProvided(),
-                 # clf_v_s_size: int = NotProvided(),
                  model_base_file: str = NotProvided(),
                  conditional_dims: int = 0,
                  batch_size: Optional[int] = None):
@@ -72,19 +61,9 @@ class ClassifierTrainingProcess(Ser):
         self.dl_val_genuine: DL2 = dl_val_genuine
         self.dl_val_synth: DL2 = dl_val_synth
         self.dl_test: DL2 = dl_test
-        # self.ds_synth_training_folder: Path = ds_synth_training_folder
-        # self.ds_synth_val_folder: Path = ds_synth_val_folder
-        # self.ds_test_folder: Path = ds_test_folder
-        # self.ds_training_folder: Path = ds_training_folder
-        # self.ds_val_folder: Path = ds_val_folder
         self.epochs: int = epochs
         self.history_csv_file: Path = history_csv_file
         self.model_base_file: str = model_base_file
-        # self.clf_t_g_size: int = clf_t_g_size
-        # self.clf_t_s_size: int = clf_t_s_size
-        # self.clf_v_g_size: int = clf_v_g_size
-        # self.clf_v_s_size: int = clf_v_s_size
-
         self.clf_t_ge_noi: int = clf_t_ge_noi
         self.clf_t_ge_sig: int = clf_t_ge_sig
         self.clf_t_sy_noi: int = clf_t_sy_noi
@@ -95,17 +74,12 @@ class ClassifierTrainingProcess(Ser):
         self.clf_v_sy_sig: int = clf_v_sy_sig
 
     def create_classifier(self) -> LazyModel:
+        # architeture from here: https://github.com/daines-analytics/deep-learning-projects/blob/master/py_autokeras_binaryclass_miniboone_particle_identification/py_autokeras_binaryclass_miniboone_particle_identification.ipynb
         input_dim = self.dl_training_genuine.props.dimensions
         ins = Input(shape=(input_dim,))
         b = Dense(512, activation='relu')(ins)
-        # b = Dropout()
         b = Dense(512, activation='relu')(b)
         b = Dense(1, activation='sigmoid')(b)
-        # b = Dense(100, activation='relu', name='DenseRELU0')(ins)
-        # b = Dense(100, activation='relu')(b)
-        # b = BatchNormalization()(b)
-        # b = Dense(100, activation='relu')(b)
-        # b = Dense(1, activation='linear', name='out')(b)
         model = Model(inputs=[ins], outputs=[b])
         lm = LazyModel.Methods.wrap(model)
         lm.compile(optimizer='adam', loss=BinaryCrossentropy(), lr=0.001, metrics=['accuracy'])
@@ -204,7 +178,6 @@ class ClassifierTrainingProcess(Ser):
         return result, classifier.id
 
     def execute(self) -> Tuple[Dict[str, float], int]:
-        # return self.run()
         js = jsonloader.to_json(self, pretty_print=True)
         # print('debug skip pool')
         # return ClassifierTrainingProcess.static_execute(js)
