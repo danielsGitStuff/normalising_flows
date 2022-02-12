@@ -130,25 +130,27 @@ class TrainingPlanner:
                 processed = processed.astype(current_type_dict)
                 d[(group_by_operation_name, metric)] = processed
         plt.clf()
-        big = 24
-        medium = 20
-        small = 20
-        plt.rc('font', size=small)
-        plt.rc('axes', titlesize=small)
-        plt.rc('axes', labelsize=medium)
-        plt.rc('xtick', labelsize=small)
-        plt.rc('ytick', labelsize=small)
-        plt.rc('legend', fontsize=small)
-        plt.rc('figure', titlesize=big)
+        L = 20
+        M = 16
+        S = 12
+        plt.rc('font', size=M)
+        plt.rc('axes', titlesize=L)
+        plt.rc('axes', labelsize=L)
+        plt.rc('xtick', labelsize=S)
+        plt.rc('ytick', labelsize=S)
+        plt.rc('legend', fontsize=S)
+        plt.rc('figure', titlesize=L)
         plt.rc('lines', linewidth=3)
 
-        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=19, h=16)
+        fig, axs = StaticMethods.default_fig(no_rows=len(group_by_operations), no_columns=len(self.metrics), w=13, h=11)
         fig.suptitle(f"Results for {models_per_config} classifiers")
         if not isinstance(axs, np.ndarray):
             axs = np.array([axs])
         for ax in axs.flatten():
             ax.set_axis_off()
         for ((group_by_operation_name, metric), df), ax in zip(d.items(), axs.flatten()):
+            # if metric != 'accuracy':
+            #     continue
             ax.set_axis_on()
             if 'dsize' in df:
                 df['dsize'] = df['dsize'].astype(np.int32)
@@ -156,13 +158,20 @@ class TrainingPlanner:
             pivoted = df.pivot(index=group_by[0], columns=group_by[1], values='metric').T[::-1]
             if 0.0 in pivoted.index and 0.0 in pivoted[pivoted.columns[0]]:  # and group_by_operation_name == 'Mean':
                 pivoted.at[0, 0] = None
-            sns.heatmap(data=pivoted, annot=True, fmt='.3f', ax=ax, square=True, )
+            fmt = '.3f'
+            mv = np.nanmax(pivoted.values)
+            if 100 <= mv <= 1000:
+                fmt = '.2f'
+            elif mv > 1000:
+                fmt = '.0f'
+            sns.heatmap(data=pivoted, annot=True, fmt=fmt, ax=ax, square=True, )
             if group_by[0] in self.label_map:
                 ax.set_xlabel(self.label_map[group_by[0]])
             if group_by[1] in self.label_map:
                 ax.set_ylabel(self.label_map[group_by[1]])
             plt.tight_layout()
         plt.savefig(target_file)
+        sys.exit(6)
 
     def print_confusion_matrices(self, target_file: Path):
         df: pd.DataFrame = self.plan
