@@ -31,7 +31,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                  classifiers_per_nf: int = 3,
                  pool_size: int = 6,
                  just_signal_plan: bool = False,
-                 synth_samples_amount_multiplier: float = 1.0):
+                 synth_samples_amount_multiplier: float = 1.0,
+                 steps_size_clf_t_ge: int = 10):
         super().__init__(
             classifiers_per_nf=classifiers_per_nf,
             name=name,
@@ -49,6 +50,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
             pool_size=pool_size)
         self.just_signal_plan: bool = just_signal_plan
         self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
+        self.steps_size_clf_t_ge: int = steps_size_clf_t_ge
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -73,7 +75,7 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                                           MetricIntParam('tsig'),
                                           MetricIntParam('fsig'),
 
-                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=10, is_var=True),
+                                          VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=self.steps_size_clf_t_ge, is_var=True),
                                           # FixedIntParam('size_clf_t_ge', 0, is_var=True),
                                           VariableParamInt('size_clf_t_sy', range_start=0, range_end=(props.length * self.synth_samples_amount_multiplier - 1500), range_steps=10,
                                                            is_var=True),

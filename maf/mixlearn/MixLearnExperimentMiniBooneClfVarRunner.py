@@ -62,14 +62,16 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        classifiers_per_nf=3,
                                                        just_signal_plan=False,
                                                        pool_size=self.pool_size,
-                                                       synth_samples_amount_multiplier=self.synth_samples_amount_multiplier)
+                                                       synth_samples_amount_multiplier=self.synth_samples_amount_multiplier,
+                                                       steps_size_clf_t_ge=self.steps_size_clf_t_ge)
 
         experiment.create_training_plan().run()
 
-    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0):
+    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0, steps_size_clf_t_ge:int = 10):
         super().__init__(name, pool_size=pool_size)
         self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
         self.experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess
+        self.steps_size_clf_t_ge: int = steps_size_clf_t_ge
 
 
 if __name__ == '__main__':
