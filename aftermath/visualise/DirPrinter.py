@@ -2,7 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from common import jsonloader
-from common.globals import Global
 from common.jsonloader import Ser, SerSettings
 from common.poolreplacement import RestartingPoolReplacement
 from maf.stuff.StaticMethods import StaticMethods
@@ -10,7 +9,7 @@ from typing import Dict, Any
 
 import argparse
 from pathlib import Path
-from visualise.CachePrinter import CachePrinter
+from aftermath.visualise.CachePrinter import CachePrinter
 import pandas as pd
 import seaborn as sns
 
