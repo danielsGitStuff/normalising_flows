@@ -1,5 +1,6 @@
 from sklearn.datasets import make_spd_matrix
 
+from keta.argparseer import ArgParser
 from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 
@@ -51,5 +52,5 @@ class NF2D_RandomB(VisualRandomExample2D):
 
 
 if __name__ == '__main__':
-    enable_memory_growth()
+    ArgParser.parse()
     NF2D_RandomB().run()
