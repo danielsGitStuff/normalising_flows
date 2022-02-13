@@ -90,8 +90,8 @@ class DivergenceProcess(Ser):
 
 
 class DivergenceExperiment(MafExperiment):
-    def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 1):
-        super().__init__(name)
+    def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 1, pool_size: int = 6):
+        super().__init__(name, pool_size=pool_size)
         self.layers: List[int] = layers or [10, 10, 10, 20, 20, 20, 30, 30, 30]
         self.layers_repeat: int = layers_repeat
         self.xmin: float = -4.0
