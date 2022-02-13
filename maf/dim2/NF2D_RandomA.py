@@ -17,7 +17,7 @@ class NF2D_RandomA(VisualRandomExample2D):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('NF2D_RandomA', layers=[1, 3, 5, 10], pool_size=2)
+        super().__init__('NF2D_RandomA', layers=[1, 3, 5, 10])
         self.mesh_count = 500
         self.set_minmax_square(10.0)
 
