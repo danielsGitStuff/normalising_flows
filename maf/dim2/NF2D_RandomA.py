@@ -17,10 +17,9 @@ class NF2D_RandomA(VisualRandomExample2D):
 
     def __init__(self):
         self.input_dimensions: int = 2
-        super().__init__('NF2D_RandomA', layers=[1, 3, 5, 10])
+        super().__init__('NF2D_RandomA', layers=[1, 3, 5, 10], pool_size=2)
         self.mesh_count = 500
         self.set_minmax_square(10.0)
-        self.patiences = [100, 100, 100, 100]
 
     def create_data_distribution(self) -> Distribution:
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
@@ -33,10 +32,11 @@ class NF2D_RandomA(VisualRandomExample2D):
             Global.set_seed(seed)
             sample_f = lambda: np.random.normal(scale=2.0)
             cov = BaseMethods.random_covariance_matrix(self.input_dimensions, sample_f=sample_f)
-            m = tf.linalg.cholesky(cov)
-            if not tf.reduce_any(tf.math.is_nan(m)):
+            try:
+                np.linalg.cholesky(cov)
                 covs.append(cov)
-                print(f"seed {seed} works!")
+            except np.linalg.LinAlgError:
+                print('np.linalg.error')
 
         for cov in covs:
             weight = np.random.random() + 3
@@ -55,5 +55,4 @@ class NF2D_RandomA(VisualRandomExample2D):
 
 
 if __name__ == '__main__':
-    enable_memory_growth()
     NF2D_RandomA().run()
