@@ -169,14 +169,14 @@ class Distribution(Ser):
         return self.batch_call_sample(size=size, cond=cond, batch_size=batch_size, **kwargs)
 
     @staticmethod
-    def static_sample(js:str, size:int):
+    def static_sample(js: str, size: int):
         d: Distribution = jsonloader.from_json(js)
         return d.sample(size)
 
     def sample_in_process(self, size: int = 1) -> np.ndarray:
-        return BaseMethods.call_func_in_process(self,self.sample,arguments={"size":size})
+        return BaseMethods.call_func_in_process(self, self.sample, arguments={"size": size})
         js = self.to_json()
-        return Global.POOL().run_blocking(Distribution.static_sample, args=(js,size))
+        return Global.POOL().run_blocking(Distribution.static_sample, args=(js, size))
 
     def likelihoods(self, xs: TTensor, cond: TTensorOpt = None, batch_size: Optional[int] = None) -> np.ndarray:
         if self.tfd_distribution is None:
