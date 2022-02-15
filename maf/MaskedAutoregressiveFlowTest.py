@@ -10,7 +10,11 @@ from numpy import ufunc
 from tensorflow_probability.python.distributions import TransformedDistribution
 
 from common.util import Runtime
+from distributions.GaussianMultivariate import GaussianMultivariate
+from distributions.LearnedDistribution import EarlyStop
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
+from distributions.kl.KL import KullbackLeiblerDivergence
+from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 
 
@@ -68,3 +72,36 @@ class MafTest(TestCase):
         loaded: MaskedAutoregressiveFlow = LearnedTransformedDistribution.load(test_dir, "bla")
         self.check_tdfs(self.maf.transformed_distribution, loaded.transformed_distribution, op=np.equal)
         shutil.rmtree(test_dir)
+
+    def test_kl_after_load(self):
+        import tensorflow as tf
+        test_dir = 'test_dir'
+        os.makedirs(test_dir, exist_ok=True)
+        p = GaussianMultivariate(input_dim=2, mus=[3, 7], cov=[1, 2])
+        xs = p.sample(1000)
+        xs_test = p.sample(1000)
+        es = EarlyStop('loss', comparison_op=tf.less_equal, patience=10, restore_best_model=True)
+        es.debug_stop_epoch = 6
+        self.maf.fit(dataset=xs, batch_size=100, epochs=10, early_stop=es)
+        self.maf.save(test_dir, 'bla')
+
+        loaded_maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(test_dir, 'bla')
+        ys = self.maf.prob(xs)
+        loaded_ys = loaded_maf.prob(xs)
+        self.assertAllEqual(ys, loaded_ys)
+
+        k = KullbackLeiblerDivergence(p=p, q=self.maf, half_width=1.0, step_size=1.0)
+        loaded_k = KullbackLeiblerDivergence(p=p, q=loaded_maf, half_width=1.0, step_size=1.0)
+        ds_xs_test = DS.from_tensor_slices(xs_test)
+        ds_log_ps_test = DS.from_tensor_slices(p.log_prob(xs_test))
+        k1 = k.calculate_from_samples_vs_q(ds_xs_test, ds_log_ps_test)
+        k2 = loaded_k.calculate_from_samples_vs_q(ds_xs_test, ds_log_ps_test)
+        self.assertEqual(k1,k2)
+
+        shutil.rmtree(test_dir)
+
+
+if __name__ == '__main__':
+    t = MafTest()
+    t.setUp()
+    t.test_kl_after_load()
