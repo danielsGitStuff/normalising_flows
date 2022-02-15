@@ -192,6 +192,7 @@ class EarlyStop:
         # cp = tf.train.Checkpoint(optimizer=opt, model=maf)
         # cp.save()
         # co = CheckpointOptions()
+        self.debug_stop_epoch: Optional[int] = None
 
     def after_training_ends(self, history: FitHistory):
         if self.__has_restored:
@@ -223,13 +224,13 @@ class EarlyStop:
             self.best_learned_distribution_config = self.learned_distribution.get_config()
             self.last_epoch = epoch
             return False
-        if self.comparison_op(last_value, self.best_value):
+        if self.comparison_op(last_value, self.best_value) and (self.debug_stop_epoch is None or self.debug_stop_epoch > epoch):
             self.best_value = last_value
             self.best_learned_distribution_config = self.learned_distribution.get_config()
             self.last_epoch = epoch
             return False
         else:
-            if epoch - self.last_epoch > self.patience:
+            if epoch - self.last_epoch > self.patience or (self.debug_stop_epoch is not None and epoch == self.debug_stop_epoch):
                 self.stopped = True
                 if self.restore_best_model:
                     self.after_training_ends(history=history)
@@ -238,6 +239,7 @@ class EarlyStop:
 
     def new(self) -> EarlyStop:
         es = EarlyStop(monitor=self.monitor, comparison_op=self.comparison_op, patience=self.patience, restore_best_model=self.restore_best_model)
+        es.debug_stop_epoch = self.debug_stop_epoch
         if self.__never_stop:
             es.never_stop()
         return es
