@@ -1,19 +1,13 @@
 from __future__ import annotations
 
-import sys
-
 import numpy as np
 
-from maf.DL import DL3
 from maf.dim10.Dim10aCenteredMVG import Dim10aCenteredMVG
-from maf.dim10.EvalExample2 import EvalExample2
-from maf.dim10.EvalExample4 import EvalExample4
 from maf.dim2.NF2D_RandomA import NF2D_RandomA
 from maf.dim2.NF2D_RandomB import NF2D_RandomB
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunnerBalanced import MixLearnExperimentMiniBooneClfVarRunnerBalanced
-from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
-from maf.dim2.NF1D_1Bumps import NF1D_1Bumps
-from maf.dim2.NF1D_2Bumps import NF1D_2Bumps
+from maf.dim1.NF1D_1Bumps import NF1D_1Bumps
+from maf.dim1.NF1D_2Bumps import NF1D_2Bumps
 from maf.dim2.NF2D_10Bumps import NF2D_10Bumps
 from maf.dim2.NF2D_1Bumps import NF2D_1Bumps
 from maf.dim2.NF2D_1Rect import NF2D_1Rect
@@ -31,7 +25,6 @@ from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from keta.argparseer import ArgParser
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 
-from common.globals import Global
 import random
 from typing import List, Type, Dict, Any
 
