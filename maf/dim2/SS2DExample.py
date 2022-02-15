@@ -15,7 +15,7 @@ class SS2DMafExperiment(MafExperiment):
         pass
 
     def results_dir_name(self) -> str:
-        return 'results_artificial'
+        return 'results_artificial_dim2'
 
     def _run(self):
         no_rows = 2

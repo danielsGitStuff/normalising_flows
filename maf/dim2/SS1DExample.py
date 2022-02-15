@@ -13,7 +13,7 @@ class SS1DMafExperiment(MafExperiment):
         pass
 
     def results_dir_name(self) -> str:
-        return 'results_artificial'
+        return 'results_artificial_dim1'
 
     def _run(self):
         fig, axs = self.default_fig(1, 2)

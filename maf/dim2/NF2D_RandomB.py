@@ -30,12 +30,12 @@ class NF2D_RandomB(VisualRandomExample2D):
     def create_data_distribution(self) -> Distribution:
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
 
-        no_of_distributions = 7
+        no_of_distributions = 8
         rng = np.random.default_rng(42 + 54)
 
         for i in range(no_of_distributions):
             weight = rng.random() + 3
-            loc = rng.uniform(-5.0, 5.0, self.input_dimensions)
+            loc = rng.uniform(-7.0, 7.0, self.input_dimensions)
             cov = BaseMethods.random_positive_semidefinite_matrix(n=self.input_dimensions, seed=58)
             print(cov)
             g = GaussianMultivariateFullCov(loc=loc, cov=cov)

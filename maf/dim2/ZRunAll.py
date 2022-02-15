@@ -1,8 +1,8 @@
 from typing import List
 
 from maf.stuff.MafExperiment import MafExperiment
-from maf.dim2.NF1D_1Bumps import NF1D_1Bumps
-from maf.dim2.NF1D_2Bumps import NF1D_2Bumps
+from maf.dim1.NF1D_1Bumps import NF1D_1Bumps
+from maf.dim1.NF1D_2Bumps import NF1D_2Bumps
 from maf.dim2.NF2D_10Bumps import NF2D_10Bumps
 from maf.dim2.NF2D_1Bumps import NF2D_1Bumps
 from maf.dim2.NF2D_2Bumps import NF2D_2Bumps

@@ -30,5 +30,4 @@ class NF2D_4Rect(VisualExample2D):
 
 if __name__ == '__main__':
     ArgParser.parse()
-    Global.set_global('results_dir', Path('results_artificial'))
     NF2D_4Rect().run()
