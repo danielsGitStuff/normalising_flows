@@ -28,7 +28,7 @@ class TableMagic:
                     f: Path = f
                     if f.is_file() and f.name.endswith('.divergences.csv'):
                         name = TableMagic.Methods.get_name_from_divergences_csv(f)
-                        target_file = Path(f.parent, f"{name}.merged.csv")
+                        target_file = Path(f.parent, f"{name}.tablemagic.csv")
                         primary_df, related = self.find_related_of_divergence(f)
                         self.merge(primary_name=name, primary_df=primary_df, related=related, target_file=target_file)
 

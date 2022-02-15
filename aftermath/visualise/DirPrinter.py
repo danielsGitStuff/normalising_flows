@@ -45,6 +45,7 @@ class DirPrinter(Ser):
         df_log = df.copy()
         df_log['kl'] = np.log(df['kl'])
         cmap = sns.color_palette("flare")
+        cmap = sns.color_palette("Blues")
         sns.barplot(data=df, x='layers', y='kl', ax=axs[0], palette=cmap, ci='sd')
         sns.barplot(data=df_log, x='layers', y='kl', ax=axs[1], palette=cmap, ci='sd')
         axs[0].set(ylabel='KL', xlabel='Layers')

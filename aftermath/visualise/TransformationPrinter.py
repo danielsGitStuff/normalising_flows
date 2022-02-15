@@ -37,7 +37,7 @@ class ChainDistribution(Distribution):
         self.chain: Chain = None
 
 
-class Spielwiese2:
+class TransformationPrinter:
     def __init__(self):
         self.denses: List[DensityPlotData] = []
         self.log_scale = False
@@ -118,18 +118,18 @@ class Spielwiese2:
         self.fig, axs = StaticMethods.default_fig(no_rows=no_rows, no_columns=no_columns, h=10, w=10, h_offset=self.h_offset)
         return self.fig, axs
 
-    def probe_src_dist(self) -> np.ndarray:
+    def probe_src_dist(self, xmin: float, xmax: float, ymin: float, ymax: float ) -> np.ndarray:
         import tensorflow as tf
-        xmin = self.src_distr.lows[0]
-        ymin = self.src_distr.lows[1]
-        xmax = self.src_distr.highs[0]
-        ymax = self.src_distr.highs[1]
+        # xmin = self.src_distr.lows[0]
+        # ymin = self.src_distr.lows[1]
+        # xmax = self.src_distr.highs[0]
+        # ymax = self.src_distr.highs[1]
         mesh_count = 20
 
-        xmin = self.src_distr.lows[0] - 2.0
-        ymin = self.src_distr.lows[1] - 1.0
-        xmax = self.src_distr.highs[0] + 2.0
-        ymax = self.src_distr.highs[1] + 1.0
+        # xmin = self.src_distr.lows[0] - 2.0
+        # ymin = self.src_distr.lows[1] - 1.0
+        # xmax = self.src_distr.highs[0] + 2.0
+        # ymax = self.src_distr.highs[1] + 1.0
         # mesh_count = 50
 
         x = tf.linspace(xmin, xmax, mesh_count)
@@ -140,17 +140,22 @@ class Spielwiese2:
         # ar = ar.T
         return ar
 
-    def run(self):
-        if LearnedDistribution.can_load_from('.cache', 'NF2D_1Rect_l2.0.maf'):
+    def run(self, xmin: float, xmax: float, ymin: float, ymax: float,radius:float, target: Path):
+        if LearnedDistribution.can_load_from('.cache', 'NF2D_1RectL2_l2.0.maf'):
+            xmin = float(xmin)
+            xmax = float(xmax)
+            ymin = float(ymin)
+            ymax = float(ymax)
+            radius = float(radius)
             print('can load')
-            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('.cache', 'NF2D_1Rect_l2.0.maf')
+            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('.cache', 'NF2D_1RectL2_l2.0.maf')
 
             self.hm(maf, mesh_count=100)
 
             chain: Chain = maf.transformed_distribution.bijector
             bs = chain.bijectors
 
-            xs = self.probe_src_dist()
+            xs = self.probe_src_dist(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
             xx = np.zeros((xs.shape[0], xs.shape[1] + 1))
             xx[:, 0:2] = xs
             xx[:, 2] = np.linspace(0, 1, len(xx))
@@ -158,7 +163,7 @@ class Spielwiese2:
             fig, axs = StaticMethods.default_fig(3, 2, w=10, h=8)
             axs = axs.reshape((3, 2))
 
-            def printi(ax, vs: np.ndarray, L: float = 10.0, c=None, cmap='viridis', determinant: bool = False):
+            def printi(ax, vs: np.ndarray, c=None, cmap='viridis', determinant: bool = False):
                 ax.set_box_aspect(1)
                 # im = ax.scatter(vs[:, 0], vs[:, 1], c=c, cmap=cmap)
                 hue = None
@@ -166,8 +171,8 @@ class Spielwiese2:
                     hue = c
                     c = None
                 sns.scatterplot(vs[:, 0], vs[:, 1], hue=hue, c=c, cmap=cmap, ax=ax, legend='auto')
-                ax.set_xlim(-L, L)
-                ax.set_ylim(-L, L)
+                ax.set_xlim(-radius, radius)
+                ax.set_ylim(-radius, radius)
                 # ax.legend()
                 # fig.colorbar(im, cax=ax, orientation='horizontal')
 
@@ -201,7 +206,11 @@ class Spielwiese2:
             printi(axs[2][1], us, c=det, cmap='plasma', determinant=True)
 
             fig.tight_layout()
-            plt.savefig('result_spielwiese/test.png')
+            results_dir: Path = Path('results_visualise')
+            results_dir.mkdir(exist_ok=True)
+            # target: Path = Path(results_dir, 'visual.png')
+            # print(f"saving to '{target.absolute()}'")
+            plt.savefig(target)
 
             # self.print_denses()
 
@@ -213,4 +222,7 @@ class Spielwiese2:
 
 if __name__ == '__main__':
     enable_memory_growth()
-    Spielwiese2().run()
+    results_dir: Path = Path('results_visualise')
+    results_dir.mkdir(exist_ok=True)
+    TransformationPrinter().run(xmin=-1, xmax=1, ymin=-2, ymax=2, radius=4, target=Path(results_dir, 'internals1.png'))
+    TransformationPrinter().run(xmin=-3, xmax=3, ymin=-3, ymax=3, radius=10, target=Path(results_dir, 'internals2.png'))
