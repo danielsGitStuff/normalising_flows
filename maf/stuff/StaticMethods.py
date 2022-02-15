@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from common.NotProvided import NotProvided
+from common.globals import Global
 from common.util import Runtime
 from distributions.Distribution import Distribution
 
@@ -26,7 +27,7 @@ class StaticMethods:
 
     @staticmethod
     def cache_dir() -> Path:
-        cache_dir = Path('.cache')
+        cache_dir = Global.get_default('cache_dir', Path('.cache'))
         if not cache_dir.exists():
             cache_dir.mkdir()
         return cache_dir
