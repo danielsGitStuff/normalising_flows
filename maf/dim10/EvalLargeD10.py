@@ -1,4 +1,4 @@
-from maf.dim10.VisualRandomExample10D import VisualRandomExample10D
+from maf.dim10.RandomExample10D import RandomExample10D
 from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from typing import List, Optional
 
@@ -11,7 +11,7 @@ from distributions.base import enable_memory_growth, BaseMethods
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 
 
-class EvalLargeD10(VisualRandomExample10D):
+class EvalLargeD10(RandomExample10D):
     def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 3, loc_range: float = 10.0):
         self.input_dimensions: int = 10
         self.no_of_gaussians: int = 7
