@@ -5,6 +5,7 @@ from maf.dim2.NF2D_1Bumps import NF2D_1Bumps
 from maf.dim2.NF2D_1Rect import NF2D_1Rect
 from maf.dim2.NF2D_2Bumps import NF2D_2Bumps
 from maf.dim2.NF2D_3Rect import NF2D_3Rect
+from maf.dim2.NF2D_4Connected1 import NF2D_4Connected1
 from maf.dim2.NF2D_4Rect import NF2D_4Rect
 from maf.dim2.NF2D_Diag4 import NF2D_Diag4
 from maf.dim2.NF2D_RandomA import NF2D_RandomA
@@ -21,6 +22,9 @@ class OverView(MafExperiment):
     def __init__(self):
         super().__init__('bogus name', pool_size=1)
 
+    def results_dir_name(self) -> str:
+        return 'results_visualise'
+
     def _run(self):
         pass
 
@@ -28,7 +32,8 @@ class OverView(MafExperiment):
         pass
 
     def run(self):
-        experiment_classes: List[Type[VisualExample2D]] = [NF2D_1Bumps, NF2D_1Rect, NF2D_2Bumps, NF2D_3Rect, NF2D_4Rect, NF2D_10Bumps, NF2D_Diag4, NF2D_RandomA, NF2D_RandomB,
+        experiment_classes: List[Type[VisualExample2D]] = [NF2D_1Bumps, NF2D_1Rect, NF2D_2Bumps, NF2D_3Rect, NF2D_4Connected1, NF2D_4Rect, NF2D_10Bumps, NF2D_Diag4, NF2D_RandomA,
+                                                           NF2D_RandomB,
                                                            NF2D_Row3,
                                                            NF2D_Row4]
         experiments: List[VisualExample2D] = []

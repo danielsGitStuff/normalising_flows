@@ -78,7 +78,7 @@ class TableMagic2:
         plt.rc('lines', linewidth=3)
 
         h_mult = 2 if len(pivoted) < 4 else 1
-        fig, ax = StaticMethods.default_fig(1, 1, w=2 * len(layers), h=h_mult * (len(pivoted)))
+        fig, ax = StaticMethods.default_fig(1, 1, w=3 * len(layers), h=h_mult * (len(pivoted)))
         fmt = '.2f'
         sns.heatmap(data=pivoted, annot=True, fmt=fmt, ax=ax, square=False, cbar=False, cmap=sns.color_palette("Blues", as_cmap=True))
         ax.set(xlabel='Layers', ylabel=None)
