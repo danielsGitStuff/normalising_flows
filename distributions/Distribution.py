@@ -360,9 +360,9 @@ class DensityPlotData:
             ax.set_ylabel(self.columns[1])
 
 
-class HeatmapCreator:
-
-    def __init__(self, dist: Distribution):
+class HeatmapCreator(Ser):
+    def __init__(self, dist: Distribution = NotProvided()):
+        super().__init__()
         self.dist: Distribution = dist
 
     def heatmap_1d_data(self, xmin=-4.0, xmax=4.0, ymin=None, ymax=None, mesh_count=200, suptitle: str = None,
