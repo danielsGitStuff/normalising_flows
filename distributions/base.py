@@ -86,7 +86,7 @@ class BaseMethods:
         return m
 
     @staticmethod
-    def random_positive_semidefinite_matrix(n: int, seed: int = 42) -> np.ndarray:
+    def random_positive_semidefinite_matrix(n: int, seed: int = None) -> np.ndarray:
         return make_spd_matrix(n_dim=n, random_state=seed)
 
     @staticmethod

@@ -24,7 +24,6 @@ class NF2D_RandomB(VisualRandomExample2D):
         self.mesh_count = 500
         self.set_minmax_square(15.0)
         self.layers_repeat = 1
-        self.patiences = [100, 100, 100]
         self.vmax = None
 
     def create_data_distribution(self) -> Distribution:
@@ -32,11 +31,13 @@ class NF2D_RandomB(VisualRandomExample2D):
 
         no_of_distributions = 8
         rng = np.random.default_rng(42 + 54)
+        random_state = np.random.RandomState(42 + 54)
 
         for i in range(no_of_distributions):
             weight = rng.random() + 3
             loc = rng.uniform(-7.0, 7.0, self.input_dimensions)
-            cov = BaseMethods.random_positive_semidefinite_matrix(n=self.input_dimensions, seed=58)
+            # cov = BaseMethods.random_positive_semidefinite_matrix(n=self.input_dimensions, seed=58)
+            cov = BaseMethods.random_positive_semidefinite_matrix(self.input_dimensions, seed=int(rng.random() * 100000))
             print(cov)
             g = GaussianMultivariateFullCov(loc=loc, cov=cov)
             d.add_d(g, weight=weight)
@@ -53,4 +54,5 @@ class NF2D_RandomB(VisualRandomExample2D):
 
 if __name__ == '__main__':
     ArgParser.parse()
+    Global.set_global('results_dir', Path('results_dev'))
     NF2D_RandomB().run()

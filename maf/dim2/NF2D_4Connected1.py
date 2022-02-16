@@ -28,10 +28,9 @@ class NF2D_4Connected1(VisualExample2D):
                 self.get_layers()]
 
     def create_data_title(self) -> str:
-        return "X ~ 4xN(var; 0.3^2, 0.3^2)"
+        return "X ~ 4xN(var; var)"
 
 
 if __name__ == '__main__':
     ArgParser.parse()
-    Global.set_global('results_dir', Path('results_dev'))
     NF2D_4Connected1().run()

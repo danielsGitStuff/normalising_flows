@@ -33,7 +33,7 @@ class EvalLargeD10(RandomExample10D):
 
         d = WeightedMultimodalMultivariate(input_dim=self.input_dimensions)
         for _ in range(self.no_of_gaussians):
-            cov = BaseMethods.random_positive_semidefinite_matrix(self.input_dimensions)
+            cov = BaseMethods.random_positive_semidefinite_matrix(self.input_dimensions, seed=int(np.random.random() * 1000000))
             weight = rng.random() + 3
             loc = rng.uniform(-self.loc_range, self.loc_range, self.input_dimensions).astype(np.float32)
             g = GaussianMultivariateFullCov(loc=loc, cov=cov)
