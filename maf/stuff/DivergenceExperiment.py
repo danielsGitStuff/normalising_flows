@@ -136,7 +136,7 @@ class DivergenceExperiment(MafExperiment):
     def _print_datadistribution(self):
         plt.clf()
         if self.data_distribution.input_dim == 2:
-            print('printing dataset')
+            print('printing original distribution')
             self.hm(self.data_distribution, xmin=-10, xmax=10, ymin=-10, ymax=10, mesh_count=200)
             xs = self.data_distribution.sample(1000)
             self.print_denses(name=f"{self.name}_data")
@@ -165,6 +165,7 @@ class DivergenceExperiment(MafExperiment):
     def _run(self):
         xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples)
         val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples)
+        self._print_datadistribution()
         self._print_dataset(xs=xs, suffix="xs")
         self._print_dataset(xs=val_xs, suffix="xs_val")
 

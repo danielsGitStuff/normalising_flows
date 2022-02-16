@@ -22,7 +22,7 @@ class NF2D_Row4(VisualExample2D):
         return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in self.get_layers()]
 
     def create_data_title(self) -> str:
-        return "X ~ 4xN(0; 0.3^2, 0.3^2)"
+        return "X ~ 4xN(x, 0; 0.3^2, 0.3^2)"
 
 
 if __name__ == '__main__':
