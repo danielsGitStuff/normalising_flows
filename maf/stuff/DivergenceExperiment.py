@@ -14,7 +14,7 @@ from common.NotProvided import NotProvided
 from common.jsonloader import Ser
 from common.poolreplacement import RestartingPoolReplacement
 from common.util import Runtime
-from distributions.Distribution import Distribution
+from distributions.Distribution import Distribution, DensityPlotData
 from distributions.LearnedDistribution import EarlyStop
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.base import enable_memory_growth, BaseMethods
@@ -136,10 +136,13 @@ class DivergenceExperiment(MafExperiment):
     def _print_datadistribution(self):
         plt.clf()
         if self.data_distribution.input_dim == 2:
+            self.denses = []
             print('printing original distribution')
-            self.hm(self.data_distribution, xmin=-10, xmax=10, ymin=-10, ymax=10, mesh_count=200)
-            xs = self.data_distribution.sample(1000)
+            args = dict(xmin=-10, xmax=10, ymin=-10, ymax=10, mesh_count=200, title=f"distribution")
+            dp: DensityPlotData = BaseMethods.call_func_in_process(self.data_distribution.heatmap_creator, f=self.data_distribution.heatmap_creator.heatmap_2d_data, arguments=args)
+            self.denses.append((dp, None, dp.values.max()))
             self.print_denses(name=f"{self.name}_data")
+            self.denses = []
 
     def _print_dataset(self, xs: np.ndarray = None, suffix: str = ""):
         plt.clf()

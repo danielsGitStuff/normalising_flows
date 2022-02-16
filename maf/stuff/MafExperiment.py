@@ -18,7 +18,7 @@ import seaborn as sns
 
 
 class MafExperiment:
-    def __init__(self, name: str, pool_size:int =6):
+    def __init__(self, name: str, pool_size: int = 6):
         self.cache_dir: Path = StaticMethods.cache_dir()
         self.name: str = name
         self.result_folder: Path = Global.get_default('results_dir', Path(self.results_dir_name()))
