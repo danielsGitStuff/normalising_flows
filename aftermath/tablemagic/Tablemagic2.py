@@ -57,14 +57,15 @@ class TableMagic2:
             ls = df['layers'].unique()
             for l in ls:
                 d: pd.DataFrame = df.loc[df['layers'] == l]['kl']
-                row = [self.experiment_names.get(name, name), l, d.mean()]
-                # row = [name, l, d.mean()]
+                row = [name, l, d.mean()]
                 values.append(row)
 
         result: pd.DataFrame = pd.DataFrame(values, columns=['Name', 'Layers', 'avg_kl'])
         pivoted: pd.DataFrame = result.pivot(index='Name', columns=['Layers'], values='avg_kl')
-        pivoted.to_csv(target_file, index=False)
+        pivoted.to_csv(target_file)
 
+        pivoted.index = [self.experiment_names.get(name, name) for name in pivoted.index]
+        pivoted = pivoted.sort_index()
         L = 28
         M = 24
         S = 20
@@ -77,13 +78,37 @@ class TableMagic2:
         plt.rc('figure', titlesize=L)
         plt.rc('lines', linewidth=3)
 
-        h_mult = 2 if len(pivoted) < 4 else 1
-        fig, ax = StaticMethods.default_fig(1, 1, w=3 * len(layers), h=h_mult * (len(pivoted)))
+        h_mult = 1.5 if len(pivoted) < 5 else 1
+        fig, ax = StaticMethods.default_fig(1, 1, w=2 * len(layers), h=h_mult * (len(pivoted)))
         fmt = '.2f'
         sns.heatmap(data=pivoted, annot=True, fmt=fmt, ax=ax, square=False, cbar=False, cmap=sns.color_palette("Blues", as_cmap=True))
         ax.set(xlabel='Layers', ylabel=None)
         plt.tight_layout()
         plt.savefig(Path(target_file.parent, f"{target_file.name}.png"))
+
+        # print bars together
+        cmap = sns.color_palette("Blues")
+        plt.clf()
+        fig, axs = StaticMethods.default_fig(1, len(dfs), w=5, h=7)
+        if isinstance(axs, np.ndarray):
+            axs = axs.flatten()
+        else:
+            axs = [axs]
+
+        vmax = 0.0
+        for _, df in dfs:
+            vmax = max(vmax, df['kl'].max())
+        for i, ((name, df), ax) in enumerate(zip(dfs, axs)):
+            sns.barplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, ci='sd')
+            n = self.experiment_names.get(name, name)
+            ylabel = None
+            if i == 0:
+                ylabel = 'KL'
+            ax.set(ylabel=ylabel, xlabel='Layers', title=n, ylim=[0.0,vmax])
+            if i > 0:
+                plt.setp(ax.get_yticklabels(), visible=False)
+        plt.tight_layout()
+        plt.savefig(Path(target_file.parent, f"{target_file.name}.bars.png"))
 
 
 if __name__ == '__main__':

@@ -12,11 +12,11 @@ from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 
 
 class EvalLargeD10(RandomExample10D):
-    def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 3, loc_range: float = 10.0):
+    def __init__(self, name: str, layers: Optional[List[int]] = None, layers_repeat: int = 6, loc_range: float = 10.0, pool_size: int = 6):
         self.input_dimensions: int = 10
         self.no_of_gaussians: int = 7
         layers = layers or [3, 5, 7, 10, 20]
-        super().__init__(name, layers=layers, layers_repeat=layers_repeat, loc_range=loc_range)
+        super().__init__(name, layers=layers, layers_repeat=layers_repeat, loc_range=loc_range, pool_size=4)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10
         # self.divergence_sample_size = 1024 * 400

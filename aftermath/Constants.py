@@ -12,15 +12,16 @@ Container__.name_dict = {
     'NF2D_2Bumps': '2 Gaussians',
     'NF2D_1Rect': 'Simple Uniform',
     'NF2D_3Rect': '3 Uniforms',
-    'NF2D_4Connected1':'4 connected Gaussians',
+    'NF2D_4Connected1': '4 connected Gaussians',
     'NF2D_4Rect': '4 Uniforms',
     'NF2D_10Bumps': '10 Gaussians',
     'NF2D_Diagonal4': '4 Gaussians, diag',
     'NF2D_Row3': '3 Gaussians, row',
     'NF2D_Row4': '4 Gaussians, row',
     'Dim10aCenteredMVG': 'Simple Gaussian',
-    'Dim10bLargeGaps': '7 Gaussians, far',
-    'Dim10cSmallGaps': '7 Gaussians, close'
+    'Dim10bLargeGaps': 'Large Gaps',
+    'Dim10cSmallGaps': 'Medium Gaps',
+    'Dim10dTinyGaps': 'Small Gaps'
 }
 
 

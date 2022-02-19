@@ -40,22 +40,26 @@ class DirPrinter(Ser):
         # plt.rc('figure', titlesize=big)
         # plt.rc('lines', linewidth=3)
 
-        fig, axs = StaticMethods.default_fig(2, 1, w=7, h=5)
-        axs = axs.flatten()
+        fig, axs = StaticMethods.default_fig(1, 1, w=5, h=5)
+        if isinstance(axs, np.ndarray):
+            axs = axs.flatten()
+        else:
+            axs = [axs]
         df_log = df.copy()
         df_log['kl'] = np.log(df['kl'])
         cmap = sns.color_palette("flare")
         cmap = sns.color_palette("Blues")
         sns.barplot(data=df, x='layers', y='kl', ax=axs[0], palette=cmap, ci='sd')
-        sns.barplot(data=df_log, x='layers', y='kl', ax=axs[1], palette=cmap, ci='sd')
+        # sns.barplot(data=df_log, x='layers', y='kl', ax=axs[1], palette=cmap, ci='sd')
         axs[0].set(ylabel='KL', xlabel='Layers')
-        axs[1].set(ylabel='log(KL)', xlabel='Layer')
+        # axs[1].set(ylabel='log(KL)', xlabel='Layer')
         plt.tight_layout()
         target = Path(f.parent, f"{f.name}.png")
         print(f"merged -> '{target}'")
         plt.savefig(target)
 
     def run_cache_printer(self, d: Path):
+        return
         c = CachePrinter(d)
         js = jsonloader.to_json(c)
         self.pool.apply_async(DirPrinter.static_run_cache_printer, args=(js,))
