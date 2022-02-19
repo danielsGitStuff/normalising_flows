@@ -34,5 +34,5 @@ nohup python "bashlauncher.py" "$module.Dim10dTinyGaps" "Dim10dTinyGaps" "$gpu" 
 #python visualise/CachePrinter.py ".cache"
 
 
-gpu=1
-nohup python "bashlauncher.py" "$module.zDim10bLargeGapsTest" "zDim10bLargeGapsTest" "$gpu" &>"logs/zDim10bLargeGapsTest.log" &
+#gpu=1
+#nohup python "bashlauncher.py" "$module.zDim10bLargeGapsTest" "zDim10bLargeGapsTest" "$gpu" &>"logs/zDim10bLargeGapsTest.log" &
