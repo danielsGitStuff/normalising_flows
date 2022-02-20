@@ -16,7 +16,7 @@ class EvalLargeD10(RandomExample10D):
         self.input_dimensions: int = 10
         self.no_of_gaussians: int = 7
         layers = layers or [3, 5, 7, 10, 20]
-        super().__init__(name, layers=layers, layers_repeat=layers_repeat, loc_range=loc_range, pool_size=4)
+        super().__init__(name, layers=layers, layers_repeat=layers_repeat, loc_range=loc_range, pool_size=pool_size)
         self.epochs = 2000
         self.divergence_metric_every_epoch = 10
         # self.divergence_sample_size = 1024 * 400

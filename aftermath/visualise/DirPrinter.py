@@ -59,7 +59,7 @@ class DirPrinter(Ser):
         plt.savefig(target)
 
     def run_cache_printer(self, d: Path):
-        return
+        # return
         c = CachePrinter(d)
         js = jsonloader.to_json(c)
         self.pool.apply_async(DirPrinter.static_run_cache_printer, args=(js,))

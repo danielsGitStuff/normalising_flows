@@ -1,17 +1,15 @@
-import numpy as np
-from matplotlib import pyplot as plt
-from pandas import Series
-
 import argparse
-from aftermath.Constants import Constants
-from maf.stuff.StaticMethods import StaticMethods
-from typing import Dict, Any, List, Tuple, Set
-
 import re
 from pathlib import Path
-import pandas as pd
+from typing import Dict, Any, List, Tuple, Set
 
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from matplotlib import pyplot as plt
+
+from aftermath.Constants import Constants
+from maf.stuff.StaticMethods import StaticMethods
 
 
 class TableMagic2:

@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 from common import util, jsonloader
 from common.NotProvided import NotProvided
+from common.globals import Global
 from common.jsonloader import Ser
 from common.poolreplacement import RestartingPoolReplacement
 from common.util import Runtime
@@ -70,6 +71,7 @@ class DivergenceProcess(Ser):
             self.maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.cache_dir, prefix=self.prefix)
         else:
             enable_memory_growth()
+            Global.set_seed(util.randomSeed())
             ds: DS = DS.from_tensor_slices(self.xs)
             val_ds: DS = DS.from_tensor_slices(self.val_xs)
             ds_samples: Optional[DS] = None

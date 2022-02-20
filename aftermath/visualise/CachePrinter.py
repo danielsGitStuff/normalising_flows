@@ -1,20 +1,17 @@
+import argparse
 import re
 import sys
+from pathlib import Path
+from typing import Dict, Any, List, Optional
+
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from matplotlib import pyplot as plt
 
 from common.NotProvided import NotProvided
 from common.jsonloader import Ser, SerSettings
-from typing import Dict, Any, List, Optional
-
-import argparse
-import numpy as np
-from matplotlib import pyplot as plt
-
 from common.poolreplacement import RestartingPoolReplacement
-from keta.argparseer import ArgParser
-from maf.stuff.StaticMethods import StaticMethods
-from pathlib import Path
-import pandas as pd
-import seaborn as sns
 
 
 class CachePrinter(Ser):
