@@ -14,7 +14,6 @@ from common.NotProvided import NotProvided
 from distributions.Distribution import Distribution, DensityPlotData
 from distributions.base import TData, TTensorOpt, cast_dataset_to_tensor, TDataOpt
 from maf.DS import DS, DSOpt, DataLoader
-from maf.SaveSettings import SaveSettings
 
 
 class LearnedConfig(Ser):
@@ -132,9 +131,6 @@ class LearnedDistribution(Distribution, ABC):
         return ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp
 
     def save(self, folder: Union[Path, str], prefix: str):
-        raise NotImplementedError()
-
-    def get_base_name_part(self, save_settings: SaveSettings) -> str:
         raise NotImplementedError()
 
     def get_config(self) -> LearnedConfig:

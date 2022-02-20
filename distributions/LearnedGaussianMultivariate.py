@@ -11,7 +11,6 @@ from distributions.Distribution import TfpD, DensityPlotData
 from distributions.LearnedDistribution import LearnedDistribution, LearnedConfig, EarlyStop, LearnedDistributionCreator
 from distributions.base import TTensor, TTensorOpt, TDataOpt, cast_dataset_to_tensor, cast_to_ndarray
 from maf.DS import DS
-from maf.SaveSettings import SaveSettings
 from scipy.stats import multivariate_normal
 
 
@@ -66,9 +65,6 @@ class LearnedGaussianMultivariateCov(LearnedDistribution):
     def save(self, folder: Union[Path, str], prefix: str):
         f = Path(folder, f"{prefix}.json")
         jsonloader.to_json(self, f)
-
-    def get_base_name_part(self, save_settings: SaveSettings) -> str:
-        return 'base_name_xx4'
 
     def get_config(self) -> LearnedConfig:
         return None

@@ -31,7 +31,6 @@ from distributions.kl.DivergenceMetric import DivergenceMetric
 from maf.CustomMade import CustomMade
 from maf.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
-from maf.SaveSettings import SaveSettings
 from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs, BaseMethods
 from distributions.Distribution import DensityPlotData, HeatmapCreator, CutThroughData
 from distributions.LearnedDistribution import LearnedConfig, LearnedDistribution, EarlyStop, LearnedDistributionCreator
@@ -510,9 +509,6 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         bijector_kwargs = self._create_bijector_kwargs(cond)
         xs = self.transformed_distribution.bijector.forward(us, **bijector_kwargs)
         return xs
-
-    def get_base_name_part(self, save_settings: SaveSettings) -> str:
-        return f"ls={self.layers},hs={self.hidden_shape}"
 
     def _calculate_det_density(self, xs: TTensor, cond: TTensorOpt = None) -> tf.Tensor:
         xs, cond = self.extract_xs_cond(xs, cond)
