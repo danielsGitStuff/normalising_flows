@@ -44,7 +44,7 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                              # epochs=epochs,
                              hidden_shape=[200, 200],
                              input_noise_variance=0.0,
-                             layers=30,
+                             layers=25,
                              norm_layer=False,
                              use_tanh_made=True)
         results_folder = Global.get_default('results_dir', Path('results_miniboone'))
@@ -63,15 +63,20 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        just_signal_plan=False,
                                                        pool_size=self.pool_size,
                                                        synth_samples_amount_multiplier=self.synth_samples_amount_multiplier,
-                                                       steps_size_clf_t_ge=self.steps_size_clf_t_ge)
+                                                       steps_size_clf_t_ge=self.steps_size_clf_t_ge,
+                                                       steps_size_clf_t_sy=self.steps_size_clf_t_sy,
+                                                       sample_variance_multiplier=self.sample_variance_multiplier)
 
         experiment.create_training_plan().run()
 
-    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0, steps_size_clf_t_ge:int = 10):
+    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0, steps_size_clf_t_ge: int = 10, steps_size_clf_t_sy: int = 10,
+                 sample_variance_multiplier: float = 1.0):
         super().__init__(name, pool_size=pool_size)
         self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
         self.experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess
         self.steps_size_clf_t_ge: int = steps_size_clf_t_ge
+        self.steps_size_clf_t_sy: int = steps_size_clf_t_sy
+        self.sample_variance_multiplier: float = sample_variance_multiplier
 
 
 if __name__ == '__main__':
