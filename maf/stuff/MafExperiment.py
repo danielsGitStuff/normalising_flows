@@ -1,20 +1,18 @@
-import math
-
-from common.poolreplacement import RestartingPoolReplacement
 from pathlib import Path
-from typing import List, Tuple, Optional, Union
 
-from matplotlib.colors import Colormap
-
-from common.globals import Global
-from common.util import Runtime
-from common.NotProvided import NotProvided
-from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
-from distributions.base import enable_memory_growth
-from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.StaticMethods import StaticMethods
+import math
 import matplotlib.pyplot as plt
 import seaborn as sns
+from normalising_flows.src.distributions import CutThroughData, DensityPlotData, Distribution
+from normalising_flows.src.maf import StaticMethods
+from matplotlib.colors import Colormap
+from typing import List, Tuple, Optional, Union
+
+from normalising_flows.src.common.NotProvided import NotProvided
+from normalising_flows.src.common.globals import Global
+from normalising_flows.src.common.util import Runtime
+from normalising_flows.src.maf import MaskedAutoregressiveFlow
+from normalising_flows.prozess.Prozessor import Prozessor
 
 
 class MafExperiment:
@@ -34,12 +32,15 @@ class MafExperiment:
         self.use_early_stop: bool = True
         plt.clf()
         self.pool_size = pool_size
-        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
 
     def set_pool_size(self, size: int):
         self.pool_size = size
-        self.pool.close()
-        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        # self.pool.close()
+        # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        self.prozessor.close()
+        self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
 
     def results_dir_name(self) -> str:
         return 'results'

@@ -27,6 +27,7 @@ from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.MAFTrainingProcess import MAFTrainingProcess
 from distributions.LearnedDistribution import LearnedDistributionCreator
 from maf.variable.TrainingPlanner import TrainingPlanner
+from prozess.Prozessor import WorkLoad
 
 
 class DatasetFetcher:
@@ -335,7 +336,8 @@ class MixLearnExperiment(MafExperiment):
                                            # clf_v_g_size=int(row['clf_v_g_size']),
                                            # clf_v_s_size=int(row['clf_v_s_size']),
                                            model_base_file=str(model_base_file))
-            self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
+            self.prozessor.run_later(WorkLoad.create_static_workload(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),), use_tf=True))
+            # self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
 
             # results: Dict[str, float] = cp.execute()
             # # update plan
@@ -344,7 +346,8 @@ class MixLearnExperiment(MafExperiment):
             #         plan.at[index, metric] = results[metric]
             # plan.at[index, 'done'] = 1.0
             # plan.to_csv(self.cache_training_plan_file, index=False)
-        cp_results: List[Tuple[Dict[str, float], int]] = self.pool.join()
+        # cp_results: List[Tuple[Dict[str, float], int]] = self.pool.join()
+        cp_results: List[Tuple[Dict[str, float], int]] = self.prozessor.join()
         for results, index in cp_results:
             # update plan
             for metric in self.training_planner.metrics:
