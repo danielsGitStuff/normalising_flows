@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 from typing import List, Dict, Any
 
-from aftermath.Constants import Constants
+from aftermath import Constants
 from common.NotProvided import NotProvided
 import pandas as pd
 

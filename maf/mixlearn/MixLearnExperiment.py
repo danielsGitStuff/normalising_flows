@@ -4,12 +4,10 @@ import functools
 import gzip
 import sys
 
-import math
 import os
 import shutil
 
 from common.globals import Global
-from keta.argparseer import ArgParser
 from pathlib import Path
 from typing import Optional, List, Dict, Type, Tuple
 
@@ -17,8 +15,6 @@ import pandas as pd
 import requests
 
 from common import jsonloader
-from common.NotProvided import NotProvided
-from maf.DS import DatasetProps
 from maf.DL import DL2, DL3
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.StaticMethods import StaticMethods
@@ -27,7 +23,7 @@ from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.MAFTrainingProcess import MAFTrainingProcess
 from distributions.LearnedDistribution import LearnedDistributionCreator
 from maf.variable.TrainingPlanner import TrainingPlanner
-from prozess.Prozessor import WorkLoad
+from common.prozess.Prozessor import WorkLoad
 
 
 class DatasetFetcher:

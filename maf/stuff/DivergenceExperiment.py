@@ -25,7 +25,7 @@ from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.MafExperiment import MafExperiment
-from prozess.Prozessor import WorkLoad
+from common.prozess.Prozessor import WorkLoad
 
 
 class DivergenceProcess(Ser):

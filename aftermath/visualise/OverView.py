@@ -1,4 +1,4 @@
-from aftermath.Constants import Constants
+from aftermath import Constants
 from distributions.base import enable_memory_growth
 from maf.dim2.NF2D_10Bumps import NF2D_10Bumps
 from maf.dim2.NF2D_1Bumps import NF2D_1Bumps

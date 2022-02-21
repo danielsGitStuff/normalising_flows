@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
+from aftermath.visualise.CachePrinter import CachePrinter
 from common import jsonloader
 from common.jsonloader import Ser, SerSettings
 from common.poolreplacement import RestartingPoolReplacement
@@ -9,7 +10,6 @@ from typing import Dict, Any
 
 import argparse
 from pathlib import Path
-from aftermath.visualise.CachePrinter import CachePrinter
 import pandas as pd
 import seaborn as sns
 
