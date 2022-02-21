@@ -116,7 +116,7 @@ class MAFTrainingProcess(Ser):
         # self.norm_layer: bool = norm_layer
         # self.use_tanh_made: bool = use_tanh_made
         # self.input_noise_variance: float = input_noise_variance
-        self.dl_main: Optional[DL2] = None
+        self._dl_main: Optional[DL2] = None
 
     def create_dirs(self):
         def create(d: [Path, NotProvided]):
@@ -134,6 +134,17 @@ class MAFTrainingProcess(Ser):
         self.checkpoint_dir: Path = Path(self.checkpoint_dir)
         self.create_dirs()
 
+    def dl_main(self) -> DL2:
+        if self._dl_main is None:
+            dl_main_copy_dir = Path(self.cache_dir, 'dl_train')
+            dl_main_test_dir = Path(self.cache_dir, 'dl_test')
+            if not dl_main_copy_dir.exists() or not dl_main_test_dir.exists():
+                self._dl_main = self.dl_init.clone(dl_main_copy_dir)
+                dl_test = self._dl_main.split(test_dir=dl_main_test_dir, test_split=0.1)
+            else:
+                self._dl_main = DL2.load(dl_main_copy_dir)
+        return self._dl_main
+
     def run(self):
         self.create_dirs()
         one_hot = None
@@ -148,14 +159,6 @@ class MAFTrainingProcess(Ser):
             if lean_noise and not self.conditional:
                 noise_maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.checkpoint_dir_noise, prefix=self.nf_base_file_name)
         else:
-            dl_main_copy_dir = Path(self.cache_dir, 'dl_train')
-            dl_main_test_dir = Path(self.cache_dir, 'dl_test')
-            if not dl_main_copy_dir.exists() or not dl_main_test_dir.exists():
-                self.dl_main = self.dl_init.clone(dl_main_copy_dir)
-                dl_test = self.dl_main.split(test_dir=dl_main_test_dir, test_split=0.1)
-            else:
-                self.dl_main = DL2.load(dl_main_copy_dir)
-
             # If a saved train/test data set exists: use these.
             # Otherwise: load them from data loader, split them, save them and never load them from the data loader anymore.
             # Then: Split the training set into val/training and save them as well.
@@ -171,8 +174,8 @@ class MAFTrainingProcess(Ser):
                                dir=self.train_dir,
                                amount_of_noise=self.take_t_noi + self.take_v_noi,
                                amount_of_signals=self.take_t_sig + self.take_v_sig,
-                               signal_source=self.dl_main.signal_source.ref(),
-                               noise_source=self.dl_main.noise_source.ref())
+                               signal_source=self.dl_main().signal_source.ref(),
+                               noise_source=self.dl_main().noise_source.ref())
                 dl_train.create_data()
 
             if DL2.can_load(self.val_dir):
@@ -220,7 +223,10 @@ class MAFTrainingProcess(Ser):
             self.sample(maf=maf, synth_folder=self.synth_val_dir, gen_sig_samples=self.gen_val_sig_samples, gen_noi_samples=self.gen_val_noi_samples)
 
     def sample(self, maf: MaskedAutoregressiveFlow, synth_folder: Path, gen_sig_samples: int, gen_noi_samples: int, noise_source: DataSource = NotProvided()):
-        noise_source: DataSource = NotProvided.value_if_not_provided(noise_source, self.dl_main.noise_source.ref())
+        noise_source: DataSource = NotProvided.value_if_not_provided(noise_source, self.dl_main().noise_source.ref())
+        sample_kwargs = {}
+        if self.sample_variance_multiplier != 1.0:
+            sample_kwargs['sample_variance_multiplier'] = self.sample_variance_multiplier
         if self.conditional:
             ones = np.ones(shape=(gen_sig_samples, 1), dtype=np.float32)
             zeros = np.zeros(shape=(gen_noi_samples, 1), dtype=np.float32)
@@ -233,14 +239,14 @@ class MAFTrainingProcess(Ser):
                      noise_source=DataSource(ds=noise),
                      amount_of_noise=gen_noi_samples,
                      amount_of_signals=gen_sig_samples)
-            dl.create_data()
+            dl.create_data(**sample_kwargs)
         else:
             dl = DL2(dataset_name='asd', dir=synth_folder,
                      signal_source=DataSource(distribution=maf),
                      noise_source=noise_source,
                      amount_of_signals=gen_sig_samples,
                      amount_of_noise=gen_noi_samples)
-            dl.create_data()
+            dl.create_data(**sample_kwargs)
         print('sampling done')
 
     @staticmethod
