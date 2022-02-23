@@ -12,6 +12,7 @@ if [ -n "$1" ]; then
 fi
 module="maf.mixlearn"
 
+python DownloadMiniBooNE.py
 gpu=0
 nohup python "bashlauncher.py" "$module.MixLearnExperimentMiniBooneClfVarRunner" "MixLearnExperimentMiniBooneClfVarRunner" "$gpu" &>"logs/MixLearnExperimentMiniBooneClfVarRunner.log" &
 gpu=1
