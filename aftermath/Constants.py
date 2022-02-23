@@ -21,7 +21,12 @@ Container__.name_dict = {
     'Dim10aCenteredMVG': 'Simple Gaussian',
     'Dim10bLargeGaps': 'Large Gaps',
     'Dim10cSmallGaps': 'Medium Gaps',
-    'Dim10dTinyGaps': 'Small Gaps'
+    'Dim10dTinyGaps': 'Small Gaps',
+    'Dim10eMediumGaps': 'Large Gaps'
+    # 'Dim10bLargeGaps': 'Gaps 15',
+    # 'Dim10cSmallGaps': 'Gaps 4',
+    # 'Dim10dTinyGaps': 'Gaps 2',
+    # 'Dim10eMediumGaps': 'Gaps 10'
 }
 
 

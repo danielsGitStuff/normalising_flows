@@ -332,7 +332,7 @@ class MixLearnExperiment(MafExperiment):
                                            # clf_v_g_size=int(row['clf_v_g_size']),
                                            # clf_v_s_size=int(row['clf_v_s_size']),
                                            model_base_file=str(model_base_file))
-            self.prozessor.run_later(WorkLoad.create_static_workload(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),), use_tf=True))
+            self.prozessor.run_later(WorkLoad.create_static_method_workload(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),), use_tf=True))
             # self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
 
             # results: Dict[str, float] = cp.execute()

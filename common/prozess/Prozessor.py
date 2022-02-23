@@ -6,9 +6,9 @@ from concurrent.futures import ProcessPoolExecutor
 from setproctitle import setproctitle
 from typing import Callable, Union, Dict, Any, Tuple, List, Optional
 
-from normalising_flows.src.common import NotProvided
-from normalising_flows.src.common.jsonloader import Ser, SerSettings
-from normalising_flows.src.distributions import enable_memory_growth
+from common import NotProvided
+from common.jsonloader import Ser, SerSettings
+from distributions.base import enable_memory_growth
 
 ProzessArgs = Optional[Union[Dict[str, Any], Tuple, List]]
 import time
@@ -23,7 +23,7 @@ class ProzessTestUtils:
         return 'asd'
 
 
-class WorkLoad(Ser):
+class WorkLoadExecution:
     @staticmethod
     def static_method_call(method: Callable, args: ProzessArgs) -> Any:
         if args is None:
@@ -36,8 +36,10 @@ class WorkLoad(Ser):
     def static_workload_call(work: WorkLoad) -> Any:
         return work.run()
 
+
+class WorkLoad(Ser):
     @staticmethod
-    def create_static_workload(method: Callable = NotProvided, args: ProzessArgs = NotProvided, use_tf: bool = False) -> StaticMethodWorkload:
+    def create_static_method_workload(method: Callable = NotProvided, args: ProzessArgs = NotProvided, use_tf: bool = False) -> StaticMethodWorkload:
         return StaticMethodWorkload(method=method, args=args, use_tf=use_tf)
 
     def __init__(self, use_tf: bool = False):
@@ -68,7 +70,7 @@ class StaticMethodWorkload(WorkLoad):
         self.args: ProzessArgs = args
 
     def _run(self) -> Any:
-        return WorkLoad.static_method_call(self.method, self.args)
+        return WorkLoadExecution.static_method_call(self.method, self.args)
 
 
 class BatchedWorkload(WorkLoad):
@@ -97,7 +99,7 @@ class Prozess(Ser):
 
     def run(self) -> Any:
         setproctitle('asd single')
-        f = self.sub_pool.submit(WorkLoad.static_workload_call, work=self.work)
+        f = self.sub_pool.submit(WorkLoadExecution.static_workload_call, work=self.work)
         self.sub_pool.shutdown()
         r = f.result()
         return r

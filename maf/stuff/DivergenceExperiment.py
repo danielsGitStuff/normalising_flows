@@ -196,7 +196,7 @@ class DivergenceExperiment(MafExperiment):
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
-            self.prozessor.run_later(WorkLoad.create_static_workload(DivergenceProcess.static_run,args=(js,self.name,xs,val_xs,self.xs_samples,self.log_ps_samples)))
+            self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
             # self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
         # results: List[Tuple[Path, str]] = self.pool.join()
         results: List[Tuple[Path, str]] = self.prozessor.join()

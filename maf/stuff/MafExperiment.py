@@ -3,16 +3,16 @@ from pathlib import Path
 import math
 import matplotlib.pyplot as plt
 import seaborn as sns
-from normalising_flows.src.distributions import CutThroughData, DensityPlotData, Distribution
-from normalising_flows.src.maf import StaticMethods
+from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
+from maf.stuff.StaticMethods import StaticMethods
 from matplotlib.colors import Colormap
 from typing import List, Tuple, Optional, Union
 
-from normalising_flows.src.common.NotProvided import NotProvided
-from normalising_flows.src.common.globals import Global
-from normalising_flows.src.common.util import Runtime
-from normalising_flows.src.maf import MaskedAutoregressiveFlow
-from normalising_flows.prozess.Prozessor import Prozessor
+from common.NotProvided import NotProvided
+from common.globals import Global
+from common.util import Runtime
+from maf import MaskedAutoregressiveFlow
+from common.prozess.Prozessor import Prozessor
 
 
 class MafExperiment:
