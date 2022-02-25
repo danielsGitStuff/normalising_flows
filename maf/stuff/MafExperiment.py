@@ -145,7 +145,7 @@ class MafExperiment:
         target = Path(self.result_folder, name)
         return str(target)
 
-    def save_fig(self, transparent: bool = True, tight_layout: bool = True, name: str = NotProvided()):
+    def save_fig(self, transparent: bool = False, tight_layout: bool = True, name: str = NotProvided()):
         if tight_layout:
             self.fig.tight_layout()
         name: str = NotProvided.value_if_not_provided(name, self.name)

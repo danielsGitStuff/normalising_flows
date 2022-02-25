@@ -23,9 +23,9 @@ module="maf.dim10"
 gpu=0
 nohup python "bashlauncher.py" "$module.Dim10bLargeGaps" "Dim10bLargeGaps" "$gpu" &>"logs/Dim10bLargeGaps.log" &
 gpu=1
-nohup python "bashlauncher.py" "$module.Dim10cSmallGaps" "Dim10cSmallGaps" "$gpu" &>"logs/Dim10cSmallGaps.log" &
+nohup python "bashlauncher.py" "$module.Dim10bSmallGaps" "Dim10bSmallGaps" "$gpu" &>"logs/Dim10bSmallGaps.log" &
 gpu=2
-nohup python "bashlauncher.py" "$module.Dim10dTinyGaps" "Dim10dTinyGaps" "$gpu" &>"logs/Dim10dTinyGaps.log" &
+nohup python "bashlauncher.py" "$module.Dim10bMediumGaps" "Dim10bMediumGaps" "$gpu" &>"logs/Dim10bMediumGaps.log" &
 #python "bashlauncher.py" "$module.EvalExample6" "EvalExample6" "2" &>"logs/EvalExample6.log" &
 
 #nohup python "bashlauncher.py" "$module.EvalExample7" "EvalExample7" "1" &>"logs/EvalExample7.log" &

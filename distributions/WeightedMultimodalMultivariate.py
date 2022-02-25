@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Optional, List, Tuple
 
 import numpy as np
@@ -62,11 +63,12 @@ class WeightedMultimodalMultivariate(Distribution):
         ll_sum = ll_sum  # / len(self._distributions)
         return self.cast_2_likelihood(input_tensor=xs, result=ll_sum)
 
-    def add_d(self, d: Distribution, weight: float):
+    def add_d(self, d: Distribution, weight: float) -> WeightedMultimodalMultivariate:
         self._distributions.append(d)
         self._distribution_weights.append(weight)
         self.weight_sum += weight
         self._normalised_distribution_weights = None
+        return self
 
 
 if __name__ == '__main__':

@@ -29,8 +29,8 @@ import random
 from typing import List, Type, Dict, Any
 
 from maf.dim2.NF2D_Row4 import NF2D_Row4
-from maf.dim10.Dim10bLargeGaps import Dim10bLargeGaps
-from maf.dim10.Dim10cSmallGaps import Dim10cSmallGaps
+from maf.dim10.Dim10bVeryLargeGaps import Dim10bLargeGaps
+from maf.dim10.Dim10bMediumGaps import Dim10cSmallGaps
 
 if __name__ == '__main__':
     # ArgParser.parse()
