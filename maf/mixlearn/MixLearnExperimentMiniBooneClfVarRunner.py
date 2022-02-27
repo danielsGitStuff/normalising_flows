@@ -44,7 +44,7 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                              # epochs=epochs,
                              hidden_shape=[200, 200],
                              input_noise_variance=0.0,
-                             layers=25,
+                             layers=35,
                              norm_layer=False,
                              use_tanh_made=True)
         results_folder = Global.get_default('results_dir', Path('results_miniboone'))

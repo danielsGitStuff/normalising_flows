@@ -1,4 +1,5 @@
 from distributions.base import BaseMethods
+from keta.argparseer import ArgParser
 from maf.dim10.RandomExample10D import RandomExample10D
 from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
@@ -35,4 +36,5 @@ class Dim10aCenteredMVG(RandomExample10D):
 
 if __name__ == '__main__':
     Global.set_seed(42)
+    ArgParser.parse()
     Dim10aCenteredMVG().run()
