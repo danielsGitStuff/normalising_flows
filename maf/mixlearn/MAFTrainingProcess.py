@@ -38,19 +38,14 @@ class MAFTrainingProcess(Ser):
                  synth_dir: Path = NotProvided(),
                  synth_val_dir: Path = NotProvided(),
                  dl_init: DL2 = NotProvided(),
-                 # training_size: int = NotProvided(),
                  epochs: int = NotProvided(),
                  batch_size: int = NotProvided(),
                  patience: int = NotProvided(),
-                 # no_of_generated_samples: int = NotProvided(),
-                 # no_of_generated_val_samples: int = NotProvided(),
                  conditional: bool = NotProvided(),
                  cache_dir: Path = NotProvided(),
                  checkpoint_dir: Path = NotProvided(),
                  checkpoint_dir_noise: Path = NotProvided(),
                  nf_base_file_name: str = NotProvided(),
-                 # layers: int = NotProvided(),
-                 # hidden_shape: List[int] = NotProvided(),
                  conditional_classes: Optional[Collection[int, str]] = None,
                  conditional_one_hot: bool = False,
 
@@ -66,11 +61,6 @@ class MAFTrainingProcess(Ser):
                  take_t_noi: int = NotProvided(),
                  take_v_sig: int = NotProvided(),
                  take_v_noi: int = NotProvided(),
-
-                 # batch_norm: bool = False,
-                 # norm_layer: bool = False,
-                 # use_tanh_made: bool = False,
-                 # input_noise_variance: float = 0.0,
                  val_size: int = 1500,
                  sample_variance_multiplier: float = 1.0):
         super().__init__()
@@ -98,11 +88,6 @@ class MAFTrainingProcess(Ser):
         self.dl_init: DL2 = dl_init
         self.val_size: int = val_size
 
-        # self.training_size: int = training_size
-        # self.no_of_generated_samples: int = no_of_generated_samples
-        # self.no_of_generated_val_samples: int = no_of_generated_val_samples
-        # self.ds_synth_folder: Path = ds_synth_folder
-        # self.ds_synth_val_folder: Path = ds_synth_val_folder
         self.conditional: bool = conditional
         self.conditional_classes: Optional[Collection[int, str]] = conditional_classes
         self.conditional_one_hot: bool = conditional_one_hot
@@ -110,12 +95,6 @@ class MAFTrainingProcess(Ser):
         self.checkpoint_dir_noise: Path = checkpoint_dir_noise
         self.cache_dir: Path = cache_dir
         self.nf_base_file_name: str = NotProvided.none_if_not_provided(nf_base_file_name)
-        # self.layers: int = NotProvided.none_if_not_provided(layers)
-        # self.hidden_shape: List[int] = NotProvided.none_if_not_provided(hidden_shape)
-        # self.batch_norm: bool = batch_norm
-        # self.norm_layer: bool = norm_layer
-        # self.use_tanh_made: bool = use_tanh_made
-        # self.input_noise_variance: float = input_noise_variance
         self._dl_main: Optional[DL2] = None
 
     def create_dirs(self):
