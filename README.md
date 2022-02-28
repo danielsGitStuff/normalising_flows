@@ -6,6 +6,13 @@ run `init.sh`:
 - creates virtualenv with it
 - installs dependencies
 
+# Run
+available scrips that run experiments:
+- `Run1D.sh` all 1 dimensional experiments
+- `Run2D.sh` all 2 dimensional experiments
+- `Run10D.sh` all 10 dimensional experiments
+- `RunMiniboone.sh` perform MiniBooNE experiment
+
 # Packages
 - `aftermath`
   - prints all the nice diagrams and merges tables
