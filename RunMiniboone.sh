@@ -4,4 +4,16 @@ cd "$DIR" || exit
 
 . venv/bin/activate
 export PYTHONPATH=$(pwd)
-python maf/mixlearn/MixLearnExperimentMiniBooneRunDSizeVar.py
+
+mkdir -p "logs"
+gpu=0
+if [ -n "$1" ]; then
+  gpu=$1
+fi
+module="maf.mixlearn"
+
+python DownloadMiniBooNE.py
+gpu=0
+nohup python "bashlauncher.py" "$module.MixLearnExperimentMiniBooneClfVarRunner" "MixLearnExperimentMiniBooneClfVarRunner" "$gpu" &>"logs/MixLearnExperimentMiniBooneClfVarRunner.log" &
+gpu=1
+nohup python "bashlauncher.py" "$module.MixLearnExperimentMiniBooneClfVarRunnerBalanced" "MixLearnExperimentMiniBooneClfVarRunnerBalanced" "$gpu" &>"logs/MixLearnExperimentMiniBooneClfVarRunnerBalanced.log" &

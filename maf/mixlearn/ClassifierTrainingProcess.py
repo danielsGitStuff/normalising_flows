@@ -107,7 +107,6 @@ class ClassifierTrainingProcess(Ser):
             epoch = int(h_pd['epoch'].max())
         else:
             lm = self.create_classifier()
-
             ds_train = prepare(genuine=self.dl_training_genuine, synth=self.dl_training_synth,
                                clf_ge_sig=self.clf_t_ge_sig,
                                clf_ge_no=self.clf_t_ge_noi,
@@ -171,7 +170,7 @@ class ClassifierTrainingProcess(Ser):
     def static_execute(js: str) -> Tuple[Dict[str, float], int]:
         """train classifier, return TEST results"""
         print('running in process')
-        enable_memory_growth()
+        # enable_memory_growth()
         classifier: ClassifierTrainingProcess = jsonloader.from_json(js)
         result = classifier.run()
         print('done with process')

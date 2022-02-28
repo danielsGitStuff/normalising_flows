@@ -4,12 +4,10 @@ import functools
 import gzip
 import sys
 
-import math
 import os
 import shutil
 
 from common.globals import Global
-from keta.argparseer import ArgParser
 from pathlib import Path
 from typing import Optional, List, Dict, Type, Tuple
 
@@ -17,8 +15,6 @@ import pandas as pd
 import requests
 
 from common import jsonloader
-from common.NotProvided import NotProvided
-from maf.DS import DatasetProps
 from maf.DL import DL2, DL3
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.StaticMethods import StaticMethods
@@ -27,6 +23,7 @@ from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.mixlearn.MAFTrainingProcess import MAFTrainingProcess
 from distributions.LearnedDistribution import LearnedDistributionCreator
 from maf.variable.TrainingPlanner import TrainingPlanner
+from common.prozess.Prozessor import WorkLoad
 
 
 class DatasetFetcher:
@@ -335,7 +332,8 @@ class MixLearnExperiment(MafExperiment):
                                            # clf_v_g_size=int(row['clf_v_g_size']),
                                            # clf_v_s_size=int(row['clf_v_s_size']),
                                            model_base_file=str(model_base_file))
-            self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
+            self.prozessor.run_later(WorkLoad.create_static_method_workload(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),), use_tf=True))
+            # self.pool.apply_async(ClassifierTrainingProcess.static_execute, args=(cp.to_json(),))
 
             # results: Dict[str, float] = cp.execute()
             # # update plan
@@ -344,7 +342,8 @@ class MixLearnExperiment(MafExperiment):
             #         plan.at[index, metric] = results[metric]
             # plan.at[index, 'done'] = 1.0
             # plan.to_csv(self.cache_training_plan_file, index=False)
-        cp_results: List[Tuple[Dict[str, float], int]] = self.pool.join()
+        # cp_results: List[Tuple[Dict[str, float], int]] = self.pool.join()
+        cp_results: List[Tuple[Dict[str, float], int]] = self.prozessor.join()
         for results, index in cp_results:
             # update plan
             for metric in self.training_planner.metrics:

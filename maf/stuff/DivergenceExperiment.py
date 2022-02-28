@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import sys
+from pathlib import Path
+from typing import Optional, Tuple, List
 
 import numpy as np
 import pandas as pd
@@ -9,11 +11,10 @@ import setproctitle
 import tensorflow as tf
 from matplotlib import pyplot as plt
 
-from common import util, jsonloader
+from common import jsonloader, util
 from common.NotProvided import NotProvided
 from common.globals import Global
 from common.jsonloader import Ser
-from common.poolreplacement import RestartingPoolReplacement
 from common.util import Runtime
 from distributions.Distribution import Distribution, DensityPlotData
 from distributions.LearnedDistribution import EarlyStop
@@ -24,8 +25,7 @@ from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.stuff.MafExperiment import MafExperiment
-from pathlib import Path
-from typing import Optional, List, Tuple
+from common.prozess.Prozessor import WorkLoad
 
 
 class DivergenceProcess(Ser):
@@ -196,8 +196,10 @@ class DivergenceExperiment(MafExperiment):
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
-            self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
-        results: List[Tuple[Path, str]] = self.pool.join()
+            self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
+            # self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
+        # results: List[Tuple[Path, str]] = self.pool.join()
+        results: List[Tuple[Path, str]] = self.prozessor.join()
         mafs = [MaskedAutoregressiveFlow.load(cache, prefix) for cache, prefix in results]
         if self.data_distribution.input_dim < 3:
             enable_memory_growth()

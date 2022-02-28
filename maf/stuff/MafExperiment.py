@@ -1,20 +1,18 @@
-import math
-
-from common.poolreplacement import RestartingPoolReplacement
 from pathlib import Path
-from typing import List, Tuple, Optional, Union
 
-from matplotlib.colors import Colormap
-
-from common.globals import Global
-from common.util import Runtime
-from common.NotProvided import NotProvided
-from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
-from distributions.base import enable_memory_growth
-from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.StaticMethods import StaticMethods
+import math
 import matplotlib.pyplot as plt
 import seaborn as sns
+from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
+from maf.stuff.StaticMethods import StaticMethods
+from matplotlib.colors import Colormap
+from typing import List, Tuple, Optional, Union
+
+from common.NotProvided import NotProvided
+from common.globals import Global
+from common.util import Runtime
+from maf import MaskedAutoregressiveFlow
+from common.prozess.Prozessor import Prozessor
 
 
 class MafExperiment:
@@ -34,12 +32,15 @@ class MafExperiment:
         self.use_early_stop: bool = True
         plt.clf()
         self.pool_size = pool_size
-        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
 
     def set_pool_size(self, size: int):
         self.pool_size = size
-        self.pool.close()
-        self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        # self.pool.close()
+        # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
+        self.prozessor.close()
+        self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
 
     def results_dir_name(self) -> str:
         return 'results'
@@ -144,7 +145,7 @@ class MafExperiment:
         target = Path(self.result_folder, name)
         return str(target)
 
-    def save_fig(self, transparent: bool = True, tight_layout: bool = True, name: str = NotProvided()):
+    def save_fig(self, transparent: bool = False, tight_layout: bool = True, name: str = NotProvided()):
         if tight_layout:
             self.fig.tight_layout()
         name: str = NotProvided.value_if_not_provided(name, self.name)

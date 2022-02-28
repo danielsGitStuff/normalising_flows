@@ -6,7 +6,7 @@ from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.stuff.MafExperiment import MafExperiment
 from pathlib import Path
 
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MAFCreator
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVar import MixLearnExperimentMiniBooneClfVar
 
@@ -59,19 +59,24 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        nf_epochs=2000,
                                                        nf_patience=20,
                                                        batch_size=1024,
-                                                       classifiers_per_nf=3,
+                                                       classifiers_per_nf=10,
                                                        just_signal_plan=False,
                                                        pool_size=self.pool_size,
                                                        synth_samples_amount_multiplier=self.synth_samples_amount_multiplier,
-                                                       steps_size_clf_t_ge=self.steps_size_clf_t_ge)
+                                                       steps_size_clf_t_ge=self.steps_size_clf_t_ge,
+                                                       steps_size_clf_t_sy=self.steps_size_clf_t_sy,
+                                                       sample_variance_multiplier=self.sample_variance_multiplier)
 
         experiment.create_training_plan().run()
 
-    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0, steps_size_clf_t_ge:int = 10):
+    def __init__(self, name='miniboone_clfvar', pool_size: int = 8, synth_samples_amount_multiplier: float = 1.0, steps_size_clf_t_ge: int = 10, steps_size_clf_t_sy: int = 10,
+                 sample_variance_multiplier: float = 1.0):
         super().__init__(name, pool_size=pool_size)
         self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
         self.experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess
         self.steps_size_clf_t_ge: int = steps_size_clf_t_ge
+        self.steps_size_clf_t_sy: int = steps_size_clf_t_sy
+        self.sample_variance_multiplier: float = sample_variance_multiplier
 
 
 if __name__ == '__main__':

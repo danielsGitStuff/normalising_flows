@@ -24,7 +24,8 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                  experiment_init_ds_class: Type[DSInitProcess] = DSInitProcess,
                  test_split: float = 0.1,
                  classifiers_per_nf: int = 3,
-                 pool_size: int = 6):
+                 pool_size: int = 6,
+                 sample_variance_multiplier: float = 1.0):
         self.paper_load: bool = paper_load
         self.dataset_name: str = dataset_name
 
@@ -41,6 +42,7 @@ class MixLearnExperimentMiniBoone(MixLearnExperiment):
                          # noise_variance=noise_variance,
                          # batch_norm=batch_norm,
                          # use_tanh_made=use_tanh_made,
+                         sample_variance_multiplier=sample_variance_multiplier,
                          test_split=test_split,
                          result_folder=result_folder,
                          experiment_init_ds_class=experiment_init_ds_class,

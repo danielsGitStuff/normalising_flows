@@ -326,6 +326,6 @@ class DL3(Ser):
 
 
 if __name__ == '__main__':
-    dl = DL2.load('/home/xor/Documents/normalising_flows/.cache/mixlearn_miniboone_default/dl_train/')
+    dl = DL2.load('~/Documents/normalising_flows/.cache/mixlearn_miniboone_default/dl_train/')
     dl.get_signal(40000)
     print('ende')

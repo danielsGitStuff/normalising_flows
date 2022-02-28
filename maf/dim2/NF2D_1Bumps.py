@@ -5,7 +5,7 @@ from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import BaseMethods
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.dim2.VisualExample2D import VisualExample2D
 from pathlib import Path

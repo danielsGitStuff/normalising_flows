@@ -1,11 +1,11 @@
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVarRunner import MixLearnExperimentMiniBooneClfVarRunner
 from maf.mixlearn.dsinit.DSBalanceInitProcess import DSBalanceInitProcess
 
 
 class MixLearnExperimentMiniBooneClfVarRunnerBalanced(MixLearnExperimentMiniBooneClfVarRunner):
     def __init__(self):
-        super().__init__(name='miniboone_clf_var_balanced', pool_size=8)
+        super().__init__(name='miniboone_clf_var_balanced', pool_size=8, steps_size_clf_t_ge=10, steps_size_clf_t_sy=10, sample_variance_multiplier=1.0)
         self.experiment_init_ds_class = DSBalanceInitProcess
 
 

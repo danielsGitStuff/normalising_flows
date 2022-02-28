@@ -4,9 +4,9 @@ from typing import List
 
 from common.globals import Global
 from distributions.Distribution import Distribution
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.VaryingParametersExperiment import Defaults
+from maf.DefaultDistributions import DefaultDistributions
 from maf.dim2.VisualExample2D import VisualExample2D
 
 
@@ -18,7 +18,7 @@ class NF2D_10BumpsDev(VisualExample2D):
         self.vmax = 'auto'
 
     def create_data_distribution(self) -> Distribution:
-        return Defaults.create_gauss_no()
+        return DefaultDistributions.create_gauss_no()
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
         return [MaskedAutoregressiveFlow(input_noise_variance=0.0, input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for

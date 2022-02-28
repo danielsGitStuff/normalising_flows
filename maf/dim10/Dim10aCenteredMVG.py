@@ -1,4 +1,5 @@
 from distributions.base import BaseMethods
+from common.argparser import ArgParser
 from maf.dim10.RandomExample10D import RandomExample10D
 from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
@@ -15,7 +16,7 @@ from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 class Dim10aCenteredMVG(RandomExample10D):
 
     def __init__(self):
-        super().__init__('Dim10aCenteredMVG', layers=[1, 2], layers_repeat=2)
+        super().__init__('Dim10aCenteredMVG', layers=[1, 2], layers_repeat=6, pool_size=12)
         self.no_samples = 1024 * 100
         self.no_val_samples = 1024 * 10
 
@@ -35,4 +36,5 @@ class Dim10aCenteredMVG(RandomExample10D):
 
 if __name__ == '__main__':
     Global.set_seed(42)
+    ArgParser.parse()
     Dim10aCenteredMVG().run()

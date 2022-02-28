@@ -118,7 +118,7 @@ class TransformationPrinter:
         self.fig, axs = StaticMethods.default_fig(no_rows=no_rows, no_columns=no_columns, h=10, w=10, h_offset=self.h_offset)
         return self.fig, axs
 
-    def probe_src_dist(self, xmin: float, xmax: float, ymin: float, ymax: float ) -> np.ndarray:
+    def probe_src_dist(self, xmin: float, xmax: float, ymin: float, ymax: float) -> np.ndarray:
         import tensorflow as tf
         # xmin = self.src_distr.lows[0]
         # ymin = self.src_distr.lows[1]
@@ -140,15 +140,17 @@ class TransformationPrinter:
         # ar = ar.T
         return ar
 
-    def run(self, xmin: float, xmax: float, ymin: float, ymax: float,radius:float, target: Path):
-        if LearnedDistribution.can_load_from('.cache', 'NF2D_1RectL2_l2.0.maf'):
+    def run(self, xmin: float, xmax: float, ymin: float, ymax: float, radius: float, target: Path):
+        model_name = 'NF2D_1Quad_l20.0.maf'
+        # if LearnedDistribution.can_load_from('.cache', 'NF2D_1RectL2_l2.0.maf'):
+        if LearnedDistribution.can_load_from('.cache', model_name):
             xmin = float(xmin)
             xmax = float(xmax)
             ymin = float(ymin)
             ymax = float(ymax)
             radius = float(radius)
             print('can load')
-            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('.cache', 'NF2D_1RectL2_l2.0.maf')
+            maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load('.cache', model_name)
 
             self.hm(maf, mesh_count=100)
 

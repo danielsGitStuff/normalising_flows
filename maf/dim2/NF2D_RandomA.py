@@ -1,4 +1,4 @@
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.dim2.VisualRandomExample2D import VisualRandomExample2D
 from pathlib import Path
 

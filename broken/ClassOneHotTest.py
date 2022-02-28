@@ -7,7 +7,7 @@ from keras.keras_parameterized import TestCase
 
 from common import jsonloader
 from distributions.base import TTensor
-from maf.ClassOneHot import ClassOneHot
+from broken.ClassOneHot import ClassOneHot
 
 
 class OneTest(TestCase):

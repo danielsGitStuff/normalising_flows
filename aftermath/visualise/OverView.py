@@ -33,7 +33,6 @@ class OverView(MafExperiment):
 
     def run(self):
         experiment_classes: List[Type[VisualExample2D]] = [NF2D_1Bumps, NF2D_1Rect, NF2D_2Bumps, NF2D_3Rect, NF2D_4Connected1, NF2D_4Rect, NF2D_10Bumps, NF2D_Diag4, NF2D_RandomA,
-                                                           NF2D_RandomB,
                                                            NF2D_Row3,
                                                            NF2D_Row4]
         experiments: List[VisualExample2D] = []

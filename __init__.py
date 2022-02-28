@@ -1,9 +1,18 @@
-from .maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow, MafConfig, MAFCreator,  NanError
-from .distributions.Distribution import DensityPlotData
-from .distributions.LearnedDistribution import LearnedDistributionCreator, LearnedDistribution, EarlyStop, LearnedConfig
-from .distributions.base import BaseMethods, TTensor, enable_memory_growth
-from .common.NotProvided import NotProvided
-from .maf.ClassOneHot import ClassOneHot
-from .maf.CustomMade import CustomMade
-from .maf.DS import DataLoader, DS, DSOpt
-from .common.jsonloader import Ser
+import sys
+
+from pathlib import Path
+
+root: Path = Path(__file__).parent
+print(f"--- {root.absolute()}")
+# sys.path.append(str(root.absolute()))
+
+from . import maf
+from . import common
+from .common import util, jsonloader
+
+# from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
+# from distributions.base import enable_memory_growth, BaseMethods, TData, TDataOpt
+# from distributions.LearnedDistribution import LearnedConfig, LearnedDistribution
+# import normalising_flows.common.jsonloader as jsonloader
+# import normalising_flows.common.util as util
+

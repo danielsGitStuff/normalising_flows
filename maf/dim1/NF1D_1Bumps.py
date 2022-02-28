@@ -1,6 +1,6 @@
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.dim1.VisualExample1D import VisualExample1D
 from typing import List

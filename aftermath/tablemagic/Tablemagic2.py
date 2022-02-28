@@ -79,7 +79,8 @@ class TableMagic2:
         h_mult = 1.5 if len(pivoted) < 5 else 1
         fig, ax = StaticMethods.default_fig(1, 1, w=2 * len(layers), h=h_mult * (len(pivoted)))
         fmt = '.2f'
-        sns.heatmap(data=pivoted, annot=True, fmt=fmt, ax=ax, square=False, cbar=False, cmap=sns.color_palette("Blues", as_cmap=True))
+        g = sns.heatmap(data=pivoted, annot=True, fmt=fmt, ax=ax, square=False, cbar=False, cmap=sns.color_palette("Blues", as_cmap=True))
+        g.set_yticklabels(g.get_yticklabels(), rotation=0)
         ax.set(xlabel='Layers', ylabel=None)
         plt.tight_layout()
         plt.savefig(Path(target_file.parent, f"{target_file.name}.png"))
@@ -96,13 +97,26 @@ class TableMagic2:
         vmax = 0.0
         for _, df in dfs:
             vmax = max(vmax, df['kl'].max())
+        name_df_map: Dict[str, pd.DataFrame] = {self.experiment_names.get(name, name): df for name, df in dfs}
+        assert len(name_df_map) == len(dfs)
+        dfs: List[Tuple[str, pd.DataFrame]] = [(name, name_df_map[name]) for name in sorted(name_df_map.keys())]
+        # very special sorting
+        if dfs[0][0] == 'Large Gaps':
+            dfs = [dfs[1], dfs[0], dfs[2], dfs[3]]
         for i, ((name, df), ax) in enumerate(zip(dfs, axs)):
-            sns.barplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, ci='sd')
-            n = self.experiment_names.get(name, name)
+            # vls = []
+            # d: pd.DataFrame = df.sort_values(['layers', 'val_loss'])
+            # for l in df['layers'].unique():
+            #     vls.append(d.loc[d['layers'] == l].values[-1:])
+            # vls: np.ndarray = np.concatenate(vls)
+            # df: pd.DataFrame = pd.DataFrame(vls, columns=df.columns)
+            # sns.barplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, ci='sd')
+            sns.boxplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, whis=19999.0)
             ylabel = None
+
             if i == 0:
                 ylabel = 'KL'
-            ax.set(ylabel=ylabel, xlabel='Layers', title=n, ylim=[0.0,vmax])
+            ax.set(ylabel=ylabel, xlabel='Layers', title=name, ylim=[0.0, vmax])
             if i > 0:
                 plt.setp(ax.get_yticklabels(), visible=False)
         plt.tight_layout()

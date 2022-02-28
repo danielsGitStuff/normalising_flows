@@ -1,31 +1,14 @@
 from __future__ import annotations
 
-import math
-import os
-import sys
-from typing import Dict, Any, List, Optional, Tuple
-from scipy.stats import multivariate_normal
+from typing import Dict, Any, List
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import plotly.graph_objects as go
-import seaborn as sns
-import tensorflow as tf
-from tensorflow.python.data import Dataset
-
-from common.util import Runtime
-from common.NotProvided import NotProvided
-from distributions.LearnedDistribution import LearnedDistribution, EarlyStop
-from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.Distribution import Distribution
 from distributions.GaussianMultiModal import GaussianMultimodal
 from distributions.GaussianMultivariate import GaussianMultivariate
-from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow, NanError
-from maf.pool import RestartingPoolReplacement
+from distributions.MultimodalDistribution import MultimodalDistribution
 
 
-class Defaults:
+class DefaultDistributions:
     @staticmethod
     def create_default_model_definitions() -> List[Dict[str, Any]]:
         model_definitions = [{"model": "NF", "parameters": {"batch_size": 50, "layers": 1, "epochs": 200, "hidden_shape": [200, 200]}},

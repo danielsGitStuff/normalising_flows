@@ -32,7 +32,9 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
                  pool_size: int = 6,
                  just_signal_plan: bool = False,
                  synth_samples_amount_multiplier: float = 1.0,
-                 steps_size_clf_t_ge: int = 10):
+                 sample_variance_multiplier: float = 1.0,
+                 steps_size_clf_t_ge: int = 10,
+                 steps_size_clf_t_sy: int = 10):
         super().__init__(
             classifiers_per_nf=classifiers_per_nf,
             name=name,
@@ -47,10 +49,12 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
             paper_load=paper_load,
             experiment_init_ds_class=experiment_init_ds_class,
             test_split=test_split,
-            pool_size=pool_size)
+            pool_size=pool_size,
+            sample_variance_multiplier=sample_variance_multiplier)
         self.just_signal_plan: bool = just_signal_plan
         self.synth_samples_amount_multiplier: float = synth_samples_amount_multiplier
         self.steps_size_clf_t_ge: int = steps_size_clf_t_ge
+        self.steps_size_clf_t_sy: int = steps_size_clf_t_sy
 
     def create_checkpoint_dir(self) -> Path:
         checkpoints_dir = Path(self.cache_dir, "miniboone_checkpoints")
@@ -77,7 +81,8 @@ class MixLearnExperimentMiniBooneClfVar(MixLearnExperimentMiniBoone):
 
                                           VariableParamInt('size_clf_t_ge', range_start=0, range_end=props.length - 1500, range_steps=self.steps_size_clf_t_ge, is_var=True),
                                           # FixedIntParam('size_clf_t_ge', 0, is_var=True),
-                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=(props.length * self.synth_samples_amount_multiplier - 1500), range_steps=10,
+                                          VariableParamInt('size_clf_t_sy', range_start=0, range_end=(props.length * self.synth_samples_amount_multiplier - 1500),
+                                                           range_steps=self.steps_size_clf_t_sy,
                                                            is_var=True),
                                           LambdaIntParam('size_clf_v_ge', source_params=['size_clf_t_ge', 'size_clf_t_sy'],
                                                          f=lambda tge, tsy: math.floor(tge / (tge + tsy) * self.val_size) if tge > 0 or tsy > 0 else 0),
