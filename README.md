@@ -31,8 +31,8 @@ available scrips that run experiments:
   - multimodal
     - weighted multimodal
   - learned distributions with serialisation
-- `kl` 
-  - Kullback-Leibler-divergence
+  - `kl` 
+    - Kullback-Leibler-divergence
 - `keta`
   - serialisation for tensorflow models
 - `maf` - Masked Autoregressive Flow:
