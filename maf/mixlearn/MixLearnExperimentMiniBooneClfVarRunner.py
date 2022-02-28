@@ -59,7 +59,7 @@ class MixLearnExperimentMiniBooneClfVarRunner(MafExperiment):
                                                        nf_epochs=2000,
                                                        nf_patience=20,
                                                        batch_size=1024,
-                                                       classifiers_per_nf=3,
+                                                       classifiers_per_nf=10,
                                                        just_signal_plan=False,
                                                        pool_size=self.pool_size,
                                                        synth_samples_amount_multiplier=self.synth_samples_amount_multiplier,
