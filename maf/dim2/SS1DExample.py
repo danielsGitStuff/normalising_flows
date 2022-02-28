@@ -1,6 +1,6 @@
 from distributions.Distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.stuff.MafExperiment import MafExperiment
 from maf.stuff.ShiftAndScale import ShiftAndScale, ShiftAndScaleWrong
 

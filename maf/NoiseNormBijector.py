@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-import keras.layers
-import math
 from typing import Optional
 
+import keras.backend as K
 import numpy as np
+import tensorflow as tf
 from keras.layers import Normalization
 from tensorflow import Tensor
 from tensorflow_probability.python.bijectors import Bijector
-import tensorflow as tf
+
 from common.jsonloader import Ser
 from distributions.base import cast_to_ndarray, cast_dataset_to_tensor
-import keras.backend as K
-
 from maf.DS import DS
 
 

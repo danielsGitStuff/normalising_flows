@@ -6,7 +6,7 @@ from maf.mixlearn.dsinit.DSInitProcess import DSInitProcess
 from maf.stuff.MafExperiment import MafExperiment
 from pathlib import Path
 
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MAFCreator
 from maf.mixlearn.MixLearnExperimentMiniBooneClfVar import MixLearnExperimentMiniBooneClfVar
 

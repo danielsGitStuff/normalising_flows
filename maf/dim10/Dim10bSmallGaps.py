@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.dim10.EvalLargeD10 import EvalLargeD10
 
 

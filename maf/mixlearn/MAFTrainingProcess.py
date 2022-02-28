@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import Optional, Collection
 
@@ -13,8 +12,7 @@ from common.NotProvided import NotProvided
 from common.globals import Global
 from common.jsonloader import Ser
 from distributions.LearnedDistribution import EarlyStop, LearnedDistribution, LearnedDistributionCreator
-from maf.ClassOneHot import ClassOneHot
-from maf.DS import DS, DatasetProps
+from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.DL import DL2, DataSource
 

@@ -1,4 +1,3 @@
-from RunAllProcessWrapper import GPUProcessWrapper, GPUProcessWrapperPool
 from common.prozess.Prozessor import Prozessor
 from maf.mixlearn.dl3.MinibooneDL3 import MinibooneDL3
 

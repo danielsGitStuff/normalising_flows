@@ -15,18 +15,14 @@ Container__.name_dict = {
     'NF2D_4Connected1': '4 connected Gaussians',
     'NF2D_4Rect': '4 Uniforms',
     'NF2D_10Bumps': '10 Gaussians',
-    'NF2D_Diagonal4': '4 Gaussians, diag',
+    'NF2D_Diag4': '4 Gaussians, diag',
     'NF2D_Row3': '3 Gaussians, row',
     'NF2D_Row4': '4 Gaussians, row',
     'Dim10aCenteredMVG': 'Simple Gaussian',
+    'Dim10bVeryLargeGaps': 'Giant Gaps',
     'Dim10bLargeGaps': 'Large Gaps',
     'Dim10bSmallGaps': 'Small Gaps',
     'Dim10bMediumGaps': 'Medium Gaps',
-    # 'Dim10eMediumGaps': 'Large Gaps'
-    # 'Dim10bLargeGaps': 'Large Gaps',
-    # 'Dim10cSmallGaps': 'Small Gaps',
-    # 'Dim10dTinyGaps': 'Tiny Gaps',
-    # 'Dim10eMediumGaps': 'Medium Gaps'
 }
 
 

@@ -1,5 +1,5 @@
 from common.globals import Global
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from pathlib import Path
 
 import tensorflow as tf

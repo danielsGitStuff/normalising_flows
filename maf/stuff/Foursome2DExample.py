@@ -1,23 +1,12 @@
 from __future__ import annotations
 
 import math
-from typing import List, Optional
-
-from matplotlib import pyplot as plt
-
-from common.util import Runtime
-from distributions.LearnedDistribution import EarlyStop
-from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
-from distributions.kl.JS import JensenShannonDivergence
-from distributions.kl.KL import KullbackLeiblerDivergence
-from maf.DS import DS
-from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
-from maf.stuff.DivergenceExperiment import DivergenceExperiment
-import numpy as np
-import tensorflow as tf
 
 import pandas as pd
 import seaborn as sns
+from matplotlib import pyplot as plt
+
+from maf.stuff.DivergenceExperiment import DivergenceExperiment
 
 
 class Foursome2DMafExperiment(DivergenceExperiment):

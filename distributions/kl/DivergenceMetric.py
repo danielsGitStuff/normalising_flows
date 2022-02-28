@@ -1,13 +1,10 @@
 from typing import List
 
-import numpy as np
-
 from common import util
 from common.jsonloader import Ser
 from distributions.Distribution import Distribution
 from distributions.LearnedDistribution import FitHistory
 from distributions.kl.Divergence import Divergence
-from distributions.kl.JS import JensenShannonDivergence
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.DS import DS
 
@@ -18,8 +15,7 @@ class DivergenceMetric(Ser):
         self.maf: Distribution = maf
         self.run_every_epoch: int = run_every_epoch
         self.batch_size: int = batch_size
-        self.divergences: List[Divergence] = [KullbackLeiblerDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)] \
-            # , JensenShannonDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)]
+        self.divergences: List[Divergence] = [KullbackLeiblerDivergence(p=self.maf, q=self.maf, half_width=0.0, step_size=666.0, batch_size=self.batch_size)]
         self.ds_samples: DS = ds_samples
         self.log_ps_samples: DS = log_ps_samples
 

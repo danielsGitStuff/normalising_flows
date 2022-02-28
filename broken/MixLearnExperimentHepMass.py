@@ -1,4 +1,5 @@
 import math
+import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -9,14 +10,18 @@ from tensorflow.python.data import Dataset
 from common.util import Runtime
 from common.NotProvided import NotProvided
 from distributions.base import enable_memory_growth
-from maf.DS import DataLoader
+from broken.DS import DataLoader
 from maf.mixlearn.MixLearnExperiment import MixLearnExperiment, DatasetFetcher
 from maf.stuff.StaticMethods import StaticMethods
 import tensorflow as tf
 
 
 class HepMassDataLoader(DataLoader):
+    """This file is likely not compatible with the rest of the framework since my work focused on MiniBooNE instead"""
+
     def __init__(self, norm_data: bool, conditional: bool = False):
+        print("This file is likely not compatible with the rest of the framework since my work focused on MiniBooNE instead", file=sys.stderr)
+        sys.exit(2)
         super().__init__(conditional=conditional)
         self.norm_data: bool = norm_data
         self.cache_txt_train_file: Path = Path(StaticMethods.cache_dir(), 'hepmass_train.txt')
@@ -64,6 +69,7 @@ class HepMassDataLoader(DataLoader):
         train_val_ds = train_ds.take(val)
         train_ds = train_ds.skip(val)
         batch_size = NotProvided.value_if_not_provided(batch_size, 128)
+
         def prepare(d: tf.data.Dataset, cache_file: Path) -> tf.data.Dataset:
             # d = d.cache(filename=str(cache_file))
             return d

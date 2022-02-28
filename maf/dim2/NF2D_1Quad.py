@@ -3,7 +3,7 @@ from typing import List
 from distributions.Distribution import Distribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
-from keta.argparseer import ArgParser
+from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
 from maf.dim2.VisualExample2D import VisualExample2D
 

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import math
 import os
-import sys
 
 from common.globals import Global
 from pathlib import Path
@@ -20,7 +19,7 @@ from tensorflow import Tensor
 from tensorflow.python.data import Dataset
 from tensorflow_probability.python import distributions as tfd
 from tensorflow_probability.python.distributions import Distribution as TD
-from tensorflow_probability.python.bijectors import Bijector, AutoregressiveNetwork
+from tensorflow_probability.python.bijectors import Bijector
 from tensorflow_probability.python.bijectors import MaskedAutoregressiveFlow as TFMAF
 
 from common import jsonloader, util
@@ -29,7 +28,7 @@ from common.NotProvided import NotProvided
 from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
 from distributions.kl.DivergenceMetric import DivergenceMetric
 from maf.CustomMade import CustomMade
-from maf.ClassOneHot import ClassOneHot
+from broken.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
 from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs, BaseMethods
 from distributions.Distribution import DensityPlotData, HeatmapCreator, CutThroughData
