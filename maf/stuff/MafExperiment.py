@@ -26,7 +26,7 @@ class MafExperiment:
         self.cuts: Optional[List[Tuple[CutThroughData, CutThroughData]]] = None
         self.denses: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
         self.overall_runtime: Runtime = Runtime(f"overall runtime for '{self.name}'").start()
-        self.print_3d_for_denses: bool = False
+        self.print_3d_for_denses: bool = True
         self.log_scale: bool = False
         self.h_offset: int = 0
         self.use_early_stop: bool = True
