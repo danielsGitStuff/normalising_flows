@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, List
+from typing import Optional, Tuple, List, Union
 
 import numpy as np
 import pandas as pd
@@ -101,6 +101,7 @@ class DivergenceExperiment(MafExperiment):
         self.ymin: float = -4.0
         self.ymax: float = 4.0
         self.vmax: Optional[float, str] = 'auto'
+        self.vmax_diff: Union[str, float] = 'auto'
         self.no_samples: int = 1024 * 30
         self.no_val_samples: int = 1024 * 2
         self.mesh_count: int = 1000
@@ -196,6 +197,7 @@ class DivergenceExperiment(MafExperiment):
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
+            # DivergenceProcess.static_run(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)
             self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
             # self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
         # results: List[Tuple[Path, str]] = self.pool.join()
@@ -203,16 +205,18 @@ class DivergenceExperiment(MafExperiment):
         mafs = [MaskedAutoregressiveFlow.load(cache, prefix) for cache, prefix in results]
         if self.data_distribution.input_dim < 3:
             enable_memory_growth()
-            self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax,
-                    mesh_count=self.mesh_count)
+            self.original_plot_data = self.hm(dist=self.data_distribution, title=self.create_data_title(), xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax,
+                                              vmax=self.vmax,
+                                              mesh_count=self.mesh_count)
         for maf in mafs:
             if self.data_distribution.input_dim < 3:
                 title = f"MAF {maf.layers}L"
-                print(f"heatmap for '{title}'")
+                print(f"heatmap/diff for '{title}'")
+                self.diff(dist=maf, unique_property='layers', title=title, vmax=self.vmax_diff)
                 self.hm(dist=maf, title=title, xmin=self.xmin, xmax=self.xmax, ymin=self.ymin, ymax=self.ymax, vmax=self.vmax, mesh_count=self.mesh_count,
                         true_distribution=self.data_distribution)
-                print(f"cut for '{title}'")
-                self.cut(maf, x_start=self.xmin, x_end=self.xmax, y_start=self.ymin, y_end=self.ymax, mesh_count=self.meh_count_cut, pre_title=title)
+                # print(f"cut for '{title}'")
+                # self.cut(maf, x_start=self.xmin, x_end=self.xmax, y_start=self.ymin, y_end=self.ymax, mesh_count=self.meh_count_cut, pre_title=title)
         self.mafs = mafs
 
     def print_divergences(self):

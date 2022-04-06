@@ -14,8 +14,9 @@ from typing import List
 
 class NF2D_1Bumps(VisualExample2D):
     def __init__(self):
-        super().__init__("NF2D_1Bumps")
-        self.vmax = BaseMethods.call_func_in_process(self.data_distribution,self.data_distribution.prob,arguments=(np.array([[-2.5, -2.5]], dtype=np.float32),))[0][0]
+        super().__init__("NF2D_1Bumps", pool_size=1)
+        self.vmax = BaseMethods.call_func_in_process(self.data_distribution, self.data_distribution.prob, arguments=(np.array([[-2.5, -2.5]], dtype=np.float32),))[0][0]
+        # self.epochs = 200
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=2, distributions=[GaussianMultivariate(input_dim=2, mus=[-2.5, -2.5], cov=[1, 1])])

@@ -24,6 +24,10 @@ function run() {
 klasses1=( "NF2D_1Bumps" "NF2D_2Bumps" "NF2D_10Bumps" "NF2D_1Rect" "NF2D_3Rect" "NF2D_RandomA" )
 klasses2=( "NF2D_RandomB" "NF2D_4Rect" "SS1DMafExperiment" "SS2DMafExperiment" "ShowCase1D1" "NF2D_Diag4" "NF2D_Row3" "NF2D_Row4" "NF2D_4Connected1" )
 
+# run on single gpu
+#./RunList.sh "$module" 0 "${klasses1[@]}"
+#./RunList.sh "$module" 0 "${klasses2[@]}"
+
 # run klasses1 on gpu 1 and klasses2 on gpu 2
 ./RunList.sh "$module" 1 "${klasses1[@]}" &
 ./RunList.sh "$module" 2 "${klasses2[@]}"

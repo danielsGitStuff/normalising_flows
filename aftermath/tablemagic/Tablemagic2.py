@@ -29,6 +29,7 @@ class TableMagic2:
         for o in self.root.iterdir():
             o: Path = o
             if o.is_dir() and o.name.startswith('results_'):
+                print(o)
                 to_merge: List[Tuple[str, pd.DataFrame]] = []
                 for f in o.iterdir():
                     f: Path = f
@@ -83,7 +84,7 @@ class TableMagic2:
         g.set_yticklabels(g.get_yticklabels(), rotation=0)
         ax.set(xlabel='Layers', ylabel=None)
         plt.tight_layout()
-        plt.savefig(Path(target_file.parent, f"{target_file.name}.png"))
+        plt.savefig(Path(target_file.parent, f"{target_file.name}.png"), transparent=True)
 
         # print bars together
         cmap = sns.color_palette("Blues")
@@ -110,8 +111,10 @@ class TableMagic2:
             #     vls.append(d.loc[d['layers'] == l].values[-1:])
             # vls: np.ndarray = np.concatenate(vls)
             # df: pd.DataFrame = pd.DataFrame(vls, columns=df.columns)
-            # sns.barplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, ci='sd')
-            sns.boxplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, whis=19999.0)
+            sns.barplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, ci=False)
+            # sns.boxplot(data=df, x='layers', y='kl', ax=ax, palette=cmap, whis=19999.0)
+            sns.stripplot(data=df, x='layers', y='kl', ax=ax, color='#3c3f41', size=11, jitter=0.03)
+
             ylabel = None
 
             if i == 0:
@@ -120,12 +123,12 @@ class TableMagic2:
             if i > 0:
                 plt.setp(ax.get_yticklabels(), visible=False)
         plt.tight_layout()
-        plt.savefig(Path(target_file.parent, f"{target_file.name}.bars.png"))
+        plt.savefig(Path(target_file.parent, f"{target_file.name}.bars.png"), transparent=True)
 
 
 if __name__ == '__main__':
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull/', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='./', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     t = TableMagic2(Path(args['dir']))
     t.run()

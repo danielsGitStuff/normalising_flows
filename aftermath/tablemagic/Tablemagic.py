@@ -24,6 +24,7 @@ class TableMagic:
         for o in self.root.iterdir():
             o: Path = o
             if o.is_dir() and o.name.startswith('results_'):
+                print(o)
                 for f in o.iterdir():
                     f: Path = f
                     if f.is_file() and f.name.endswith('.divergences.csv'):
@@ -63,7 +64,7 @@ class TableMagic:
 
 if __name__ == '__main__':
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull/', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='./', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     t = TableMagic(Path(args['dir']))
     t.run()

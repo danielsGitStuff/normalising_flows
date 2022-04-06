@@ -14,6 +14,7 @@ from maf.dim2.VisualExample2D import VisualExample2D
 class NF2D_3Rect(VisualExample2D):
     def __init__(self):
         super().__init__("NF2D_3Rect")
+        self.vmax = 0.3
 
     def create_data_distribution(self) -> Distribution:
         return MultimodalDistribution(input_dim=2, distributions=[UniformMultivariate(input_dim=2, lows=[-2, -3], highs=[-1, -1]),
@@ -21,7 +22,8 @@ class NF2D_3Rect(VisualExample2D):
                                                                   UniformMultivariate(input_dim=2, lows=[1, 1], highs=[2, 3])])
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
-        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in self.get_layers()]
+        return [MaskedAutoregressiveFlow(input_dim=2, layers=layers, activation="relu", hidden_shape=[200, 200], norm_layer=True, use_tanh_made=True) for layers in
+                self.get_layers()]
 
     def create_data_title(self) -> str:
         return '3 Uniforms'

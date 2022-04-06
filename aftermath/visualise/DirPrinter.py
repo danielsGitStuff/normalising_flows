@@ -28,19 +28,19 @@ class DirPrinter(Ser):
         df = df.astype({'layers': int})
         plt.clf()
 
-        # big = 32
-        # medium = 28
-        # small = 24
-        # plt.rc('font', size=small)
-        # plt.rc('axes', titlesize=small)
-        # plt.rc('axes', labelsize=medium)
-        # plt.rc('xtick', labelsize=small)
-        # plt.rc('ytick', labelsize=small)
-        # plt.rc('legend', fontsize=small)
-        # plt.rc('figure', titlesize=big)
-        # plt.rc('lines', linewidth=3)
+        big = 32
+        medium = 28
+        small = 20
+        plt.rc('font', size=small)
+        plt.rc('axes', titlesize=small)
+        plt.rc('axes', labelsize=medium)
+        plt.rc('xtick', labelsize=small)
+        plt.rc('ytick', labelsize=small)
+        plt.rc('legend', fontsize=small)
+        plt.rc('figure', titlesize=big)
+        plt.rc('lines', linewidth=3)
 
-        fig, axs = StaticMethods.default_fig(1, 1, w=5, h=5)
+        fig, axs = StaticMethods.default_fig(1, 1, w=12, h=9)
         if isinstance(axs, np.ndarray):
             axs = axs.flatten()
         else:
@@ -49,14 +49,16 @@ class DirPrinter(Ser):
         df_log['kl'] = np.log(df['kl'])
         cmap = sns.color_palette("flare")
         cmap = sns.color_palette("Blues")
-        sns.barplot(data=df, x='layers', y='kl', ax=axs[0], palette=cmap, ci='sd')
+        sns.barplot(data=df, x='layers', y='kl', ax=axs[0], palette=cmap, ci=False)
+        sns.stripplot(data=df, x='layers', y='kl', ax=axs[0], color='#3c3f41', size=11, jitter=0.03)
+        # sns.barplot(data=df, x='layers', y='kl', ax=axs[0], palette=cmap, ci='sd')
         # sns.barplot(data=df_log, x='layers', y='kl', ax=axs[1], palette=cmap, ci='sd')
         axs[0].set(ylabel='KL', xlabel='Layers')
         # axs[1].set(ylabel='log(KL)', xlabel='Layer')
         plt.tight_layout()
         target = Path(f.parent, f"{f.name}.png")
         print(f"merged -> '{target}'")
-        plt.savefig(target)
+        plt.savefig(target, transparent=True)
 
     def run_cache_printer(self, d: Path):
         # return
@@ -90,7 +92,7 @@ class DirPrinter(Ser):
 if __name__ == '__main__':
     SerSettings.enable_testing_mode()
     ap: argparse.ArgumentParser = argparse.ArgumentParser()
-    ap.add_argument('--dir', help='which dir to traverse', default='pull/', type=str)
+    ap.add_argument('--dir', help='which dir to traverse', default='./', type=str)
     args: Dict[str, Any] = vars(ap.parse_args())
     d = DirPrinter(Path(args['dir']))
     d.run()

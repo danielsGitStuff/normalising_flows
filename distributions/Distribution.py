@@ -11,7 +11,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import seaborn as sns
 import tensorflow as tf
-from matplotlib.colors import Colormap
+from matplotlib.colors import Colormap, TwoSlopeNorm
 from scipy.stats import multivariate_normal
 from tensorflow import Tensor
 from tensorflow_probability.python.distributions import Distribution as TD
@@ -290,7 +290,7 @@ class DensityPlotData:
         self.type: str = type
         self.columns: Optional[List[str]] = columns
         self.vmin: float = 0.0
-        if type not in {"hm", "scatter", "1d"}:
+        if type not in {"hm", "scatter", "1d", 'diff'}:
             raise RuntimeError(f"unknown plot type: {type}")
 
     def save(self, f: Union[str, Path]) -> DensityPlotData:
@@ -314,7 +314,8 @@ class DensityPlotData:
         if show:
             fig.show()
 
-    def print_yourself(self, ax, vmax: Optional[float] = None, vmin: Optional[float] = None, cmap: Optional[Colormap] = None):
+    def print_yourself(self, ax, vmax: Optional[float] = None, vmin: Optional[float] = None, cmap: Optional[Colormap] = None, legend: bool = NotProvided,
+                       norm: Optional[TwoSlopeNorm] = None):
 
         if self.title is not None:
             ax.set_title(self.title)
@@ -326,12 +327,12 @@ class DensityPlotData:
         y_tick_labels = [ymax, ymax / 2, 0, ymin / 2, ymin]
         x_tick_indices = [0] + [int(self.mesh_count * m) for m in [1 / 4, 1 / 2, 3 / 4, 1]]
         y_tick_indices = x_tick_indices
-
+        cbar_kws = {"shrink": .7}
         if self.type == "hm":
 
             ax.set_aspect("equal")
             # TODO make this work from ranges like [0, 5] not just [-5, 5]
-            sns.heatmap(self.values, ax=ax, vmax=vmax, cmap=cmap, vmin=vmin)
+            sns.heatmap(self.values, ax=ax, vmax=vmax, cmap=cmap, vmin=vmin, cbar_kws=cbar_kws, norm=norm)
             ax.set_xticks(x_tick_indices)
             ax.set_xticklabels(x_tick_labels)
             ax.set_yticks(y_tick_indices)
@@ -353,7 +354,16 @@ class DensityPlotData:
             # ax.plot(xs, ys)
             df = pd.DataFrame(self.values, columns=columns).set_index(columns[0])
             ax.set_ylim(ymin, ymax)
-            sns.lineplot(data=df, ax=ax, legend=False, )
+            sns.lineplot(data=df, ax=ax, legend=NotProvided.value_if_not_provided(legend, False))
+        elif self.type == 'diff':
+            ax.set_aspect("equal")
+            # TODO make this work from ranges like [0, 5] not just [-5, 5]
+            cbar = NotProvided.value_if_not_provided(legend, True)
+            sns.heatmap(self.values, ax=ax, vmax=vmax, cmap=cmap, vmin=vmin, cbar=cbar, cbar_kws=cbar_kws, norm=norm)
+            ax.set_xticks(x_tick_indices)
+            ax.set_xticklabels(x_tick_labels)
+            ax.set_yticks(y_tick_indices)
+            ax.set_yticklabels(y_tick_labels)
 
         if NotProvided.is_provided(self.columns):
             ax.set_xlabel(self.columns[0])
@@ -398,3 +408,27 @@ class HeatmapCreator(Ser):
         data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
                                truth=truth)
         return data
+
+    def diff_2d(self, true_plot_data: DensityPlotData, title: Optional[str] = None) -> DensityPlotData:
+        x = tf.linspace(true_plot_data.xmin, true_plot_data.xmax, true_plot_data.mesh_count)
+        y = tf.linspace(true_plot_data.ymin, true_plot_data.ymax, true_plot_data.mesh_count)
+        X, Y = tf.meshgrid(x, y)
+
+        concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+        prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
+        probs = tf.reshape(prob, (true_plot_data.mesh_count, true_plot_data.mesh_count))
+        probs = probs.numpy()
+        # probs = np.flip(probs,axis=(1,0))
+        probs = np.rot90(probs)
+        # values = np.abs(true_plot_data.values - probs)
+        values = probs - true_plot_data.values
+        data = DensityPlotData(values=values,
+                               xmin=true_plot_data.xmin,
+                               xmax=true_plot_data.xmax,
+                               ymin=true_plot_data.ymin,
+                               ymax=true_plot_data.ymax,
+                               type='diff',
+                               mesh_count=true_plot_data.mesh_count,
+                               title=title)
+        return data
+        # print('asdasdasdasd')

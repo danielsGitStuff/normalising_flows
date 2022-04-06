@@ -1,12 +1,15 @@
+import sys
+
 from pathlib import Path
 
 import math
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
 from maf.stuff.StaticMethods import StaticMethods
-from matplotlib.colors import Colormap
-from typing import List, Tuple, Optional, Union
+from matplotlib.colors import Colormap, TwoSlopeNorm
+from typing import List, Tuple, Optional, Union, Dict, Set, Any
 
 from common.NotProvided import NotProvided
 from common.globals import Global
@@ -25,8 +28,10 @@ class MafExperiment:
         self.fig = None
         self.cuts: Optional[List[Tuple[CutThroughData, CutThroughData]]] = None
         self.denses: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
+        self.differences: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
+        self.differences_keys: Set[str] = set()
         self.overall_runtime: Runtime = Runtime(f"overall runtime for '{self.name}'").start()
-        self.print_3d_for_denses: bool = True
+        self.print_3d_for_denses: bool = False
         self.log_scale: bool = False
         self.h_offset: int = 0
         self.use_early_stop: bool = True
@@ -34,6 +39,10 @@ class MafExperiment:
         self.pool_size = pool_size
         # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
         self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
+        self.original_plot_data: Optional[DensityPlotData] = None
+        # self.cmap_divergence = sns.diverging_palette(220, 20, as_cmap=True)
+        self.cmap_divergence = sns.color_palette("icefire", as_cmap=True)
+        self.cmap_absolute = sns.color_palette("rocket", as_cmap=True)
 
     def set_pool_size(self, size: int):
         self.pool_size = size
@@ -71,8 +80,24 @@ class MafExperiment:
         self.cuts.append((maf.heatmap_creator.cut_along_x(x_start=x_start, x_end=x_end, mesh_count=mesh_count, pre_title=pre_title),
                           maf.heatmap_creator.cut_along_y(y_start=y_start, y_end=y_end, mesh_count=mesh_count, pre_title=pre_title)))
 
+    def diff(self, dist: Distribution, unique_property: Optional[str] = None, title: Optional[str] = None, vmax: Optional[Union[float, str]] = None):
+        if dist.input_dim > 2 or dist.input_dim < 1:
+            return
+        if self.original_plot_data is None:
+            raise RuntimeError('no original plot data. diff is impossible')
+        if self.differences is None:
+            self.differences = []
+        if unique_property is not None:
+            key: Any = getattr(dist, unique_property)
+            if key in self.differences_keys:
+                return
+            dp = dist.heatmap_creator.diff_2d(self.original_plot_data, title=title)
+            vmin = None
+            self.differences.append((dp, vmin, vmax))
+            self.differences_keys.add(key)
+
     def hm(self, dist: Distribution, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None, vmax: Optional[Union[float, str]] = None,
-           columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None):
+           columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
         if self.denses is None:
             self.denses = []
         if dist.input_dim == 1:
@@ -86,6 +111,7 @@ class MafExperiment:
         if not self.log_scale:
             vmin = 0.0
         self.denses.append((dp, vmin, vmax))
+        return dp
 
     def print_denses(self, name: Optional[str] = None):
         if self.denses is None:
@@ -99,15 +125,42 @@ class MafExperiment:
                 vmax = 0
                 for d, _, _ in self.denses:
                     vmax = max(vmax, d.values.max())
-            dp.print_yourself(ax, vmax=vmax, vmin=vmin)
+            dp.print_yourself(ax, vmax=vmax, vmin=vmin, cmap=self.cmap_absolute)
         # remove empty diagram
         # if len(axs.shape) == 2 and axs.shape[0] * axs.shape[1] > len(self.denses):
         #     axs[-1][-1].set_axis_off()
-        self.save_fig(name=name)
+        self.save_fig(name=name, transparent=True)
         if self.print_3d_for_denses and not Global.Testing.has('kaleido_missing_hack'):
             for dp, vmin, vmax in self.denses[1:]:
                 dp.print_yourself_3d(title=dp.title, image_base_path=self.get_base_path(f"{self.name}.{dp.title}"))
         self.denses = None
+
+    def print_diffs(self):
+        if self.differences is None:
+            return
+        fig, axs = self.default_fig(int(math.ceil((len(self.differences) + 1) / 3)), 3)
+        for ax in axs.flatten():
+            ax.set_axis_off()
+        axs = axs.flatten()
+        self.original_plot_data.print_yourself(axs[0], cmap=self.cmap_absolute)
+        axs = axs[1:]
+
+        max_abs_divergence: float = max([np.abs(dp.values).max() for dp, _, _ in self.differences])
+        divergence_norm = TwoSlopeNorm(vmin=-max_abs_divergence, vcenter=0, vmax=max_abs_divergence)
+
+        for i, ((dp, vmin, vmax), ax) in enumerate(zip(reversed(self.differences), axs)):
+            ax.set_axis_on()
+            if vmax == 'auto':
+                vmax = 0
+                for d, _, _ in self.differences:
+                    vmax = max(vmax, d.values.max())
+            legend = i == 1 or True
+            dp.print_yourself(ax, vmax=vmax, vmin=vmin, legend=legend, cmap=self.cmap_divergence, norm=divergence_norm)
+        name = f"{self.name}.diff"
+        self.save_fig(name=name, transparent=True)
+        self.differences = None
+        self.differences_keys = set()
+        # sys.exit(76)
 
     def print_cuts(self):
         if self.cuts is None:
@@ -129,6 +182,7 @@ class MafExperiment:
         # enable_memory_growth()
         self._run()
         self.print_divergences()
+        self.print_diffs()
         self.print_denses()
         self.print_cuts()
         self.overall_runtime.stop().print()
@@ -150,6 +204,7 @@ class MafExperiment:
             self.fig.tight_layout()
         name: str = NotProvided.value_if_not_provided(name, self.name)
         target = f"{self.get_base_path(name)}.png"
+        plt.tight_layout()
         self.fig.savefig(target, transparent=transparent)
 
     def maf_prefix(self, optional: [str, int, float] = '') -> str:
