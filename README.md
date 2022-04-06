@@ -27,7 +27,7 @@ available scrips that run experiments:
   - prints all the nice diagrams and merges tables
   - not needed if you do not want all tables and all diagrams
 - [`broken`](broken/)
-  - stuff that broke somewhere along the line: MNIST, HepMass
+  - stuff that (likely but not necessarily) broke somewhere along the line: MNIST, HepMass
 - [`common`](common/)
   - common stuff like serialisation
   - multiprocessing (more than one implementation, because I had to learn how to do it right) to speed things up and prevent Tensorflow from wasting memory
