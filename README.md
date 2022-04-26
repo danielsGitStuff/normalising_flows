@@ -1,3 +1,15 @@
+# Normalising Flows
+Normalising Flows are a framework that suits well for density estimation and can be used to create new samples from a learned distribution too.
+So, like all the other mechanisms, like Gaussian mixture models etc, it constructs a (data) probability density function out of training samples.
+The idea is to find a mapping from an unobservable data distribution to something nice, like a standard normal. 
+Thus the density of a sample is the density of the mapped sample under the nice and simple standard normal. And since Normalising Flows use bijective mappings, you can turn it the outher way around, sample from the standard normal plug it into the inverse mapping and obtain a 'new' sample.
+
+This work implements the ['Masked Autoregressive Flow' of George Papamakarios](https://arxiv.org/abs/1705.07057).
+
+In case you are interested in the autoregressive part, read [MADE: Masked Autoencoder for Distribution Estimation by Mathieu Germain](https://arxiv.org/abs/1502.03509).
+
+If you are looking for a comprehensive overview of a whole bunch of types of Normalising Flows, and Normalising Flows in general, read [Normalizing Flows for Probabilistic Modeling and Inference by George Papamakarios](https://arxiv.org/abs/1912.02762) or [Normalizing Flows: An Introduction and Review of Current Methods by Ivan Kobyzev](https://arxiv.org/abs/1908.09257).
+
 # Contents
 - [Setup](#setup)
 - [Run](#run)
@@ -100,7 +112,7 @@ The file contains all information about what amount of data from what dataset (t
 - accuracy `[0 .. 1.0]` metric: accuracy on test data
 - fnoise `[0 .. inf]` metric: True Noise
 - fsig `[0 .. inf]` metric: False Signal
-- loss `[0 .. inf]` metric: loss on test data
+- loss `[-inf .. inf]` metric: loss on test data
 - max_epoch `[0 .. inf]` metric: epoch the classifier stopped training
 - tnoise `[0 .. inf]` metric: False Noise
 - tsig `[0 .. inf]` metric: True Signal

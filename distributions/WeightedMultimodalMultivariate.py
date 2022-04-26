@@ -20,9 +20,14 @@ class WeightedMultimodalMultivariate(Distribution):
         self._normalised_distribution_weights: Optional[List[float]] = None
         self.ignored.add('_normalised_distribution_weights')
 
+    def get_distribution(self, index: int) -> Distribution:
+        return self._distributions[index]
+
     def normalised_distribution_weights(self) -> List[float]:
         if self._normalised_distribution_weights is None:
-            self._normalised_distribution_weights = [weight / self.weight_sum for d, weight in zip(self._distributions, self._distribution_weights)]
+            self._normalised_distribution_weights = np.array([float(weight) / self.weight_sum for d, weight in zip(self._distributions, self._distribution_weights)],
+                                                               dtype=np.float32)
+            # self._normalised_distribution_weights = [weight / self.weight_sum for d, weight in zip(self._distributions, self._distribution_weights)]
         return self._normalised_distribution_weights
 
     def _create_base_distribution(self) -> Optional[TfpD]:

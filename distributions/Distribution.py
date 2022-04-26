@@ -34,6 +34,7 @@ class Distribution(Ser):
         self.conditional_dims: int = conditional_dims
         self.conditional: bool = self.conditional_dims > 0
         self.tfd_distribution: Optional[TD] = None
+        self.conditional_producer_function: Optional[Callable[[Distribution, List[float]], Distribution]] = None
         self.ignored.add('tfd_distribution')
 
     def kl_divergence(self: Distribution, other: Distribution, no_of_samples: int = 100000, batch_size: int = 100000) -> float:
@@ -48,6 +49,12 @@ class Distribution(Ser):
             kl += kl_sum
             rest -= take
         return kl
+
+    def make_conditional(self, conditional_dims: int, producer_function: Callable[[Distribution, List[float]], Distribution]):
+        self.conditional_producer_function = producer_function
+        self.conditional_dims = conditional_dims
+        self.conditional = self.conditional_dims > 0
+        return self
 
     def create_base_distribution(self):
         if self.tfd_distribution is None:
@@ -184,6 +191,9 @@ class Distribution(Ser):
         xs, con = self.extract_xs_cond(xs, cond)
         xs = self.cast_2_input(xs, event_dim=self.input_dim)
         cond = self.cast_2_input(cond, event_dim=self.conditional_dims)
+        if self.conditional and self.conditional_producer_function is not None:
+            d: Distribution = self.conditional_producer_function(self, cond)
+            return d.batch_call(d._likelihoods, xs, cond, batch_size)
         return self.batch_call(self._likelihoods, xs, cond, batch_size)
 
     def _log_likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
