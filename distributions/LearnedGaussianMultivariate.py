@@ -7,7 +7,8 @@ import numpy as np
 
 from common import jsonloader
 from common.NotProvided import NotProvided
-from distributions.Distribution import TfpD, DensityPlotData
+from distributions.distribution import TfpD
+from distributions.density_plot_data import DensityPlotData
 from distributions.LearnedDistribution import LearnedDistribution, LearnedConfig, EarlyStop, LearnedDistributionCreator
 from distributions.base import TTensor, TTensorOpt, TDataOpt, cast_dataset_to_tensor, cast_to_ndarray
 from maf.DS import DS

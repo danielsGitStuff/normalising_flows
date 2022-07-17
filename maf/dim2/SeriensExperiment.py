@@ -6,7 +6,7 @@ from typing import List, Optional
 
 import numpy as np
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import enable_memory_growth

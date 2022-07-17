@@ -1,4 +1,4 @@
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
 from maf.stuff.MafExperiment import MafExperiment

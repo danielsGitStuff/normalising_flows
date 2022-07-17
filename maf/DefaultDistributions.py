@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Dict, Any, List
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultiModal import GaussianMultimodal
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution

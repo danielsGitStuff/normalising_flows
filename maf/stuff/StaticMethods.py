@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from common.NotProvided import NotProvided
 from common.globals import Global
 from common.util import Runtime
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 
 
 class StaticMethods:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from distributions.Distribution import DensityPlotData
+from distributions.density_plot_data import DensityPlotData
 from distributions.GaussianMultivariate import GaussianMultivariate
 from common.argparser import ArgParser
 from maf.stuff.MafExperiment import MafExperiment

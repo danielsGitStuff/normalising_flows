@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import numpy as np
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import enable_memory_growth, BaseMethods

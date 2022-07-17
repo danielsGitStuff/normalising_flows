@@ -4,7 +4,7 @@ import numpy as np
 from tensorflow_probability.python.distributions import MultivariateNormalDiag
 
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution, TfpD
+from distributions.distribution import Distribution, TfpD
 from distributions.base import cast_to_ndarray, TTensor, TTensorOpt
 
 

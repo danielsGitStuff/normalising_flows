@@ -7,7 +7,7 @@ import tensorflow as tf
 from typing import List
 
 from common.globals import Global
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariateFullCov import GaussianMultivariateFullCov
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import BaseMethods, enable_memory_growth

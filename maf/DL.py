@@ -12,7 +12,7 @@ from common import jsonloader
 from common.NotProvided import NotProvided
 from common.globals import Global
 from common.jsonloader import Ser
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.base import TTensor, cast_dataset_to_tensor, TTensorOpt, cast_to_ndarray
 from maf.DS import DataLoader, DatasetProps, DS, DSOpt
 from maf.stuff.StaticMethods import StaticMethods

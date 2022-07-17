@@ -7,8 +7,8 @@ cd "$DIR" || exit
 #python_md5='f7890dd43302daa5fcb7b0254b4d0f33'
 python_tgz='python39.src.tgz'
 python_src_dir='python39.src'
-python_url='https://www.python.org/ftp/python/3.9.9/Python-3.9.9.tgz'
-python_md5='a2da2a456c078db131734ff62de10ed5'
+python_url='https://www.python.org/ftp/python/3.9.11/Python-3.9.11.tgz'
+python_md5='daca49063ced330eb933a0fb437dee50'
 target_root="$(pwd)/pyinstall"
 
 cpu_cores=$(nproc --all)

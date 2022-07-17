@@ -4,7 +4,7 @@ import numpy as np
 from typing import Optional, List
 
 from common.globals import Global
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from common.argparser import ArgParser
 from maf.stuff.MafExperiment import MafExperiment

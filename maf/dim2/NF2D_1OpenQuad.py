@@ -1,6 +1,6 @@
 from typing import List
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from common.argparser import ArgParser

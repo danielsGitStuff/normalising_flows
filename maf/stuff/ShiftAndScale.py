@@ -3,7 +3,7 @@ from typing import List
 import numpy as np
 import scipy.stats
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 
 
 class ShiftAndScale(Distribution):

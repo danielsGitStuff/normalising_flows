@@ -62,10 +62,12 @@ class BaseMethods:
         return False
 
     @staticmethod
-    def is_conditional_data(data: TData):
+    def is_conditional_data(data: TData, dim: int, cond_dim: int):
         if isinstance(data, tf.data.Dataset):
             return BaseMethods.is_conditional_Dataset(data)
         elif isinstance(data, Tuple) and len(data) == 2:
+            return True
+        elif (isinstance(data, Tensor) or isinstance(data, np.ndarray)) and len(data.shape) == 2 and (cond_dim > 0 and data.shape[1] == cond_dim + dim):
             return True
         return False
 

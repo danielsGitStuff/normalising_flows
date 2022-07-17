@@ -31,7 +31,8 @@ from maf.CustomMade import CustomMade
 from broken.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
 from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs, BaseMethods
-from distributions.Distribution import DensityPlotData, HeatmapCreator, CutThroughData
+from distributions.distribution import CutThroughData, HeatmapCreator
+from distributions.density_plot_data import DensityPlotData
 from distributions.LearnedDistribution import LearnedConfig, LearnedDistribution, EarlyStop, LearnedDistributionCreator
 from maf.NoiseNormBijector import NoiseNormBijectorBuilder, NoiseNormBijector
 
@@ -164,15 +165,17 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.ignored.add("base_dist")
         self.ignored.add("optimizer")
         self.ignored.add("norm_layer_instance")
+        self.ignored.add("built_transformation")
         self.norm_layer: bool = norm_layer
         self.norm_adapted: bool = False
+        self.built_transformation: bool = False
         self.transformed_distribution: Optional[tfd.TransformedDistribution] = None
         self.use_tanh_made: bool = NotProvided.value_if_not_provided(use_tanh_made, False)
         self.activation: str = NotProvided.value_if_not_provided(activation, "relu")
         self.noise_norm_builder = NoiseNormBijectorBuilder(normalise=self.norm_layer, noise_stddev=input_noise_variance, batch_size=None)
         self.maf_layer_names: List[str] = []
-        if not self.norm_layer and NotProvided.is_provided(input_dim):
-            self.build_transformation()
+        # if not self.norm_layer and NotProvided.is_provided(input_dim):
+        #     self.build_transformation()
 
     def _create_base_distribution(self) -> Optional[TD]:
         self.build_transformation()
@@ -200,8 +203,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                     new_permutation = tf.random.shuffle(permutation)
 
     def build_transformation(self):
-        if self.transformed_distribution is not None:
+        if self.transformed_distribution is not None or self.built_transformation:
             return
+        self.built_transformation = True
         self.base_dist: Optional[tfd.Distribution] = tfd.Normal(loc=0.0, scale=1.0)
         self.layers = Global.Testing.get('testing_nf_layers', self.layers)
         self.norm_layer = Global.Testing.get('testing_nf_norm_layer', self.norm_layer)

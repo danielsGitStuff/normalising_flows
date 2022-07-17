@@ -1,8 +1,13 @@
+from typing import List
 from unittest import TestCase
 
-from distributions.Distribution import Distribution
+import numpy as np
+
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
+from distributions.base import TTensor, BaseMethods
 from distributions.kl.KLSampler import KLSampler
+from maf import DL
 from maf.DS import DS
 import tensorflow as tf
 
@@ -50,5 +55,3 @@ class DistributionTest(TestCase):
         # for b in ds:
         #     print('batch')
         #     print(b)
-
-

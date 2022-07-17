@@ -2,7 +2,7 @@ from typing import List
 
 from common import util
 from common.jsonloader import Ser
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.LearnedDistribution import FitHistory
 from distributions.kl.Divergence import Divergence
 from distributions.kl.KL import KullbackLeiblerDivergence

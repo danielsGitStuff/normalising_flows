@@ -6,7 +6,8 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from distributions.Distribution import CutThroughData, DensityPlotData, Distribution
+from distributions.distribution import CutThroughData, Distribution
+from distributions.density_plot_data import DensityPlotData
 from maf.stuff.StaticMethods import StaticMethods
 from matplotlib.colors import Colormap, TwoSlopeNorm
 from typing import List, Tuple, Optional, Union, Dict, Set, Any

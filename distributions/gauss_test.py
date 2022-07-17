@@ -8,7 +8,7 @@ import tensorflow as tf
 from tensorflow import Tensor
 
 from distributions.base import cast_to_tensor, cast_to_ndarray, TTensorOpt
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultiModal import GaussianMultimodal
 from distributions.GaussianMultivariate import GaussianMultivariate
 

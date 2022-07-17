@@ -4,7 +4,7 @@ import tensorflow as tf
 from keras import backend as K
 
 from common.jsonloader import Ser
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from maf.DS import DS
 
 

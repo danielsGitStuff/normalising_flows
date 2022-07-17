@@ -1,30 +1,26 @@
 from __future__ import annotations
 
 import math
-import pathlib
 from common.globals import Global
-from pathlib import Path
 from typing import List, Union, Optional, Tuple, Callable
 
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
 import seaborn as sns
 import tensorflow as tf
-from matplotlib.colors import Colormap, TwoSlopeNorm
 from scipy.stats import multivariate_normal
 from tensorflow import Tensor
 from tensorflow_probability.python.distributions import Distribution as TD
 import tensorflow_probability.python.distributions as tfpds
-
-TfpD = tfpds.Distribution
-
 from common import jsonloader
 from common.NotProvided import NotProvided
 from common.jsonloader import Ser
 from common.util import Runtime
 from distributions.base import TTensor, TTensorOpt, cast_to_tensor, cast_to_ndarray, BaseMethods
+from distributions.density_plot_data import DensityPlotData
 from maf.DS import DS
+
+TfpD = tfpds.Distribution
 
 
 class Distribution(Ser):
@@ -33,7 +29,10 @@ class Distribution(Ser):
         self.input_dim: int = input_dim
         self.conditional_dims: int = conditional_dims
         self.conditional: bool = self.conditional_dims > 0
+        """conditionals can be sampled too, so they do not have to be provided when calling sample()"""
+        self.conditional_sample: bool = False
         self.tfd_distribution: Optional[TD] = None
+        """deprecated"""
         self.conditional_producer_function: Optional[Callable[[Distribution, List[float]], Distribution]] = None
         self.ignored.add('tfd_distribution')
 
@@ -50,7 +49,7 @@ class Distribution(Ser):
             rest -= take
         return kl
 
-    def make_conditional(self, conditional_dims: int, producer_function: Callable[[Distribution, List[float]], Distribution]):
+    def make_conditional(self, conditional_dims: int, producer_function: Optional[Callable[[Distribution, List[float]], Distribution]]):
         self.conditional_producer_function = producer_function
         self.conditional_dims = conditional_dims
         self.conditional = self.conditional_dims > 0
@@ -64,18 +63,31 @@ class Distribution(Ser):
         raise NotImplementedError()
 
     def check_condition(self, cond: TTensorOpt):
-        if self.conditional and cond is None:
+        if self.conditional and cond is None and not self.conditional_sample:
             raise ValueError("Distribution is conditional but no condition was provided")
         if not self.conditional and cond is not None:
             raise ValueError("Distribution is NOT conditional but condition was provided")
 
     def extract_xs_cond(self, xs: Union[TTensor, Tuple[Tensor, Tensor]], cond: TTensorOpt = None) -> Tuple[Tensor, Optional[Tensor]]:
         """convenience method to unpack xs and cond to (xs, conditional) depending on whether this Distribution is conditional"""
-        cond_provided = BaseMethods.is_conditional_data(xs) or cond is not None  # isinstance(xs, Tuple) or cond is not None
+        cond_provided = BaseMethods.is_conditional_data(xs, dim=self.input_dim, cond_dim=self.conditional_dims) or cond is not None  # isinstance(xs, Tuple) or cond is not None
         if self.conditional and not cond_provided:
             raise ValueError("Distribution is conditional but no condition was provided")
         if not self.conditional and cond_provided:
             raise ValueError("Distribution is NOT conditional but condition was provided")
+        # extract cond
+        if isinstance(xs, Tuple) and cond is not None:
+            raise ValueError("Conditional was provided via 'cond' and 'xs'")
+        if cond is not None:
+            x, _ = cast_to_tensor(xs)
+            c, _ = cast_to_tensor(cond)
+            return x, c
+        elif cond is None and self.conditional and len(xs.shape) == 2 and xs.shape[1] == self.input_dim + self.conditional_dims:
+            x, _ = cast_to_tensor(xs[:, :-1])
+            c, _ = cast_to_tensor(xs[:, -1:])
+            return x, c
+        else:
+            return cast_to_tensor(xs)
         return BaseMethods.extract_xs_cond(xs, cond)
 
     def cast_2_likelihood(self, input_tensor: TTensor, result: TTensor) -> np.ndarray:
@@ -109,7 +121,8 @@ class Distribution(Ser):
         if cond is None:
             d: tf.data.Dataset = tf.data.Dataset.from_tensor_slices(xs)
         else:
-            d: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([xs, cond])
+            # d: tf.data.Dataset = tf.data.Dataset.from_tensor_slices([xs, cond])
+            d: tf.data.Dataset = tf.data.Dataset.from_tensor_slices(tf.concat([xs, cond], axis=1))
         d = d.batch(batch_size=batch_size)
         for batch in d:
             x, c = self.extract_xs_cond(batch, None)
@@ -180,15 +193,15 @@ class Distribution(Ser):
         d: Distribution = jsonloader.from_json(js)
         return d.sample(size)
 
-    def sample_in_process(self, size: int = 1) -> np.ndarray:
-        return BaseMethods.call_func_in_process(self, self.sample, arguments={"size": size})
+    def sample_in_process(self, size: int = 1, cond=None) -> np.ndarray:
+        return BaseMethods.call_func_in_process(self, self.sample, arguments={"size": size, 'cond': cond})
         js = self.to_json()
         return Global.POOL().run_blocking(Distribution.static_sample, args=(js, size))
 
     def likelihoods(self, xs: TTensor, cond: TTensorOpt = None, batch_size: Optional[int] = None) -> np.ndarray:
         if self.tfd_distribution is None:
             self.create_base_distribution()
-        xs, con = self.extract_xs_cond(xs, cond)
+        xs, cond = self.extract_xs_cond(xs, cond)
         xs = self.cast_2_input(xs, event_dim=self.input_dim)
         cond = self.cast_2_input(cond, event_dim=self.conditional_dims)
         if self.conditional and self.conditional_producer_function is not None:
@@ -270,116 +283,6 @@ class CutThroughData:
         # sns.lineplot(data=df, x=self.x_label, y=self.y_label, ax=ax)
 
 
-class DensityPlotData:
-    class Methods:
-        @staticmethod
-        def load(f: Union[str, Path]) -> DensityPlotData:
-            if isinstance(f, str):
-                f = pathlib.Path(f)
-            plot_data: DensityPlotData = jsonloader.load_json(f)
-            return plot_data
-
-        @staticmethod
-        def save(plot_data: DensityPlotData, f: Union[str, Path]):
-            if isinstance(f, str):
-                f = pathlib.Path(f)
-            jsonloader.to_json(plot_data, file=f)
-
-    def __init__(self, values: np.ndarray, mesh_count: int, xmin: float = -4.0, xmax: float = 4.0, ymin: Optional[float] = -4.0, ymax: Optional[float] = 4.0,
-                 suptitle: Optional[str] = None,
-                 title: Optional[str] = None, type: str = "hm", columns: Optional[List[str]] = NotProvided(), truth: Optional[np.ndarray] = None):
-        self.mesh_count: int = mesh_count
-        self.xmin: float = xmin
-        self.xmax: float = xmax
-        self.ymin: float = ymin
-        self.ymax: float = ymax
-        self.values: np.ndarray = values
-        self.truth: Optional[np.ndarray] = truth
-        self.suptitle: Optional[str] = suptitle
-        self.title: Optional[str] = title
-        self.type: str = type
-        self.columns: Optional[List[str]] = columns
-        self.vmin: float = 0.0
-        if type not in {"hm", "scatter", "1d", 'diff'}:
-            raise RuntimeError(f"unknown plot type: {type}")
-
-    def save(self, f: Union[str, Path]) -> DensityPlotData:
-        DensityPlotData.Methods.save(self, f)
-        return self
-
-    def print_yourself_3d(self, title: str, show: bool = False, image_base_path: Optional[str] = None):
-        x, y = np.linspace(self.xmin, self.xmax, self.mesh_count), np.linspace(self.ymax, self.ymin, self.mesh_count)
-        p = np.clip(self.values, -10.0, math.inf)
-
-        if self.truth is not None:
-            truth = np.clip(self.truth, -10, math.inf)
-            fig = go.Figure(data=[go.Surface(z=p, x=x, y=y), go.Surface(z=truth, x=x, y=y, colorscale='Viridis', showscale=False, opacity=0.5)])
-        else:
-            fig = go.Figure(data=[go.Surface(z=p, x=x, y=y)])
-
-        fig.update_layout(title=title, autosize=True, margin=dict(l=65, r=50, b=65, t=90))
-        if image_base_path is not None:
-            fig.write_image(f"{image_base_path}.3d.png", width=1600, height=1600)
-            fig.write_html(f"{image_base_path}.3d.html")
-        if show:
-            fig.show()
-
-    def print_yourself(self, ax, vmax: Optional[float] = None, vmin: Optional[float] = None, cmap: Optional[Colormap] = None, legend: bool = NotProvided,
-                       norm: Optional[TwoSlopeNorm] = None):
-
-        if self.title is not None:
-            ax.set_title(self.title)
-        ax.set_xlim([self.xmin, self.xmax])
-        ax.set_ylim([self.ymin, self.ymax])
-        ymin = self.ymin if self.ymin is not None else self.values[:, -1].min()
-        ymax = self.ymax if self.ymax is not None else self.values[:, -1].max()
-        x_tick_labels = [self.xmin, self.xmin / 2, 0.0, self.xmax / 2, self.xmax]
-        y_tick_labels = [ymax, ymax / 2, 0, ymin / 2, ymin]
-        x_tick_indices = [0] + [int(self.mesh_count * m) for m in [1 / 4, 1 / 2, 3 / 4, 1]]
-        y_tick_indices = x_tick_indices
-        cbar_kws = {"shrink": .7}
-        if self.type == "hm":
-
-            ax.set_aspect("equal")
-            # TODO make this work from ranges like [0, 5] not just [-5, 5]
-            sns.heatmap(self.values, ax=ax, vmax=vmax, cmap=cmap, vmin=vmin, cbar_kws=cbar_kws, norm=norm)
-            ax.set_xticks(x_tick_indices)
-            ax.set_xticklabels(x_tick_labels)
-            ax.set_yticks(y_tick_indices)
-            ax.set_yticklabels(y_tick_labels)
-
-        elif self.type == "scatter":
-            df: pd.DataFrame = pd.DataFrame(columns=["x", "y"])
-            df["x"] = self.values[:, 0]
-            df["y"] = self.values[:, 1]
-            sns.scatterplot(data=df, x="x", y="y", ax=ax)
-        elif self.type == '1d':
-            if vmax is not None:
-                ymax = vmax
-            if vmin is not None:
-                ymin = vmin
-            xs = self.values[:, 0]
-            ys = self.values[:, 1]
-            columns: List[str] = NotProvided.value_if_not_provided(self.columns, ['x', 'y'])
-            # ax.plot(xs, ys)
-            df = pd.DataFrame(self.values, columns=columns).set_index(columns[0])
-            ax.set_ylim(ymin, ymax)
-            sns.lineplot(data=df, ax=ax, legend=NotProvided.value_if_not_provided(legend, False))
-        elif self.type == 'diff':
-            ax.set_aspect("equal")
-            # TODO make this work from ranges like [0, 5] not just [-5, 5]
-            cbar = NotProvided.value_if_not_provided(legend, True)
-            sns.heatmap(self.values, ax=ax, vmax=vmax, cmap=cmap, vmin=vmin, cbar=cbar, cbar_kws=cbar_kws, norm=norm)
-            ax.set_xticks(x_tick_indices)
-            ax.set_xticklabels(x_tick_labels)
-            ax.set_yticks(y_tick_indices)
-            ax.set_yticklabels(y_tick_labels)
-
-        if NotProvided.is_provided(self.columns):
-            ax.set_xlabel(self.columns[0])
-            ax.set_ylabel(self.columns[1])
-
-
 class HeatmapCreator(Ser):
     def __init__(self, dist: Distribution = NotProvided()):
         super().__init__()
@@ -393,6 +296,30 @@ class HeatmapCreator(Ser):
         probs = self.dist.prob(x)
         values = np.concatenate([x, probs], axis=1)
         data = DensityPlotData(values=values, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, mesh_count=mesh_count, type="1d", suptitle=suptitle, title=title, columns=columns)
+        return data
+
+    def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
+                        columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
+        """plot_data.append(heatmap_2d_data(maf, -4.0, 4.0, -4.0, 4.0, mesh_count=200, suptitle="p(x) sampled from Z", title=f"after {i} epochs"))"""
+        x = tf.linspace(xmin, xmax, mesh_count)
+        y = tf.linspace(ymin, ymax, mesh_count)
+        X, Y = tf.meshgrid(x, y)
+
+        concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+        prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
+        probs = tf.reshape(prob, (mesh_count, mesh_count))
+        probs = probs.numpy()
+        # probs = np.flip(probs,axis=(1,0))
+        probs = np.rot90(probs)
+
+        truth: Optional[np.ndarray] = None
+        if true_distribution is not None:
+            truth = true_distribution.prob(concatenated_mesh_coordinates, batch_size=10000)
+            truth = truth.reshape((mesh_count, mesh_count))
+            truth = np.rot90(truth)
+
+        data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
+                               truth=truth)
         return data
 
     def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,

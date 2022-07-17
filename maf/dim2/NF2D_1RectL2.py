@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import List
 
 from common.globals import Global
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.UniformMultivariate import UniformMultivariate
 from common.argparser import ArgParser
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow

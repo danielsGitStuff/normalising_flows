@@ -1,14 +1,14 @@
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.WeightedMultimodalMultivariate import WeightedMultimodalMultivariate
 from distributions.base import TTensorOpt, TTensor
 
 
-class ConditionalCategorical(WeightedMultimodalMultivariate):
+class ConditionalCategoricalOld(WeightedMultimodalMultivariate):
     """Condition Distributions on categories"""
 
     def __init__(self, input_dim: int = NotProvided(), categorical_dims: int = 1, conditional_dims: int = 1):
@@ -39,3 +39,10 @@ class ConditionalCategorical(WeightedMultimodalMultivariate):
             results.append(d.likelihoods(x, cond=c))
         results: np.ndarray = np.array(results, dtype=np.float32)
         return self.cast_2_likelihood(input_tensor=xs, result=results[:, 0, 0])
+
+    def sample(self, size: int = 1, cond: TTensorOpt = None, batch_size: Optional[int] = None, **kwargs) -> np.ndarray:
+        if cond is None:
+            dist_indices: List[int] = list(range(len(self.distributions)))
+            cond = np.random.choice(dist_indices, size, p=self.normalised_distribution_weights)
+        samples = super(ConditionalCategoricalOld, self).sample(size=size, cond=cond, batch_size=batch_size, **kwargs)
+        return np.column_stack([samples, cond])

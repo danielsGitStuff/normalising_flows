@@ -3,13 +3,13 @@ from typing import List
 import numpy as np
 from keras.keras_parameterized import TestCase
 
-from distributions.ConditionalCategorical import ConditionalCategorical
+from distributions.ConditionalCategoricalOld import ConditionalCategoricalOld
 from distributions.GaussianMultivariate import GaussianMultivariate
 
 
 class T(TestCase):
     def test_categorical(self):
-        c = ConditionalCategorical(input_dim=1, conditional_dims=1)
+        c = ConditionalCategoricalOld(input_dim=1, conditional_dims=1)
         c.add_d(d=GaussianMultivariate(input_dim=1, mus=[1], cov=[1]), weight=2)
         c.add_d(d=GaussianMultivariate(input_dim=1, mus=[-1], cov=[1]), weight=1)
         xs = np.array([[1.0], [-1.0], [0.0]], dtype=np.float32)
@@ -27,7 +27,7 @@ class T(TestCase):
         g2 = GaussianMultivariate(input_dim=1, mus=[-1], cov=[1])
         g1.make_conditional(conditional_dims=1, producer_function=produce_f)
         g2.make_conditional(conditional_dims=1, producer_function=produce_f)
-        c = ConditionalCategorical(input_dim=1, conditional_dims=2, categorical_dims=1)
+        c = ConditionalCategoricalOld(input_dim=1, conditional_dims=2, categorical_dims=1)
         c.add_d(d=g1, weight=2)
         c.add_d(d=g2, weight=1)
         xs = np.array([[1.0], [-1.0], [0.0]], dtype=np.float32)

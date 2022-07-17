@@ -9,7 +9,8 @@ from tensorflow_probability.python.bijectors import Chain
 
 from common.NotProvided import NotProvided
 from common.globals import Global
-from distributions.Distribution import Distribution, DensityPlotData, HeatmapCreator, TfpD
+from distributions.distribution import Distribution, TfpD, HeatmapCreator
+from distributions.density_plot_data import DensityPlotData
 from distributions.LearnedDistribution import LearnedDistribution
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.base import TTensor, TTensorOpt, enable_memory_growth

@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow_probability.python.distributions import MultivariateNormalTriL
 
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution, TfpD
+from distributions.distribution import Distribution, TfpD
 from distributions.base import TTensor, TTensorOpt
 from typing import Optional
 

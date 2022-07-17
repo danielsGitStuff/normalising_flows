@@ -4,7 +4,7 @@ import numpy as np
 from tensorflow_probability.python.distributions import Distribution as TD
 
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.base import TTensor, TTensorOpt, cast_to_ndarray
 
 

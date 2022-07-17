@@ -3,7 +3,7 @@ from __future__ import annotations
 import tensorflow as tf
 from typing import Tuple
 
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.base import TTensor, BaseMethods
 from distributions.kl.Divergence import Divergence
 from distributions.kl.KLSampler import KLSampler

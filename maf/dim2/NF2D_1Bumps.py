@@ -1,7 +1,7 @@
 import numpy as np
 
 from common.globals import Global
-from distributions.Distribution import Distribution
+from distributions.distribution import Distribution
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.MultimodalDistribution import MultimodalDistribution
 from distributions.base import BaseMethods

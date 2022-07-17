@@ -1,9 +1,10 @@
 from __future__ import annotations
 from typing import Collection, Union, List, Optional
 from tensorflow.keras.layers.experimental.preprocessing import CategoryEncoding, StringLookup, IntegerLookup
-# from keras.layers.preprocessing.index_lookup import IndexLookup
 from tensorflow.python.keras.layers.preprocessing.index_lookup import IndexLookup
 from tensorflow import Tensor
+# from keras.layers.preprocessing.index_lookup import IndexLookup
+
 
 from common.jsonloader import Ser
 from common.NotProvided import NotProvided

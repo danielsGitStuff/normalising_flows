@@ -4,7 +4,7 @@ from typing import Optional, List, Tuple
 import numpy as np
 
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution, TfpD
+from distributions.distribution import Distribution, TfpD
 from distributions.UniformMultivariate import UniformMultivariate
 from distributions.base import TTensor, TTensorOpt, BaseMethods
 import tensorflow as tf

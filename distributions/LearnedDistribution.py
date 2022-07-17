@@ -11,7 +11,8 @@ from tensorflow import Tensor
 
 from common.jsonloader import Ser
 from common.NotProvided import NotProvided
-from distributions.Distribution import Distribution, DensityPlotData
+from distributions.distribution import Distribution
+from distributions.density_plot_data import DensityPlotData
 from distributions.base import TData, TTensorOpt, cast_dataset_to_tensor, TDataOpt
 from maf.DS import DS, DSOpt, DataLoader
 

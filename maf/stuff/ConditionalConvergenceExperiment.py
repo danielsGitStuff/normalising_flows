@@ -1,98 +1,27 @@
-from __future__ import annotations
-
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, List, Union
+from typing import List, Optional, Union, Tuple
 
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import setproctitle
-import tensorflow as tf
 from matplotlib import pyplot as plt
 
-from common import jsonloader, util
-from common.NotProvided import NotProvided
-from common.globals import Global
-from common.jsonloader import Ser
+from common import util
+from common.prozess.Prozessor import WorkLoad
 from common.util import Runtime
+from distributions.conditional_categorical import ConditionalCategorical
 from distributions.distribution import Distribution
 from distributions.density_plot_data import DensityPlotData
-from distributions.LearnedDistribution import EarlyStop
-from distributions.LearnedTransformedDistribution import LearnedTransformedDistribution
-from distributions.base import enable_memory_growth, BaseMethods
-from distributions.kl.DivergenceMetric import DivergenceMetric
+from distributions.base import BaseMethods, enable_memory_growth, TTensor
 from distributions.kl.KL import KullbackLeiblerDivergence
 from maf.DS import DS
 from maf.MaskedAutoregressiveFlow import MaskedAutoregressiveFlow
+from maf.stuff.DivergenceExperiment import DivergenceProcess
 from maf.stuff.MafExperiment import MafExperiment
-from common.prozess.Prozessor import WorkLoad
+import seaborn as sns
 
 
-class DivergenceProcess(Ser):
-    @staticmethod
-    def static_run(js: str, task: str, xs, val_xs: np.ndarray, xs_samples: np.ndarray, log_ps_samples: np.ndarray) -> Tuple[Path, str]:
-        dp: DivergenceProcess = jsonloader.from_json(js)
-        dp.xs = xs
-        dp.xs_samples = xs_samples
-        dp.val_xs = val_xs
-        dp.log_ps_samples = log_ps_samples
-        setproctitle.setproctitle(f"{task}, MAF.fit L{dp.maf.layers}")
-        return dp.run()
-
-    def __init__(self, cache_dir: Path = NotProvided(),
-                 prefix: str = NotProvided(),
-                 use_early_stop: bool = NotProvided(),
-                 epochs: int = NotProvided(),
-                 batch_size: int = NotProvided(),
-                 patience: int = NotProvided(),
-                 divergence_metric_every_epoch: int = NotProvided(),
-                 maf: MaskedAutoregressiveFlow = NotProvided(),
-                 xs: Optional[np.ndarray] = NotProvided(),
-                 val_xs: Optional[np.ndarray] = NotProvided(),
-                 xs_samples: Optional[np.ndarray] = NotProvided(),
-                 log_ps_samples: Optional[np.ndarray] = NotProvided()):
-        super().__init__()
-        self.cache_dir: Path = cache_dir
-        self.maf: MaskedAutoregressiveFlow = maf
-        self.xs: Optional[np.ndarray] = xs
-        self.val_xs: Optional[np.ndarray] = val_xs
-        self.prefix: str = prefix
-        self.use_early_stop: bool = use_early_stop
-        self.xs_samples: Optional[np.ndarray] = xs_samples
-        self.patience: int = patience
-        self.divergence_metric_every_epoch: int = divergence_metric_every_epoch
-        self.epochs: int = epochs
-        self.batch_size: int = batch_size
-        self.log_ps_samples: Optional[np.ndarray] = log_ps_samples
-
-    def run(self) -> Tuple[Path, str]:
-        if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=self.prefix):
-            # pass
-            self.maf: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(self.cache_dir, prefix=self.prefix)
-        else:
-            enable_memory_growth()
-            Global.set_seed(util.randomSeed())
-            ds: DS = DS.from_tensor_slices(self.xs)
-            val_ds: DS = DS.from_tensor_slices(self.val_xs)
-            ds_samples: Optional[DS] = None
-            log_ps_samples = None
-            if self.xs_samples is not None:
-                ds_samples = DS.from_tensor_slices(self.xs_samples)
-                log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
-            es = None
-            if self.use_early_stop:
-                es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patience, restore_best_model=True)
-            divergence_metric = None
-            if ds_samples is not None:
-                divergence_metric = DivergenceMetric(maf=self.maf, ds_samples=ds_samples, log_ps_samples=log_ps_samples,
-                                                     run_every_epoch=self.divergence_metric_every_epoch)
-            self.maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
-            self.maf.save(self.cache_dir, prefix=self.prefix)
-        return self.cache_dir, self.prefix
-
-
-class DivergenceExperiment(MafExperiment):
+class ConditionalDivergenceExperiment(MafExperiment):
     def __init__(self, name: str, layers: List[int] = None, layers_repeat: int = 1, pool_size: int = 6):
         super().__init__(name, pool_size=pool_size)
         self.layers: List[int] = layers or [10, 10, 10, 20, 20, 20, 30, 30, 30]
@@ -119,7 +48,7 @@ class DivergenceExperiment(MafExperiment):
         self.divergence_half_width: Optional[float] = None
         self.divergence_step_size: Optional[float] = None
         self.divergence_sample_size: Optional[int] = 10000
-        self.data_distribution: Distribution = self.create_data_distribution()
+        self.data_distribution: ConditionalCategorical = self.create_data_distribution()
         self.divergence_metric_every_epoch: int = 25
         self.patiences: List[int] = [50] * len(self.mafs)
 
@@ -139,14 +68,15 @@ class DivergenceExperiment(MafExperiment):
 
     def _print_datadistribution(self):
         plt.clf()
-        if self.data_distribution.input_dim == 2:
-            self.denses = []
-            print('printing original distribution')
-            args = dict(xmin=-10, xmax=10, ymin=-10, ymax=10, mesh_count=200, title=f"distribution")
-            dp: DensityPlotData = BaseMethods.call_func_in_process(self.data_distribution.heatmap_creator, f=self.data_distribution.heatmap_creator.heatmap_2d_data, arguments=args)
-            self.denses.append((dp, None, dp.values.max()))
-            self.print_denses(name=f"{self.name}_data")
-            self.denses = []
+        # if self.data_distribution.input_dim == 2:
+        #     for i in self.data_distribution.distributions:
+        #         self.denses = []
+        #         print('printing original distribution')
+        #         args = dict(xmin=-10, xmax=10, ymin=-10, ymax=10, mesh_count=200, title=f"distribution")
+        #         dp: DensityPlotData = BaseMethods.call_func_in_process(self.data_distribution.heatmap_creator, f=self.data_distribution.heatmap_creator.heatmap_2d_data, arguments=args)
+        #         self.denses.append((dp, None, dp.values.max()))
+        #         self.print_denses(name=f"{self.name}_data")
+        #         self.denses = []
 
     def _print_dataset(self, xs: np.ndarray = None, suffix: str = ""):
         plt.clf()
@@ -160,7 +90,7 @@ class DivergenceExperiment(MafExperiment):
             plt.xlim(self.xmin, self.xmax)
             plt.savefig(self.get_base_path(f"{self.name}_samples{suffix}"))
 
-    def create_data_distribution(self) -> Distribution:
+    def create_data_distribution(self) -> ConditionalCategorical:
         raise NotImplementedError()
 
     def create_mafs(self) -> List[MaskedAutoregressiveFlow]:
@@ -170,8 +100,10 @@ class DivergenceExperiment(MafExperiment):
         raise NotImplementedError()
 
     def _run(self):
-        xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples)
-        val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples)
+        cond = np.concatenate([[i] * self.no_samples for i, _ in enumerate(self.data_distribution.distributions)])
+        cond_val = np.concatenate([[i] * self.no_val_samples for i, _ in enumerate(self.data_distribution.distributions)])
+        xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples, cond=cond)
+        val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples, cond=cond_val)
         self._print_datadistribution()
         self._print_dataset(xs=xs, suffix="xs")
         self._print_dataset(xs=val_xs, suffix="xs_val")
