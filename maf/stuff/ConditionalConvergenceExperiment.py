@@ -54,6 +54,8 @@ class ConditionalDivergenceExperiment(MafExperiment):
 
         self.xs_samples: Optional[np.ndarray] = None
         self.log_ps_samples: Optional[np.ndarray] = None
+        self.cond: Optional[np.ndarray] = None
+        self.cond_val: Optional[np.ndarray] = None
 
     def get_layers(self) -> List[int]:
         return list(reversed(sorted(self.layers * self.layers_repeat)))
@@ -100,18 +102,19 @@ class ConditionalDivergenceExperiment(MafExperiment):
         raise NotImplementedError()
 
     def _run(self):
-        cond = np.concatenate([[i] * self.no_samples for i, _ in enumerate(self.data_distribution.distributions)])
-        cond_val = np.concatenate([[i] * self.no_val_samples for i, _ in enumerate(self.data_distribution.distributions)])
-        xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples, cond=cond)
-        val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples, cond=cond_val)
+        self.cond = np.concatenate([[i] * self.no_samples for i, _ in enumerate(self.data_distribution.distributions)])
+        self.cond_val = np.concatenate([[i] * self.no_val_samples for i, _ in enumerate(self.data_distribution.distributions)])
+        xs: np.ndarray = self.data_distribution.sample_in_process(self.no_samples, cond=self.cond)
+        val_xs: np.ndarray = self.data_distribution.sample_in_process(self.no_val_samples, cond=self.cond_val)
         self._print_datadistribution()
         self._print_dataset(xs=xs, suffix="xs")
         self._print_dataset(xs=val_xs, suffix="xs_val")
 
         mafs = []
+        # same cond for xs_samples and xs
         if self.divergence_metric_every_epoch > 0:
-            self.xs_samples = self.data_distribution.sample_in_process(self.divergence_sample_size)
-            self.log_ps_samples = BaseMethods.call_func_in_process(self.data_distribution, self.data_distribution.log_prob, arguments=[self.xs_samples])
+            self.xs_samples = self.data_distribution.sample_in_process(self.divergence_sample_size, cond=self.cond)
+            self.log_ps_samples = BaseMethods.call_func_in_process(self.data_distribution, self.data_distribution.log_prob, arguments=[self.xs_samples, self.cond])
         for i, maf in enumerate(self.mafs):
             prefix = self.maf_prefix(f"l{maf.layers}.{i}")
             dp: DivergenceProcess = DivergenceProcess(cache_dir=self.cache_dir,
@@ -126,12 +129,14 @@ class ConditionalDivergenceExperiment(MafExperiment):
                                                       val_xs=None,
                                                       xs_samples=None,
                                                       log_ps_samples=None)
+            dp.cond = self.cond
+            dp.cond_val = self.cond_val
             js = dp.to_json()
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
-            # DivergenceProcess.static_run(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)
-            self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
+            DivergenceProcess.static_run(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)
+            # self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
             # self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
         # results: List[Tuple[Path, str]] = self.pool.join()
         results: List[Tuple[Path, str]] = self.prozessor.join()

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional, Tuple, List, Union
+from typing import Optional, Tuple, List, Union, Type
 
 import numpy as np
 import pandas as pd
@@ -65,6 +65,9 @@ class DivergenceProcess(Ser):
         self.epochs: int = epochs
         self.batch_size: int = batch_size
         self.log_ps_samples: Optional[np.ndarray] = log_ps_samples
+        self.cond: Optional[np.ndarray] = None
+        self.cond_val: Optional[np.ndarray] = None
+        self.cond_type: tf.types = None
 
     def run(self) -> Tuple[Path, str]:
         if LearnedTransformedDistribution.can_load_from(self.cache_dir, prefix=self.prefix):
@@ -73,21 +76,25 @@ class DivergenceProcess(Ser):
         else:
             enable_memory_growth()
             Global.set_seed(util.randomSeed())
-            ds: DS = DS.from_tensor_slices(self.xs)
-            val_ds: DS = DS.from_tensor_slices(self.val_xs)
+            ds: DS = DS.from_tensor_slices(self.xs) if self.cond is None else DS.from_tensor_slices(np.column_stack([self.xs, self.cond]))
+            val_ds: DS = DS.from_tensor_slices(self.val_xs) if self.cond_val is None else DS.from_tensor_slices(np.column_stack([self.val_xs, self.cond_val]))
+            if self.cond is not None:
+                print("ads")
+
             ds_samples: Optional[DS] = None
             log_ps_samples = None
             if self.xs_samples is not None:
-                ds_samples = DS.from_tensor_slices(self.xs_samples)
+                ds_samples = DS.from_tensor_slices(self.xs_samples) if self.cond is None else DS.from_tensor_slices(
+                    tf.concat([self.xs_samples, self.maf.cast_2_input(self.cond, 1)], 1))
                 log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
             es = None
             if self.use_early_stop:
                 es = EarlyStop(monitor="val_loss", comparison_op=tf.less, patience=self.patience, restore_best_model=True)
-            divergence_metric = None
+            divergence_metrics = None
             if ds_samples is not None:
-                divergence_metric = DivergenceMetric(maf=self.maf, ds_samples=ds_samples, log_ps_samples=log_ps_samples,
-                                                     run_every_epoch=self.divergence_metric_every_epoch)
-            self.maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metric=divergence_metric)
+                divergence_metrics = [DivergenceMetric(maf=self.maf, ds_samples=ds_samples, log_ps_samples=log_ps_samples,
+                                                       run_every_epoch=self.divergence_metric_every_epoch)]
+            self.maf.fit(dataset=ds, batch_size=self.batch_size, epochs=self.epochs, val_xs=val_ds, early_stop=es, divergence_metrics=divergence_metrics)
             self.maf.save(self.cache_dir, prefix=self.prefix)
         return self.cache_dir, self.prefix
 

@@ -35,7 +35,9 @@ class LearnedDistribution(Distribution, ABC):
             if data is None:
                 return None
             if isinstance(data, tf.data.Dataset):
-                return data
+                if data.element_spec.dtype == tf.float32:
+                    return data
+                return data.map(lambda t: tf.cast(t, tf.float32))
             tensor = tf.convert_to_tensor(data, dtype=tf.float32)
             return tf.data.Dataset.from_tensor_slices(tensor)
 
@@ -80,7 +82,8 @@ class LearnedDistribution(Distribution, ABC):
         """
         raise NotImplementedError()
 
-    def fit_prepare(self, ds: DS, batch_size: int, val_ds: DSOpt = None, val_contains_truth: bool = False, shuffle: bool = False) -> Tuple[DS, DSOpt, DSOpt, DSOpt, DSOpt]:
+    def fit_prepare(self, ds: DS, batch_size: int, val_ds: DSOpt = None, val_contains_truth: bool = False, shuffle: bool = False, cond_cast_type: str = None) -> Tuple[
+        DS, DSOpt, DSOpt, DSOpt, DSOpt]:
         def check_batch(unknown: Any):
             # is_dataset and is_batched and batch_size_set
             if isinstance(unknown, tf.data.Dataset) and batch_size is not None:
@@ -106,8 +109,8 @@ class LearnedDistribution(Distribution, ABC):
         if shuffle:
             ds_xs = ds_xs.shuffle(buffer_size=len(ds_xs), reshuffle_each_iteration=True)
         if self.conditional:
-            cond = lambda t: t[:self.conditional_dims]
-            rest = lambda t: t[self.conditional_dims:]
+            cond = lambda t: t[-self.conditional_dims:]
+            rest = lambda t: t[:-self.conditional_dims]
             ds_cond = ds_xs.map(cond, num_parallel_calls=tf.data.AUTOTUNE)  # get cond
             ds_xs = ds_xs.map(rest, num_parallel_calls=tf.data.AUTOTUNE)  # overwrite ds_xs without cond
             if ds_val_xs is not None:
@@ -128,6 +131,17 @@ class LearnedDistribution(Distribution, ABC):
         ds_cond = prefetch(ds_cond)
         ds_val_cond = prefetch(ds_val_cond)
         ds_val_truth_exp = prefetch(ds_val_truth_exp)
+
+        if cond_cast_type is not None:
+            target = None
+            if cond_cast_type == 'int':
+                target = tf.int32
+
+            def cast_function(t: Tensor) -> Tensor:
+                return tf.cast(t, target)
+
+            ds_cond = ds_cond.map(cast_function)
+            ds_val_cond = ds_val_cond.map(cast_function)
 
         return ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp
 

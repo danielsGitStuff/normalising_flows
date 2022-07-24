@@ -17,8 +17,8 @@ class Divergence(Ser):
         self.name: str = 'name not set'
 
         def check(d: Distribution):
-            if d.conditional:
-                raise RuntimeError('conditional KL not supported')
+            # if d.conditional:
+            #     raise RuntimeError('conditional KL not supported')
             if d.input_dim != self.dims:
                 raise RuntimeError(f"expected input_dim is {self.dims} but a distribution has {d.input_dim}")
 

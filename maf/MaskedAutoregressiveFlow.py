@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pandas as pd
 from tabulate import tabulate
-from typing import List, Union, Optional, Dict, Any
+from typing import List, Union, Optional, Dict, Any, Type
 
 import numpy as np
 import tensorflow as tf
@@ -150,7 +150,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
     def __init__(self, input_dim: int = NotProvided(), conditional_dims: int = 0, layers: int = NotProvided(), hidden_shape: List[int] = [200, 200], base_lr: float = 1e-3,
                  end_lr: float = 1e-4,
                  batch_norm: bool = False, norm_layer: bool = False, permutations: List[np.ndarray] = NotProvided(), use_tanh_made: bool = NotProvided(), build: bool = True,
-                 activation: str = NotProvided(), input_noise_variance: float = 0.0, class_one_hot: ClassOneHot = NotProvided()):
+                 activation: str = NotProvided(), input_noise_variance: float = 0.0, class_one_hot: ClassOneHot = NotProvided(), cond_type: str = NotProvided()):
         super().__init__(NotProvided.value_if_not_provided(input_dim, -1), conditional_dims=conditional_dims)
         self.layers: int = NotProvided.value_if_not_provided(layers, -1)
         self.class_one_hot: ClassOneHot = NotProvided.value_if_not_provided(class_one_hot, ClassOneHot(enabled=False))
@@ -174,6 +174,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         self.activation: str = NotProvided.value_if_not_provided(activation, "relu")
         self.noise_norm_builder = NoiseNormBijectorBuilder(normalise=self.norm_layer, noise_stddev=input_noise_variance, batch_size=None)
         self.maf_layer_names: List[str] = []
+        self.cond_type: Optional[str] = NotProvided.value_if_not_provided(cond_type, None)
         # if not self.norm_layer and NotProvided.is_provided(input_dim):
         #     self.build_transformation()
 
@@ -264,7 +265,11 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
 
     def _print_model(self):
         xx = np.ones((2, self.input_dim), dtype=np.float32)
-        self.transformed_distribution.log_prob(xx)
+        bijector_kwargs = None
+        if self.conditional:
+            cond = np.full((2, 1), self.class_one_hot.classes[0])
+            bijector_kwargs: MaybeBijKwargs = self._create_bijector_kwargs(cond)
+        self.transformed_distribution.log_prob(xx, bijector_kwargs=bijector_kwargs)
         rows = []
 
         for b in self.transformed_distribution.bijector.bijectors:
@@ -291,7 +296,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             lr: float = NotProvided(),
             val_contains_truth=False,
             shuffle: bool = False,
-            divergence_metric: Optional[DivergenceMetric] = None
+            divergence_metrics: Optional[List[DivergenceMetric]] = None,
+            # ds_cond: DSOpt = None,
+            # ds_val_cond: DSOpt = None
             ) -> Optional[List[DensityPlotData]]:
         if Global.Testing.has('testing_nf_norm_layer'):
             self.norm_layer = Global.Testing.get('testing_nf_norm_layer', self.norm_layer)
@@ -306,9 +313,12 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         ds_val_cond: DSOpt = None
         if self.norm_layer and not self.norm_adapted:
             ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp = self.fit_prepare(ds=dataset, batch_size=batch_size, val_ds=val_xs,
-                                                                                        val_contains_truth=val_contains_truth, shuffle=shuffle)
+                                                                                        val_contains_truth=val_contains_truth, shuffle=shuffle, cond_cast_type=self.cond_type)
             self.adapt(ds_xs)
             self.set_training(True)
+        else:
+            ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp = self.fit_prepare(ds=dataset, batch_size=batch_size, val_ds=val_xs,
+                                                                                        val_contains_truth=val_contains_truth, shuffle=shuffle, cond_cast_type=self.cond_type)
 
         epochs = Global.Testing.get('testing_epochs', epochs)
 
@@ -318,15 +328,15 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
             self.transformed_distribution.log_prob(xx)
             self.set_training(False)
             return []
-
+        self.build_transformation()
         self._print_model()
         if epochs == -1:
             epochs = 99 * 99  # not infinite but big enough
             if early_stop is None:
                 raise RuntimeError("epochs is set to -1 and EarlyStop is not provided. This would run forever.")
-        if ds_xs is None:
-            ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp = self.fit_prepare(ds=dataset, batch_size=batch_size, val_ds=val_xs,
-                                                                                        val_contains_truth=val_contains_truth, shuffle=shuffle)
+        # if ds_xs is None:
+        #     ds_xs, ds_val_xs, ds_cond, ds_val_cond, ds_val_truth_exp = self.fit_prepare(ds=dataset, batch_size=batch_size, val_ds=val_xs,
+        #                                                                                 val_contains_truth=val_contains_truth, shuffle=shuffle)
         self.set_training(True)
         learning_rate_fn = NotProvided.value_if_not_provided(lr, tf.keras.optimizers.schedules.PolynomialDecay(self.base_lr, epochs, self.end_lr, power=0.5))
         self.optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate_fn)
@@ -397,8 +407,10 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
                     self.history.add("val_loss", val_loss)
                     line += f"val_loss {val_loss} "
 
-                if divergence_metric is not None:
-                    divergence_metric.calculate(self.history, epoch)
+                if divergence_metrics is not None:
+                    for divergence_metric in divergence_metrics:
+                        divergence_metric: DivergenceMetric = divergence_metric
+                        divergence_metric.calculate(self.history, epoch)
 
                 self.history.add('epoch', epoch)
 
