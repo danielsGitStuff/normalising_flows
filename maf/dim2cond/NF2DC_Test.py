@@ -1,4 +1,5 @@
 import tensorflow as tf
+from setproctitle import setproctitle
 
 from broken.ClassOneHot import ClassOneHot
 from common.argparser import ArgParser
@@ -27,5 +28,6 @@ class NF2DC_Test(VisualExample2DCond):
 
 
 if __name__ == '__main__':
+    setproctitle('MAIN')
     ArgParser.parse()
     NF2DC_Test().run()

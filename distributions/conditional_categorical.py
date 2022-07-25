@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from numbers import Number
+
 from tensorflow import Tensor
 
-from typing import Optional, List, Callable
+from typing import Optional, List, Callable, Union
 
 import numpy as np
 import tensorflow as tf
@@ -30,7 +32,7 @@ class ConditionalCategorical(Distribution):
 
     @property
     def heatmap_creator(self) -> HeatmapCreator:
-        hm = ConditionalHeatmapCreator(self)
+        hm = ConditionalHeatmapCreator(self, cond_values=list(range(len(self.distributions))))
         return hm
 
     def _create_base_distribution(self) -> Optional[TfpD]:
@@ -133,9 +135,10 @@ class ConditionalDensityPlotData(DensityPlotData):
 
 
 class ConditionalHeatmapCreator(HeatmapCreator):
-    def __init__(self, dist: ConditionalCategorical = NotProvided()):
+    def __init__(self, dist: ConditionalCategorical = NotProvided(), cond_values: List[Union[float, int]] = NotProvided()):
         super().__init__(dist)
         self.dist: ConditionalCategorical = dist
+        self.cond_values: List[Number] = cond_values
 
     def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
                         columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
@@ -144,9 +147,11 @@ class ConditionalHeatmapCreator(HeatmapCreator):
         y = tf.linspace(ymin, ymax, mesh_count)
         X, Y = tf.meshgrid(x, y)
         result = ConditionalDensityPlotData()
-        for dist in self.dist.distributions:
-            dist: Distribution = dist
+        for cond in self.cond_values:
+            cond: Union[float, int] = cond
             concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+            concatenated_mesh_coordinates = tf.concat([concatenated_mesh_coordinates, tf.fill((concatenated_mesh_coordinates.shape[0], self.dist.conditional_dims), float(cond))],
+                                                      1)
             prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
             probs = tf.reshape(prob, (mesh_count, mesh_count))
             probs = probs.numpy()

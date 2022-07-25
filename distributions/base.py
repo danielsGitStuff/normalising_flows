@@ -140,7 +140,7 @@ def set_gpu():
 
 
 def enable_memory_growth():
-    print('enabling memory growth ...')
+    print(f"   '{setproctitle.getproctitle()}' enabling memory growth ...")
     set_gpu()
     physical_devices = tf.config.list_physical_devices('GPU')
     if len(physical_devices) == 0:

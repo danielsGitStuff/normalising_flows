@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+import setproctitle
+
 from common.globals import Global
 from typing import List, Union, Optional, Tuple, Callable
 
@@ -189,14 +191,15 @@ class Distribution(Ser):
         return self.batch_call_sample(size=size, cond=cond, batch_size=batch_size, **kwargs)
 
     @staticmethod
-    def static_sample(js: str, size: int):
+    def static_sample(js: str, size: int, cond: Optional[np.ndarray] = None):
+        setproctitle.setproctitle('static sample')
         d: Distribution = jsonloader.from_json(js)
-        return d.sample(size)
+        return d.sample(size, cond=cond)
 
     def sample_in_process(self, size: int = 1, cond=None) -> np.ndarray:
-        return BaseMethods.call_func_in_process(self, self.sample, arguments={"size": size, 'cond': cond})
+        # return BaseMethods.call_func_in_process(self, self.sample, arguments={"size": size, 'cond': cond})
         js = self.to_json()
-        return Global.POOL().run_blocking(Distribution.static_sample, args=(js, size))
+        return Global.POOL().run_blocking(Distribution.static_sample, args=(js, size, cond))
 
     def likelihoods(self, xs: TTensor, cond: TTensorOpt = None, batch_size: Optional[int] = None) -> np.ndarray:
         if self.tfd_distribution is None:
