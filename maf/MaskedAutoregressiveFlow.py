@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from numbers import Number
+
 import math
 import os
 
@@ -31,7 +33,7 @@ from maf.CustomMade import CustomMade
 from broken.ClassOneHot import ClassOneHot
 from maf.DS import DS, DSOpt, DSMethods, DataLoader
 from distributions.base import cast_to_ndarray, TTensor, TDataOpt, TTensorOpt, MaybeBijKwargs, BaseMethods
-from distributions.distribution import CutThroughData, HeatmapCreator
+from distributions.distribution import CutThroughData, HeatmapCreator, ConditionalDensityPlotData, CHMC
 from distributions.density_plot_data import DensityPlotData
 from distributions.LearnedDistribution import LearnedConfig, LearnedDistribution, EarlyStop, LearnedDistributionCreator
 from maf.NoiseNormBijector import NoiseNormBijectorBuilder, NoiseNormBijector
@@ -75,10 +77,10 @@ class MafConfig(LearnedConfig):
         return cp
 
 
-class MafHeatmapCreator(HeatmapCreator):
+class MafHeatmapCreator(CHMC):
 
-    def __init__(self, dist: LearnedDistribution):
-        super().__init__(dist)
+    def __init__(self, dist: LearnedDistribution, conditional_values: Optional[List[List[Number]]] = None):
+        super().__init__(dist, conditional_values=conditional_values)
 
     def cut_along_x(self, pre_title: str, x_start: float = -4.0, x_end: float = 4.0, mesh_count: int = 1000) -> CutThroughData:
         if self.dist.input_dim != 2:
@@ -269,7 +271,9 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         if self.conditional:
             cond = np.full((2, 1), self.class_one_hot.classes[0])
             bijector_kwargs: MaybeBijKwargs = self._create_bijector_kwargs(cond)
-        self.transformed_distribution.log_prob(xx, bijector_kwargs=bijector_kwargs)
+            self.transformed_distribution.log_prob(xx, bijector_kwargs=bijector_kwargs)
+        else:
+            self.transformed_distribution.log_prob(xx)
         rows = []
 
         for b in self.transformed_distribution.bijector.bijectors:
@@ -343,7 +347,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         # import tensorflow.keras.optimizers as OOO
         # self.optimizer = OOO.Adadelta(lr=1.0)
         # self.optimizer = OOO.RMSprop()
-        plot_data: List[DensityPlotData] = []
+        plot_data: List[ConditionalDensityPlotData] = []
         runtime = Runtime("fit")
         # worked = False
         # nan_errors = 0
@@ -482,6 +486,7 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         bijector_kwargs: MaybeBijKwargs = {'conditional_input': cond, 'noise_norm': {'training': training}}
         for name in self.maf_layer_names:
             bijector_kwargs[name] = {'conditional_input': cond}
+        # bijector_kwargs[self.maf_layer_names[0]] = {'conditional_input': cond}
         return bijector_kwargs
 
     def _sample(self, size=1, cond: TTensorOpt = None, **kwargs) -> np.ndarray:
@@ -531,9 +536,8 @@ class MaskedAutoregressiveFlow(LearnedTransformedDistribution):
         log_det = self.transformed_distribution.bijector.inverse_log_det_jacobian(xs, bijector_kwargs=bijector_kwargs)
         return tf.abs(tf.exp(log_det))
 
-    @property
-    def heatmap_creator(self) -> MafHeatmapCreator:
-        return MafHeatmapCreator(self)
+    def heatmap_creator(self, conditional_values: Optional[List[List[Number]]] = None) -> MafHeatmapCreator:
+        return MafHeatmapCreator(self, conditional_values=conditional_values)
 
     @staticmethod
     def can_load_from(folder: Union[Path, str], prefix: str) -> bool:

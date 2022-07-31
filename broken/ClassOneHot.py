@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+from broken import statics
 from typing import Collection, Union, List, Optional
 from tensorflow.keras.layers.experimental.preprocessing import CategoryEncoding, StringLookup, IntegerLookup
 from tensorflow.python.keras.layers.preprocessing.index_lookup import IndexLookup
@@ -48,8 +50,8 @@ class ClassOneHot(Ser):
         if not self.enabled:
             t, _ = cast_to_tensor(classes)
             return t
-        if tf.reduce_max(classes) > 1:
-            print(f'CCCC {classes}')
+        if self._indexer is None:
+            self.init()
         indexed = self._indexer(classes)
         result: Tensor = self._encoder(indexed)
         return result

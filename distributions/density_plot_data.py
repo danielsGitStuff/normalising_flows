@@ -32,7 +32,8 @@ class DensityPlotData:
 
     def __init__(self, values: np.ndarray, mesh_count: int, xmin: float = -4.0, xmax: float = 4.0, ymin: Optional[float] = -4.0, ymax: Optional[float] = 4.0,
                  suptitle: Optional[str] = None,
-                 title: Optional[str] = None, type: str = "hm", columns: Optional[List[str]] = NotProvided(), truth: Optional[np.ndarray] = None):
+                 title: Optional[str] = None, type: str = "hm", columns: Optional[List[str]] = NotProvided(), truth: Optional[np.ndarray] = None,
+                 conditional_values: List[float] = None):
         self.mesh_count: int = mesh_count
         self.xmin: float = xmin
         self.xmax: float = xmax
@@ -45,6 +46,7 @@ class DensityPlotData:
         self.type: str = type
         self.columns: Optional[List[str]] = columns
         self.vmin: float = 0.0
+        self.conditional_values: Optional[List[float]] = conditional_values
         if type not in {"hm", "scatter", "1d", 'diff'}:
             raise RuntimeError(f"unknown plot type: {type}")
 
@@ -123,5 +125,3 @@ class DensityPlotData:
         if NotProvided.is_provided(self.columns):
             ax.set_xlabel(self.columns[0])
             ax.set_ylabel(self.columns[1])
-
-

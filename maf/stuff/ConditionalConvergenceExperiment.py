@@ -135,8 +135,8 @@ class ConditionalDivergenceExperiment(MafExperiment):
             # cache_d, pre = DivergenceProcess.static_run(js)
             # m: MaskedAutoregressiveFlow = MaskedAutoregressiveFlow.load(cache_d, pre)
             # mafs.append(m)
-            DivergenceProcess.static_run(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)
-            # self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
+            # DivergenceProcess.static_run(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)
+            self.prozessor.run_later(WorkLoad.create_static_method_workload(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples)))
             # self.pool.apply_async(DivergenceProcess.static_run, args=(js, self.name, xs, val_xs, self.xs_samples, self.log_ps_samples))
         # results: List[Tuple[Path, str]] = self.pool.join()
         results: List[Tuple[Path, str]] = self.prozessor.join()
@@ -167,7 +167,7 @@ class ConditionalDivergenceExperiment(MafExperiment):
             return
         values = []
         enable_memory_growth()
-        ds_samples = DS.from_tensor_slices(self.xs_samples)
+        ds_samples = DS.from_tensor_slices(self.xs_samples) if self.cond is None else DS.from_tensor_slices(np.column_stack([self.xs_samples, self.cond]))
         log_ps_samples = DS.from_tensor_slices(self.log_ps_samples)
         for maf in self.mafs:
             # j = JensenShannonDivergence(p=maf, q=self.data_distribution, half_width=self.divergence_half_width, step_size=self.divergence_step_size, batch_size=self.batch_size)

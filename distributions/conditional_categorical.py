@@ -13,7 +13,7 @@ from matplotlib.colors import Colormap, TwoSlopeNorm
 from common import util
 from common.NotProvided import NotProvided
 from common.jsonloader import SerSettings
-from distributions.distribution import Distribution, TfpD, HeatmapCreator
+from distributions.distribution import Distribution, TfpD, HeatmapCreator, CHMC
 from distributions.GaussianMultivariate import GaussianMultivariate
 from distributions.base import TTensor, TTensorOpt
 from distributions.density_plot_data import DensityPlotData
@@ -30,9 +30,8 @@ class ConditionalCategorical(Distribution):
         self.d_probs: List[float] = d_probs
         self._init()
 
-    @property
-    def heatmap_creator(self) -> HeatmapCreator:
-        hm = ConditionalHeatmapCreator(self, cond_values=list(range(len(self.distributions))))
+    def heatmap_creator(self, conditional_values: Optional[List[List[Number]]] = None) -> HeatmapCreator:
+        hm = CHMC(self, conditional_values)
         return hm
 
     def _create_base_distribution(self) -> Optional[TfpD]:
@@ -148,7 +147,7 @@ class ConditionalHeatmapCreator(HeatmapCreator):
         X, Y = tf.meshgrid(x, y)
         result = ConditionalDensityPlotData()
         for cond in self.cond_values:
-            cond: Union[float, int] = cond
+            cond: List[Union[float, int]] = cond
             concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
             concatenated_mesh_coordinates = tf.concat([concatenated_mesh_coordinates, tf.fill((concatenated_mesh_coordinates.shape[0], self.dist.conditional_dims), float(cond))],
                                                       1)
@@ -164,8 +163,8 @@ class ConditionalHeatmapCreator(HeatmapCreator):
                 truth = truth.reshape((mesh_count, mesh_count))
                 truth = np.rot90(truth)
 
-            data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
-                                   truth=truth)
+            data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=f'{title} cond={cond}', columns=columns,
+                                   truth=truth, conditional_values=[float(cond)])
             result.add_conditional(data)
         return result
 

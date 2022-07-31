@@ -14,6 +14,3 @@ class VisualExample2DCond(ConditionalDivergenceExperiment, ABC):
 
     def results_dir_name(self) -> str:
         return 'results_artificial_dim2_cond'
-
-    def create_data_title(self) -> str:
-        return 'not set yet'

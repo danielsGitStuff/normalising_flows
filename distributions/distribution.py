@@ -1,26 +1,28 @@
 from __future__ import annotations
 
 import math
-import setproctitle
-
-from common.globals import Global
-from typing import List, Union, Optional, Tuple, Callable
-
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import setproctitle
 import tensorflow as tf
+import tensorflow_probability.python.distributions as tfpds
+from matplotlib.axis import Axis
+from matplotlib.colors import Colormap
 from scipy.stats import multivariate_normal
 from tensorflow import Tensor
 from tensorflow_probability.python.distributions import Distribution as TD
-import tensorflow_probability.python.distributions as tfpds
+
 from common import jsonloader
 from common.NotProvided import NotProvided
+from common.globals import Global
 from common.jsonloader import Ser
 from common.util import Runtime
 from distributions.base import TTensor, TTensorOpt, cast_to_tensor, cast_to_ndarray, BaseMethods
 from distributions.density_plot_data import DensityPlotData
 from maf.DS import DS
+from numbers import Number
+from typing import List, Union, Optional, Tuple, Callable
 
 TfpD = tfpds.Distribution
 
@@ -221,9 +223,11 @@ class Distribution(Ser):
     def _likelihoods(self, xs: TTensor, cond: TTensorOpt = None) -> np.ndarray:
         raise NotImplementedError()
 
-    @property
-    def heatmap_creator(self) -> HeatmapCreator:
-        hm = HeatmapCreator(self)
+    def heatmap_creator(self, conditional_values: Optional[List[List[Number]]] = None) -> HeatmapCreator:
+        if self.conditional:
+            hm = CHMC(self, conditional_values=conditional_values)
+        else:
+            hm = HeatmapCreator(self)
         return hm
 
 
@@ -286,23 +290,136 @@ class CutThroughData:
         # sns.lineplot(data=df, x=self.x_label, y=self.y_label, ax=ax)
 
 
+class ConditionalDensityPlotData(Ser):
+    def __init__(self, conditional_values: Optional[List[List[Number]]] = None):
+        super().__init__()
+        self.conditional_values: Optional[List[List[Number]]] = conditional_values
+        self.density_plots: List[DensityPlotData] = []
+
+    def plot_count(self) -> int:
+        return len(self.density_plots)
+
+    def print_yourself(self, axs: List[Axis], cmap: Optional[Colormap] = None):
+        assert len(axs) == self.plot_count()
+        for ax, dp in zip(axs, self.density_plots):
+            dp: DensityPlotData = dp
+            dp.print_yourself(ax, cmap=cmap)
+
+
+class CHMC(Ser):
+    def __init__(self, dist: Distribution = NotProvided(), conditional_values: List[List[Number]] = None):
+        super().__init__()
+        self.dist: Distribution = dist
+        self.conditional_values: Optional[List[List[Number]]] = conditional_values
+
+    def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
+                        columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> ConditionalDensityPlotData:
+        """plot_data.append(heatmap_2d_data(maf, -4.0, 4.0, -4.0, 4.0, mesh_count=200, suptitle="p(x) sampled from Z", title=f"after {i} epochs"))"""
+        x = tf.linspace(xmin, xmax, mesh_count)
+        y = tf.linspace(ymin, ymax, mesh_count)
+        X, Y = tf.meshgrid(x, y)
+        result = ConditionalDensityPlotData(conditional_values=self.conditional_values)
+        for cond in self.conditional_values:
+            cond: List[Union[float, int]] = cond
+            assert len(cond) == self.dist.conditional_dims
+            concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+            conditional_columns = tf.reshape(tf.repeat(tf.cast(cond, dtype=tf.float32), concatenated_mesh_coordinates.shape[0]),
+                                             (concatenated_mesh_coordinates.shape[0], len(cond)))
+            concatenated_mesh_coordinates = tf.concat([concatenated_mesh_coordinates, conditional_columns], 1)
+            prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
+            probs = tf.reshape(prob, (mesh_count, mesh_count))
+            probs = probs.numpy()
+            # probs = np.flip(probs,axis=(1,0))
+            probs = np.rot90(probs)
+
+            truth: Optional[np.ndarray] = None
+            if true_distribution is not None:
+                truth = true_distribution.prob(concatenated_mesh_coordinates, batch_size=10000)
+                truth = truth.reshape((mesh_count, mesh_count))
+                truth = np.rot90(truth)
+
+            data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=f'{title} cond: {cond}', columns=columns,
+                                   truth=truth, conditional_values=cond)
+            result.density_plots.append(data)
+        return result
+
+    def diff_2d(self, true_plot_data: ConditionalDensityPlotData, title: Optional[str] = None):
+        assert len(true_plot_data.density_plots) > 0
+        dpd: DensityPlotData = true_plot_data.density_plots[0]
+        assert len(dpd.conditional_values) == self.dist.conditional_dims
+        x = tf.linspace(dpd.xmin, dpd.xmax, dpd.mesh_count)
+        y = tf.linspace(dpd.ymin, dpd.ymax, dpd.mesh_count)
+        X, Y = tf.meshgrid(x, y)
+
+        result = ConditionalDensityPlotData(conditional_values=self.conditional_values)
+        for cond, dpd in zip(true_plot_data.conditional_values, true_plot_data.density_plots):
+            concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+            conditional_columns = tf.reshape(tf.repeat(tf.cast(dpd.conditional_values, dtype=tf.float32), concatenated_mesh_coordinates.shape[0]),
+                                             (concatenated_mesh_coordinates.shape[0], len(dpd.conditional_values)))
+            concatenated_mesh_coordinates = tf.concat([concatenated_mesh_coordinates, conditional_columns], 1)
+            prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
+            probs = tf.reshape(prob, (dpd.mesh_count, dpd.mesh_count))
+            probs = probs.numpy()
+            # probs = np.flip(probs,axis=(1,0))
+            probs = np.rot90(probs)
+            # values = np.abs(true_plot_data.values - probs)
+            values = probs - dpd.values
+            data = DensityPlotData(values=values,
+                                   xmin=dpd.xmin,
+                                   xmax=dpd.xmax,
+                                   ymin=dpd.ymin,
+                                   ymax=dpd.ymax,
+                                   type='diff',
+                                   mesh_count=dpd.mesh_count,
+                                   title=f'{title} cond: {cond}')
+            result.density_plots.append(data)
+        return result
+        # print('asdasdasdasd')
+
+
 class HeatmapCreator(Ser):
     def __init__(self, dist: Distribution = NotProvided()):
         super().__init__()
         self.dist: Distribution = dist
 
     def heatmap_1d_data(self, xmin=-4.0, xmax=4.0, ymin=None, ymax=None, mesh_count=200, suptitle: str = None,
-                        title: str = None, columns: Optional[List[str]] = NotProvided()) -> DensityPlotData:
+                        title: str = None, columns: Optional[List[str]] = NotProvided()) -> ConditionalDensityPlotData:
         x = tf.linspace(xmin, xmax, mesh_count)
         x = cast_to_ndarray(x)
         x = x.reshape((mesh_count, 1))
         probs = self.dist.prob(x)
         values = np.concatenate([x, probs], axis=1)
         data = DensityPlotData(values=values, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, mesh_count=mesh_count, type="1d", suptitle=suptitle, title=title, columns=columns)
-        return data
+        result = ConditionalDensityPlotData()
+        result.density_plots.append(data)
+        return result
+
+    # def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
+    #                     columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
+    #     """plot_data.append(heatmap_2d_data(maf, -4.0, 4.0, -4.0, 4.0, mesh_count=200, suptitle="p(x) sampled from Z", title=f"after {i} epochs"))"""
+    #     x = tf.linspace(xmin, xmax, mesh_count)
+    #     y = tf.linspace(ymin, ymax, mesh_count)
+    #     X, Y = tf.meshgrid(x, y)
+    #
+    #     concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
+    #     prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
+    #     probs = tf.reshape(prob, (mesh_count, mesh_count))
+    #     probs = probs.numpy()
+    #     # probs = np.flip(probs,axis=(1,0))
+    #     probs = np.rot90(probs)
+    #
+    #     truth: Optional[np.ndarray] = None
+    #     if true_distribution is not None:
+    #         truth = true_distribution.prob(concatenated_mesh_coordinates, batch_size=10000)
+    #         truth = truth.reshape((mesh_count, mesh_count))
+    #         truth = np.rot90(truth)
+    #
+    #     data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
+    #                            truth=truth)
+    #     return data
 
     def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
-                        columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
+                        columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> ConditionalDensityPlotData:
         """plot_data.append(heatmap_2d_data(maf, -4.0, 4.0, -4.0, 4.0, mesh_count=200, suptitle="p(x) sampled from Z", title=f"after {i} epochs"))"""
         x = tf.linspace(xmin, xmax, mesh_count)
         y = tf.linspace(ymin, ymax, mesh_count)
@@ -323,33 +440,11 @@ class HeatmapCreator(Ser):
 
         data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
                                truth=truth)
-        return data
+        result = ConditionalDensityPlotData()
+        result.density_plots.append(data)
+        return result
 
-    def heatmap_2d_data(self, xmin=-4.0, xmax=4.0, ymin=-4.0, ymax=4.0, mesh_count=200, suptitle: str = None, title: str = None,
-                        columns: Optional[List[str]] = NotProvided(), true_distribution: Optional[Distribution] = None) -> DensityPlotData:
-        """plot_data.append(heatmap_2d_data(maf, -4.0, 4.0, -4.0, 4.0, mesh_count=200, suptitle="p(x) sampled from Z", title=f"after {i} epochs"))"""
-        x = tf.linspace(xmin, xmax, mesh_count)
-        y = tf.linspace(ymin, ymax, mesh_count)
-        X, Y = tf.meshgrid(x, y)
-
-        concatenated_mesh_coordinates = tf.transpose(tf.stack([tf.reshape(Y, [-1]), tf.reshape(X, [-1])]))
-        prob = self.dist.prob(concatenated_mesh_coordinates, batch_size=10000)
-        probs = tf.reshape(prob, (mesh_count, mesh_count))
-        probs = probs.numpy()
-        # probs = np.flip(probs,axis=(1,0))
-        probs = np.rot90(probs)
-
-        truth: Optional[np.ndarray] = None
-        if true_distribution is not None:
-            truth = true_distribution.prob(concatenated_mesh_coordinates, batch_size=10000)
-            truth = truth.reshape((mesh_count, mesh_count))
-            truth = np.rot90(truth)
-
-        data = DensityPlotData(values=probs, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, type="hm", mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns,
-                               truth=truth)
-        return data
-
-    def diff_2d(self, true_plot_data: DensityPlotData, title: Optional[str] = None) -> DensityPlotData:
+    def diff_2d(self, true_plot_data: DensityPlotData, title: Optional[str] = None) -> ConditionalDensityPlotData:
         x = tf.linspace(true_plot_data.xmin, true_plot_data.xmax, true_plot_data.mesh_count)
         y = tf.linspace(true_plot_data.ymin, true_plot_data.ymax, true_plot_data.mesh_count)
         X, Y = tf.meshgrid(x, y)
@@ -370,5 +465,7 @@ class HeatmapCreator(Ser):
                                type='diff',
                                mesh_count=true_plot_data.mesh_count,
                                title=title)
-        return data
+        result = ConditionalDensityPlotData()
+        result.density_plots.append(data)
+        return result
         # print('asdasdasdasd')

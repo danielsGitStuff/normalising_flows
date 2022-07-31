@@ -170,7 +170,7 @@ def ser_instanciate(deserialized, instance: Ser = None, eager: bool = False):
                 instance.ser_deserialize_lazy_z = deserialized
                 return instance
         for k, v in deserialized.items():
-            if k == "k__" or k == "m_" or k == "dates":
+            if k == "k__" or k == "m__" or k == "dates":
                 continue
             val = ser_instanciate(v)
             if k in instance.dates:

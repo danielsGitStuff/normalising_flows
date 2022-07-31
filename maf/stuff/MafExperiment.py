@@ -1,4 +1,5 @@
 import sys
+from numbers import Number
 
 from pathlib import Path
 
@@ -6,7 +7,7 @@ import math
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-from distributions.distribution import CutThroughData, Distribution
+from distributions.distribution import CutThroughData, Distribution, ConditionalDensityPlotData
 from distributions.density_plot_data import DensityPlotData
 from maf.stuff.StaticMethods import StaticMethods
 from matplotlib.colors import Colormap, TwoSlopeNorm
@@ -28,8 +29,8 @@ class MafExperiment:
         self.heat_map_cmap = None
         self.fig = None
         self.cuts: Optional[List[Tuple[CutThroughData, CutThroughData]]] = None
-        self.denses: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
-        self.differences: Optional[List[Tuple[DensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
+        self.denses: Optional[List[Tuple[ConditionalDensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
+        self.differences: Optional[List[Tuple[ConditionalDensityPlotData, Optional[float], Optional[Union[float, str]]]]] = None
         self.differences_keys: Set[str] = set()
         self.overall_runtime: Runtime = Runtime(f"overall runtime for '{self.name}'").start()
         self.print_3d_for_denses: bool = False
@@ -40,10 +41,11 @@ class MafExperiment:
         self.pool_size = pool_size
         # self.pool: RestartingPoolReplacement = RestartingPoolReplacement(self.pool_size)
         self.prozessor: Prozessor = Prozessor(max_workers=self.pool_size)
-        self.original_plot_data: Optional[DensityPlotData] = None
+        self.original_plot_data: Optional[ConditionalDensityPlotData] = None
         # self.cmap_divergence = sns.diverging_palette(220, 20, as_cmap=True)
         self.cmap_divergence = sns.color_palette("icefire", as_cmap=True)
         self.cmap_absolute = sns.color_palette("rocket", as_cmap=True)
+        self.conditional_values: Optional[List[List[Number]]] = None
 
     def set_pool_size(self, size: int):
         self.pool_size = size
@@ -92,7 +94,7 @@ class MafExperiment:
             key: Any = getattr(dist, unique_property)
             if key in self.differences_keys:
                 return
-            dp = dist.heatmap_creator.diff_2d(self.original_plot_data, title=title)
+            dp = dist.heatmap_creator(conditional_values=self.conditional_values).diff_2d(self.original_plot_data, title=title)
             vmin = None
             self.differences.append((dp, vmin, vmax))
             self.differences_keys.add(key)
@@ -102,10 +104,12 @@ class MafExperiment:
         if self.denses is None:
             self.denses = []
         if dist.input_dim == 1:
-            dp = dist.heatmap_creator.heatmap_1d_data(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, mesh_count=mesh_count, suptitle=suptitle, title=title, columns=columns)
+            dp = dist.heatmap_creator(conditional_values=self.conditional_values).heatmap_1d_data(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, mesh_count=mesh_count,
+                                                                                                  suptitle=suptitle, title=title, columns=columns)
         elif dist.input_dim == 2:
-            dp: DensityPlotData = dist.heatmap_creator.heatmap_2d_data(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax, mesh_count=mesh_count, suptitle=suptitle, title=title,
-                                                                       columns=columns, true_distribution=true_distribution)
+            dp: ConditionalDensityPlotData = dist.heatmap_creator(conditional_values=self.conditional_values).heatmap_2d_data(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax,
+                                                                                                                              mesh_count=mesh_count, suptitle=suptitle, title=title,
+                                                                                                                              columns=columns, true_distribution=true_distribution)
         else:
             raise RuntimeError(f"cannot handle input_dim {dist.input_dim}")
         vmin = None
@@ -117,16 +121,26 @@ class MafExperiment:
     def print_denses(self, name: Optional[str] = None):
         if self.denses is None:
             return
-        fig, axs = self.default_fig(int(math.ceil(len(self.denses) / 2)), 2)
+        no_of_plots = sum([d[0].plot_count() for d in self.denses])
+        fig, axs = self.default_fig(int(math.ceil(no_of_plots / 2)), 2)
         for ax in axs.flatten():
             ax.set_axis_off()
-        for (dp, vmin, vmax), ax in zip(self.denses, axs.flatten()):
-            ax.set_axis_on()
-            if vmax == 'auto':
-                vmax = 0
-                for d, _, _ in self.denses:
-                    vmax = max(vmax, d.values.max())
-            dp.print_yourself(ax, vmax=vmax, vmin=vmin, cmap=self.cmap_absolute)
+        ax_index = 0
+        axs = axs.flatten()
+        for (cdp, vmin, vmax) in self.denses:
+            cdp: ConditionalDensityPlotData = cdp
+            for i, dp in enumerate(cdp.density_plots):
+                dp: DensityPlotData = dp
+                ax = axs[ax_index]
+                ax_index += 1
+                ax.set_axis_on()
+                if vmax == 'auto':
+                    vmax = 0
+                    for cd, _, _ in self.denses:
+                        cd: ConditionalDensityPlotData = cd
+                        for d in cd.density_plots:
+                            vmax = max(vmax, d.values.max())
+                dp.print_yourself(ax, vmax=vmax, vmin=vmin, cmap=self.cmap_absolute)
         # remove empty diagram
         # if len(axs.shape) == 2 and axs.shape[0] * axs.shape[1] > len(self.denses):
         #     axs[-1][-1].set_axis_off()
@@ -139,24 +153,42 @@ class MafExperiment:
     def print_diffs(self):
         if self.differences is None:
             return
-        fig, axs = self.default_fig(int(math.ceil((len(self.differences) + 1) / 3)), 3)
+        no_of_plots = sum([d[0].plot_count() for d in self.differences]) + self.original_plot_data.plot_count()
+        fig, axs = self.default_fig(int(math.ceil((no_of_plots + 1) / 3)), 3)
         for ax in axs.flatten():
             ax.set_axis_off()
         axs = axs.flatten()
-        self.original_plot_data.print_yourself(axs[0], cmap=self.cmap_absolute)
-        axs = axs[1:]
+        self.original_plot_data.print_yourself(axs[0: self.original_plot_data.plot_count()], cmap=self.cmap_absolute)
+        axs = axs[self.original_plot_data.plot_count():]
 
-        max_abs_divergence: float = max([np.abs(dp.values).max() for dp, _, _ in self.differences])
+        # max_abs_divergence: float = max([np.abs(dp.values).max() for dp, _, _ in self.differences])
+        max_abs_divergence: float = max([np.abs(dp.values).max() for cdp, _, _ in self.differences for dp in cdp.density_plots])
         divergence_norm = TwoSlopeNorm(vmin=-max_abs_divergence, vcenter=0, vmax=max_abs_divergence)
 
-        for i, ((dp, vmin, vmax), ax) in enumerate(zip(reversed(self.differences), axs)):
-            ax.set_axis_on()
-            if vmax == 'auto':
-                vmax = 0
-                for d, _, _ in self.differences:
-                    vmax = max(vmax, d.values.max())
-            legend = i == 1 or True
-            dp.print_yourself(ax, vmax=vmax, vmin=vmin, legend=legend, cmap=self.cmap_divergence, norm=divergence_norm)
+        ax_index = 0
+        for (cdp, vmin, vmax) in reversed(self.differences):
+            cdp: ConditionalDensityPlotData = cdp
+            for dp in cdp.density_plots:
+                ax = axs[ax_index]
+                ax_index += 1
+                ax.set_axis_on()
+                if vmax == 'auto':
+                    vmax = 0
+                    for cd, _, _ in self.differences:
+                        cd: ConditionalDensityPlotData = cd
+                        for d in cd.density_plots:
+                            vmax = max(vmax, d.values.max())
+                legend = ax_index == 1 or True
+                dp.print_yourself(ax, vmax=vmax, vmin=vmin, legend=legend, cmap=self.cmap_divergence, norm=divergence_norm)
+
+        # for i, ((dp, vmin, vmax), ax) in enumerate(zip(reversed(self.differences), axs)):
+        #     ax.set_axis_on()
+        #     if vmax == 'auto':
+        #         vmax = 0
+        #         for d, _, _ in self.differences:
+        #             vmax = max(vmax, d.values.max())
+        #     legend = i == 1 or True
+        #     dp.print_yourself(ax, vmax=vmax, vmin=vmin, legend=legend, cmap=self.cmap_divergence, norm=divergence_norm)
         name = f"{self.name}.diff"
         self.save_fig(name=name, transparent=True)
         self.differences = None
